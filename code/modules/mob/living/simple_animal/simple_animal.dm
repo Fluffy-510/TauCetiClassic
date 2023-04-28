@@ -60,6 +60,8 @@
 	var/has_arm = FALSE
 	var/has_leg = FALSE
 
+	can_point = FALSE
+
 	///What kind of footstep this mob should have. Null if it shouldn't have any.
 	var/footstep_type
 
@@ -379,6 +381,9 @@
 	if(IsSleeping())
 		stat = UNCONSCIOUS
 		blinded = TRUE
+	else
+		stat = CONSCIOUS
+		blinded = FALSE
 	med_hud_set_status()
 
 /mob/living/simple_animal/get_scrambled_message(message, datum/language/speaking = null)

@@ -243,7 +243,7 @@ var/global/mining_shuttle_location = 0 // 0 = station 13, 1 = mining station
 	if(target_zone == BP_HEAD)
 		shake_camera(target, 2, 2)
 
-	if((CLUMSY in user.mutations) && asshole_counter >= 5)
+	if((user.IsClumsy()) && asshole_counter >= 5)
 		target.emote("scream")
 		playsound(user, 'sound/misc/s_asshole_short.ogg', VOL_EFFECTS_MASTER, 100, FALSE)
 		user.say(pick("Spa-a-ace assho-o-o-o-ole!", "Spaaace asshoooole!", "Space assho-o-ole!"))
@@ -342,7 +342,7 @@ var/global/mining_shuttle_location = 0 // 0 = station 13, 1 = mining station
 	return
 
 /obj/item/weapon/pickaxe/drill/attackby(obj/item/I, mob/user, params)
-	if(isscrewdriver(I))
+	if(isscrewing(I))
 		if(state==0)
 			state = 1
 			to_chat(user, "<span class='notice'>You open maintenance panel.</span>")
@@ -531,7 +531,7 @@ var/global/mining_shuttle_location = 0 // 0 = station 13, 1 = mining station
 	if(length(installed_upgrades) >= max_upgrades)
 		to_chat(user, "<span class='warning'>Достигнут общий лимит количества улучшений!</span>")
 		return FALSE
-	
+
 	if(count_by_type(installed_upgrades, UPG.type) >= MAX_IDENTICAL_UPGRADES)
 		to_chat(user, "<span class='warning'>Достигнут лимит улучшений данного типа!</span>")
 		return FALSE
@@ -560,7 +560,7 @@ var/global/mining_shuttle_location = 0 // 0 = station 13, 1 = mining station
 		playsound(src, 'sound/items/insert_key.ogg', VOL_EFFECTS_MASTER)
 		qdel(I)
 
-	else if(isscrewdriver(I))
+	else if(isscrewing(I))
 		if(!length(installed_upgrades))
 			to_chat(user, "<span class='warning'>Нет улучшений для извлечения!</span>")
 			return
@@ -707,6 +707,41 @@ var/global/mining_shuttle_location = 0 // 0 = station 13, 1 = mining station
 	emagged = TRUE
 	to_chat(user, "<span class='warning'>Ошибка: Обнаружен несовместимый модуль. Ошибкаошибкаошибка.</span>")
 	return TRUE
+
+/obj/item/weapon/gun/energy/laser/cutter/attackby(obj/item/A, mob/user)
+	if(istype(A, /obj/item/stack/sheet/mineral/phoron))
+		if(power_supply.charge >= power_supply.maxcharge)
+			to_chat(user,"<span class='notice'>[src] is already fully charged.</span>")
+			return
+		if (A.use_tool(A, user, 10, amount = 1, can_move = TRUE))
+			power_supply.give(1000)
+			to_chat(user, "<span class='notice'>You insert [A] in [src], recharging it.</span>")
+			update_icon()
+	else if(istype(A, /obj/item/weapon/ore/phoron))
+		if(power_supply.charge >= power_supply.maxcharge)
+			to_chat(user,"<span class='notice'>[src] is already fully charged.</span>")
+			return
+		if (A.use_tool(A, user, 10, amount = 1, can_move = TRUE))
+			power_supply.give(500)
+			to_chat(user, "<span class='notice'>You insert [A] in [src], recharging it.</span>")
+			update_icon()
+	else if(istype(A, /obj/item/weapon/storage/bag/ore))
+		if(power_supply.charge >= power_supply.maxcharge)
+			to_chat(user,"<span class='notice'>[src] is already fully charged.</span>")
+			return
+		var/obj/item/weapon/storage/bag/ore/O = A
+		for(var/obj/item/weapon/ore/phoron/P in O.contents)
+			if(power_supply.charge >= power_supply.maxcharge)
+				return
+			if (P.use_tool(O, user, 10, amount = 1, can_move = TRUE))
+				O.remove_from_storage(P)
+				power_supply.give(500)
+				to_chat(user, "<span class='notice'>You insert [P] in [src], recharging it.</span>")
+				update_icon()
+			else
+				return
+	else
+		return ..()
 
 /obj/item/weapon/gun/energy/laser/cutter/emagged //for robots
 	emagged = TRUE
@@ -986,13 +1021,6 @@ var/global/mining_shuttle_location = 0 // 0 = station 13, 1 = mining station
 					junction |= get_dir(src,W)
 		icon_state = "[basestate][junction]"
 
-//Window
-/obj/structure/window/shuttle/survival_pod
-	name = "pod window"
-	icon = 'icons/obj/survwindows.dmi'
-	icon_state = "window"
-	basestate = "window"
-
 //Door
 /obj/structure/inflatable/door/survival_pod
 	name = "inflatable airlock"
@@ -1023,7 +1051,7 @@ var/global/mining_shuttle_location = 0 // 0 = station 13, 1 = mining station
 	pixel_y = -32
 
 /obj/item/device/gps/computer/attackby(obj/item/I, mob/user, params)
-	if(iswrench(I) && !(flags & NODECONSTRUCT))
+	if(iswrenching(I) && !(flags & NODECONSTRUCT))
 		if(user.is_busy(src))
 			return
 		user.visible_message("<span class='warning'>[user] disassembles the gps.</span>", \
@@ -1106,7 +1134,7 @@ var/global/mining_shuttle_location = 0 // 0 = station 13, 1 = mining station
 
 /obj/machinery/smartfridge/survival_pod/attackby(obj/item/O, mob/user)
 	if(is_type_in_typecache(O,forbidden_tools))
-		if(iswrench(O))
+		if(iswrenching(O))
 			if(user.is_busy(src))
 				return
 			to_chat(user, "<span class='notice'>You start to disassemble the storage unit...</span>")
@@ -1141,7 +1169,7 @@ var/global/mining_shuttle_location = 0 // 0 = station 13, 1 = mining station
 	density = TRUE
 
 /obj/structure/fans/attackby(obj/item/weapon/W, mob/user, params)
-	if(iswrench(W) && !(flags&NODECONSTRUCT))
+	if(iswrenching(W) && !(flags&NODECONSTRUCT))
 		if(user.is_busy(src))
 			return
 		playsound(src, 'sound/items/Ratchet.ogg', VOL_EFFECTS_MASTER)

@@ -13,13 +13,15 @@
 /obj/effect/anomaly/atom_init()
 	. = ..()
 	set_light(3, 5, light_color)
-	aSignal = new(src)
+
+	var/freq = rand(1200, 1599)
+	if(IS_MULTIPLE(freq, 2))//signaller frequencies are always uneven!
+		freq++
+
+	aSignal = new(src, freq)
+	aSignal.frequency = freq
 	aSignal.name = "[name] core"
 	aSignal.code = rand(1,100)
-
-	aSignal.frequency = rand(1200, 1599)
-	if(IS_MULTIPLE(aSignal.frequency, 2))//signaller frequencies are always uneven!
-		aSignal.frequency++
 
 /obj/effect/anomaly/proc/anomalyEffect()
 	if(prob(50))
@@ -249,7 +251,7 @@
 	need_bound = bound
 
 	enable()
-	notify_ghosts("Появился портал культа. Нажмите на него, чтобы стать конструктом.")
+	notify_ghosts("Появился портал культа. Нажмите на него, чтобы стать конструктом.", source = src, action = NOTIFY_ATTACK, header = "Cult Portal")
 
 /obj/effect/anomaly/bluespace/cult_portal/Destroy()
 	disable()
