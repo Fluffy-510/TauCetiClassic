@@ -1,5 +1,5 @@
 /obj/item/ammo_casing/a357
-	name = "357. bullet"
+	name = "357. bullet"  // it's need for autolate craft
 	icon_state = "casing_357"
 	desc = "A .357 bullet casing."
 	caliber = "357"
@@ -187,7 +187,6 @@
 	caliber = "rocket_as"
 
 /obj/item/ammo_casing/chameleon
-	name = "chameleon bullets"
 	desc = "A set of bullets for the Chameleon Gun."
 	projectile_type = /obj/item/projectile/bullet/chameleon
 	caliber = ".45"
