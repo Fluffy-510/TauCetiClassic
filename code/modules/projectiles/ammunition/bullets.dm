@@ -1,5 +1,5 @@
 /obj/item/ammo_casing/a357
-	name = "357. bullet"  // it's need for autolate craft
+	name = "357. bullet"  // it's need for autolate name craft
 	icon_state = "casing_357"
 	desc = "A .357 bullet casing."
 	caliber = "357"
