@@ -33,7 +33,7 @@ var/global/list/airlock_overlays = list()
 	name = "airlock"
 	icon = 'icons/obj/doors/airlocks/station/public.dmi'
 	icon_state = "closed"
-	explosion_resistance = 15
+	explosive_resistance = 2
 	var/aiControlDisabled = 0 //If 1, AI control is disabled until the AI hacks back in and disables the lock. If 2, the AI has bypassed the lock. If -1, the control is enabled but the AI had bypassed it earlier, so if it is disabled again the AI would have no trouble getting back in.
 	var/hackProof = 0 // if 1, this door can't be hacked by the AI
 	var/secondsMainPowerLost = 0 //The number of seconds until power is restored.
@@ -357,7 +357,7 @@ var/global/list/airlock_overlays = list()
 	if(!(. = airlock_overlays[iconkey]))
 		var/mutable_appearance/MA
 		if(light_source)
-			MA = mutable_appearance(icon_file, icon_state, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+			MA = mutable_appearance(icon_file, icon_state, 1, LIGHTING_LAMPS_PLANE)
 		else
 			MA = mutable_appearance(icon_file, icon_state)
 		. = airlock_overlays[iconkey] = MA
@@ -887,7 +887,7 @@ var/global/list/airlock_overlays = list()
 	if(istype(C, /obj/item/device/detective_scanner) || istype(C, /obj/item/taperoll))
 		return
 
-	if(iswelder(C) && !(operating > 0))
+	if(iswelding(C) && !(operating > 0))
 		var/obj/item/weapon/weldingtool/W = C
 		if(W.use(0, user))
 			if(!handle_fumbling(user, src, SKILL_TASK_EASY , list(/datum/skill/engineering = SKILL_LEVEL_NOVICE), message_self = "<span class='notice'>You fumble around, figuring out how to [welded? "remove welding from":"welding"] [src]'s shutters with [W]... </span>"))
@@ -903,25 +903,25 @@ var/global/list/airlock_overlays = list()
 		else
 			to_chat(user, "<span class='notice'>You need more welding fuel to complete this task.</span>")
 			return
-	else if(isscrewdriver(C))
+	else if(isscrewing(C))
 		p_open = !p_open
 		update_icon()
-	else if(iswirecutter(C))
+	else if(iscutter(C) && p_open)
 		return attack_hand(user)
-	else if(ismultitool(C))
+	else if(ispulsing(C))
 		return attack_hand(user)
-	else if(issignaler(C))
+	else if(issignaling(C))
 		return attack_hand(user)
 	else if(istype(C, /obj/item/weapon/pai_cable))	// -- TLE
 		var/obj/item/weapon/pai_cable/cable = C
 		cable.afterattack(src, user)
-	else if(iscrowbar(C) || istype(C, /obj/item/weapon/fireaxe) )
+	else if(isprying(C))
 		var/beingcrowbarred = null
-		if(iscrowbar(C) )
+		if(isprying(C))
 			beingcrowbarred = 1 //derp, Agouri
 		else
 			beingcrowbarred = 0
-		if( beingcrowbarred && (operating == -1 || density && welded && operating != 1 && p_open && !hasPower() && !locked) )
+		if(beingcrowbarred && (operating == -1 || density && welded && operating != 1 && p_open && !hasPower() && !locked) )
 			if(user.is_busy(src)) return
 			user.visible_message("[user] removes the electronics from the airlock assembly.", "You start to remove electronics from the airlock assembly.")
 			if(C.use_tool(src, user, SKILL_TASK_AVERAGE, volume = 100))
@@ -1034,7 +1034,7 @@ var/global/list/airlock_overlays = list()
 	if(autoclose)
 		if(close_timer_id)
 			deltimer(close_timer_id)
-		close_timer_id = addtimer(CALLBACK(src, .proc/do_autoclose), normalspeed ? 150 : 5, TIMER_STOPPABLE)
+		close_timer_id = addtimer(CALLBACK(src, PROC_REF(do_autoclose)), normalspeed ? 150 : 5, TIMER_STOPPABLE)
 
 /obj/machinery/door/airlock/proc/do_autoclose()
 	close_timer_id = null
@@ -1046,15 +1046,12 @@ var/global/list/airlock_overlays = list()
 	bolt()
 	return
 
-/obj/machinery/door/airlock/proc/change_paintjob(obj/item/C, mob/user)
-	var/obj/item/weapon/airlock_painter/W
-	if(istype(C, /obj/item/weapon/airlock_painter))
-		W = C
-	else
+/obj/machinery/door/airlock/proc/change_paintjob(obj/item/weapon/airlock_painter/W, mob/user)
+	if(!istype(W))
 		to_chat(user, "If you see this, it means airlock/change_paintjob() was called with something other than an airlock painter. Check your code!")
 		return
 
-	if(!W.can_use(user))
+	if(!W.can_use(user, 1))
 		return
 
 	var/list/optionlist
@@ -1064,7 +1061,7 @@ var/global/list/airlock_overlays = list()
 		optionlist = list("Public", "Engineering", "Atmospherics", "Security", "Command", "Medical", "Research", "Mining", "Maintenance", "External", "High Security")
 
 	var/paintjob = input(user, "Please select a paintjob for this airlock.") in optionlist
-	if((!Adjacent(usr) && loc != usr) || !W.use(10))
+	if(!W.use_tool(src, user, 50, 1))
 		return
 	switch(paintjob)
 		if("Public")
@@ -1190,7 +1187,7 @@ var/global/list/airlock_overlays = list()
 
 
 /obj/structure/door_scrap/attackby(obj/item/O, mob/user)
-	if(iswrench(O))
+	if(iswrenching(O))
 		if(ticker >= 300)
 			user.visible_message("[user] has disassemble these scrap...")
 			new /obj/item/stack/sheet/metal(loc)
@@ -1204,8 +1201,8 @@ var/global/list/airlock_overlays = list()
 
 /obj/structure/door_scrap/atom_init()
 	. = ..()
-	var/image/fire_overlay = image(icon = 'icons/effects/effects.dmi', icon_state = "s_fire", layer = ABOVE_LIGHTING_LAYER)
-	fire_overlay.plane = ABOVE_LIGHTING_PLANE
+	var/image/fire_overlay = image(icon = 'icons/effects/effects.dmi', icon_state = "s_fire", layer = 1)
+	fire_overlay.plane = LIGHTING_LAMPS_PLANE
 	add_overlay(fire_overlay)
 	START_PROCESSING(SSobj, src)
 

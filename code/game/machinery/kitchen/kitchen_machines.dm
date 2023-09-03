@@ -81,7 +81,7 @@
 	default_deconstruction_crowbar(O)
 
 	if(src.broken > 0)
-		if(src.broken == 2 && iswirecutter(O)) // If it's broken and they're using a wirecutters.
+		if(src.broken == 2 && iscutter(O)) // If it's broken and they're using a wirecutters.
 			user.visible_message( \
 				"<span class='notice'>[user] starts to fix part of the [src].</span>", \
 				"<span class='notice'>You start to fix part of the [src].</span>" \
@@ -92,7 +92,7 @@
 					"<span class='notice'>You have fixed part of the [src].</span>" \
 				)
 				src.broken = 1 // Fix it a bit
-		else if(src.broken == 1 && iswelder(O) && !user.is_busy(src)) // If it's broken and they're doing the weldingtool.
+		else if(src.broken == 1 && iswelding(O) && !user.is_busy(src)) // If it's broken and they're doing the weldingtool.
 			user.visible_message( \
 				"<span class='notice'>[user] starts to fix part of the [src].</span>", \
 				"<span class='notice'>You start to fix part of the [src].</span>" \
@@ -426,6 +426,19 @@
 		if ("dispose")
 			dispose()
 	updateUsrDialog()
+
+/obj/machinery/kitchen_machine/CtrlClick(mob/user)
+	if(!Adjacent(user))
+		return ..()
+	if(user.incapacitated())
+		return
+	if(!user.IsAdvancedToolUser())
+		to_chat(user, "<span class='warning'>You can not comprehend what to do with this.</span>")
+		return
+	if(operating || panel_open)
+		return ..()
+
+	cook()
 
 /*******************
 *   Microwave

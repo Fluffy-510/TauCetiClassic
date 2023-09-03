@@ -8,7 +8,7 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/door/window, windowdoor_list)
 	visible = 0.0
 	flags = ON_BORDER
 	opacity = 0
-	explosion_resistance = 5
+	explosive_resistance = 0
 	air_properties_vary_with_direction = 1
 	door_open_sound  = 'sound/machines/windowdoor.ogg'
 	door_close_sound = 'sound/machines/windowdoor.ogg'
@@ -30,7 +30,7 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/door/window, windowdoor_list)
 		icon_state = "[icon_state]"
 		base_state = icon_state
 
-	color = color_windows()
+	color = SSstation_coloring.get_default_color()
 
 /obj/machinery/door/window/Destroy()
 	density = FALSE
@@ -82,47 +82,33 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/door/window, windowdoor_list)
 	qdel(src)
 
 //painter
-/obj/machinery/door/window/proc/change_paintjob(obj/item/C, mob/user)
-	var/obj/item/weapon/airlock_painter/W
-	if(istype(C, /obj/item/weapon/airlock_painter))
-		W = C
-	else
+/obj/machinery/door/window/proc/change_paintjob(obj/item/weapon/airlock_painter/W, mob/user)
+	if(!istype(W))
 		return
 
 	if(!W.can_use(user, 1))
 		return
 
 	var/new_color = input(user, "Choose color!") as color|null
-	if(!new_color) return
 
-	if((!Adjacent(usr) && src.loc != usr) || !W.use(1))
+	if(!new_color)
 		return
-	else
+
+	if(W.use_tool(src, user, 50, 1))
 		color = new_color
 
 /obj/machinery/door/window/Bumped(atom/movable/AM)
-	if( operating || !src.density )
+	if(operating || !src.density)
 		return
-	if (!( ismob(AM) ))
-		var/obj/machinery/bot/bot = AM
-		if(istype(bot))
-			if(check_access(bot.botcard))
-				open_and_close()
-			else
-				do_animate("deny")
-		else if(istype(AM, /obj/mecha))
-			var/obj/mecha/mecha = AM
-			if(mecha.occupant && allowed(mecha.occupant))
-				open_and_close()
-			else
-				do_animate("deny")
-		return
-	if (!( SSticker ))
+	if(!ismob(AM))
+		if(allowed(AM))
+			open_and_close()
+		else
+			do_animate("deny")
 		return
 	var/mob/M = AM
 	if(!M.restrained())
 		bumpopen(M)
-	return
 
 /obj/machinery/door/window/bumpopen(mob/user)
 	if( operating || !src.density )
@@ -181,7 +167,7 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/door/window, windowdoor_list)
 	sleep(10)
 	density = FALSE
 	block_air_zones = FALSE // We merge zones if door is open.
-	explosion_resistance = 0
+	explosive_resistance = 0
 	update_nearby_tiles()
 
 /obj/machinery/door/window/do_close()
@@ -192,7 +178,7 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/door/window, windowdoor_list)
 	icon_state = base_state
 	density = TRUE
 	block_air_zones = TRUE
-	explosion_resistance = initial(explosion_resistance)
+	explosive_resistance = initial(explosive_resistance)
 	update_nearby_tiles()
 
 /obj/machinery/door/window/do_animate(animation)
@@ -257,7 +243,7 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/door/window, windowdoor_list)
 		return
 
 	if(!(flags & NODECONSTRUCT))
-		if(isscrewdriver(I))
+		if(isscrewing(I))
 			if(src.density || src.operating == 1)
 				to_chat(user, "<span class='warning'>You need to open the [src.name] to access the maintenance panel.</span>")
 				return
@@ -266,7 +252,7 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/door/window, windowdoor_list)
 			to_chat(user, "<span class='notice'>You [p_open ? "open":"close"] the maintenance panel of the [src.name].</span>")
 			return
 
-		if(iscrowbar(I))
+		if(isprying(I))
 			if(p_open && !src.density)
 				if(user.is_busy(src)) return
 				user.visible_message("<span class='warning'>[user] removes the electronics from the [src.name].</span>", \
@@ -320,7 +306,7 @@ ADD_TO_GLOBAL_LIST(/obj/machinery/door/window, windowdoor_list)
 
 
 	//If windoor is unpowered, crowbar, fireaxe and armblade can force it.
-	if(iscrowbar(I) || istype(I, /obj/item/weapon/fireaxe) || istype(I, /obj/item/weapon/melee/arm_blade) )
+	if(isprying(I))
 		if(!hasPower())
 			user.SetNextMove(CLICK_CD_INTERACT)
 			if(density)

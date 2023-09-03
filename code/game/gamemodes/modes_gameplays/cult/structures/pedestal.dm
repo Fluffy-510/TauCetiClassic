@@ -20,7 +20,7 @@
 
 /obj/structure/pedestal/atom_init()
 	. = ..()
-	AddComponent(/datum/component/clickplace, CALLBACK(src, .proc/put_item))
+	AddComponent(/datum/component/clickplace, CALLBACK(src, PROC_REF(put_item)))
 	last_turf = get_turf(src)
 
 /obj/structure/pedestal/Destroy()
@@ -58,7 +58,7 @@
 	if(istype(W, /obj/item/weapon/storage/bible/tome)) // So that you can destroy the pedestal and not put a tome on it
 		return FALSE
 
-	if(iswrench(W))
+	if(iswrenching(W))
 		to_chat(user, "<span class='notice'>You begin [anchored ? "unwrenching" : "wrenching"] the [src].</span>")
 		if(W.use_tool(src, user, 20, volume = 50))
 			anchored = !anchored
@@ -82,7 +82,7 @@
 				ill.alpha = 0
 				break
 
-	RegisterSignal(I, list(COMSIG_MOVABLE_MOVED), .proc/moved_item)
+	RegisterSignal(I, list(COMSIG_MOVABLE_MOVED), PROC_REF(moved_item))
 
 /obj/structure/pedestal/proc/moved_item(atom/movable/I, atom/oldLoc, dir)
 	lying_items -= I

@@ -5,8 +5,8 @@
 	icon_state = "rig0-engineering"
 	item_state = "eng_helm"
 	armor = list(melee = 40, bullet = 5, laser = 10,energy = 5, bomb = 35, bio = 100, rad = 20)
+	item_action_types = list(/datum/action/item_action/hands_free/toggle_helmet_light)
 
-	action_button_name = "Toggle Helmet Light"
 	allowed = list(/obj/item/device/flashlight)
 	var/brightness_on = 4 //luminosity when on
 	var/on = 0
@@ -33,6 +33,9 @@
 
 	var/rig_variant = "engineering"
 
+/datum/action/item_action/hands_free/toggle_helmet_light
+	name = "Toggle Helmet Light"
+
 /obj/item/clothing/head/helmet/space/rig/attack_self(mob/user)
 	if(!isturf(user.loc))
 		to_chat(user, "You cannot turn the light on while in this [user.loc]")//To prevent some lighting anomalities.
@@ -40,14 +43,11 @@
 	on = !on
 	icon_state = "rig[on]-[rig_variant]"
 //	item_state = "rig[on]-[color]"
-	usr.update_inv_head()
+	update_inv_mob()
+	update_item_actions()
 
 	if(on)	set_light(brightness_on)
 	else	set_light(0)
-
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		H.update_inv_head()
 
 /obj/item/clothing/head/helmet/space/rig/dropped(mob/user)
 	if(rig_connect)
@@ -480,13 +480,13 @@
 	H.update_gravity(H.mob_has_gravity())
 
 /obj/item/clothing/suit/space/rig/proc/enable_magpulse(mob/user)
-		flags |= NOSLIP
+		flags |= NOSLIP | AIR_FLOW_PROTECT
 		slowdown += boots.slowdown_off
 		magpulse = TRUE
 		to_chat(user, "You enable \the [src] the mag-pulse traction system.")
 
 /obj/item/clothing/suit/space/rig/proc/disable_magpulse(mob/user)
-		flags &= ~NOSLIP
+		flags &= ~(NOSLIP | AIR_FLOW_PROTECT)
 		slowdown = initial(slowdown)
 		magpulse = FALSE
 		to_chat(user, "You disable \the [src] the mag-pulse traction system.")
@@ -731,11 +731,11 @@
 			if(ishuman(user)) //Lets Update Lamps offset because human have height
 				var/mob/living/carbon/human/H = user
 				H.human_update_offset(lamp, TRUE)
-			lamp.plane = ABOVE_LIGHTING_PLANE
+			lamp.plane = LIGHTING_LAMPS_PLANE
 			lamp.layer = ABOVE_LIGHTING_LAYER
 			lamp.alpha = 255
 			user.add_overlay(lamp)
-		user.update_inv_head()
+		update_inv_mob()
 
 /obj/item/clothing/head/helmet/space/rig/syndi/attack_self(mob/user)
 	if(camera)
@@ -804,7 +804,6 @@
 	               /obj/item/weapon/melee/energy/sword,
 	               /obj/item/weapon/handcuffs)
 	species_restricted = list("exclude" , UNATHI , TAJARAN , DIONA, VOX)
-	action_button_name = "Toggle space suit mode"
 	max_mounted_devices = 4
 	initial_modules = list(/obj/item/rig_module/simple_ai, /obj/item/rig_module/selfrepair, /obj/item/rig_module/emp_shield)
 	cell_type = /obj/item/weapon/stock_parts/cell/super
@@ -812,6 +811,14 @@
 	var/combat_armor = list(melee = 60, bullet = 65, laser = 55, energy = 45, bomb = 50, bio = 100, rad = 60)
 	var/space_armor = list(melee = 30, bullet = 20, laser = 20, energy = 30, bomb = 50, bio = 100, rad = 60)
 	var/combat_slowdown = 0
+	item_action_types = list(/datum/action/item_action/hands_free/toggle_space_suit_mode)
+
+/datum/action/item_action/hands_free/toggle_space_suit_mode
+	name = "Toggle space suit mode"
+
+/datum/action/item_action/hands_free/toggle_space_suit_mode/Activate()
+	var/obj/item/clothing/suit/space/rig/syndi/S = target
+	S.toggle_mode()
 
 /obj/item/clothing/suit/space/rig/syndi/atom_init()
 	. = ..()
@@ -828,10 +835,7 @@
 /obj/item/clothing/suit/space/rig/syndi/update_icon(mob/user)
 	..()
 	icon_state = "[rig_variant]-[combat_mode ? "combat" : "space"]"
-	user.update_inv_wear_suit()
-
-/obj/item/clothing/suit/space/rig/syndi/ui_action_click()
-	toggle_mode()
+	update_inv_mob()
 
 /obj/item/clothing/suit/space/rig/syndi/verb/toggle_mode()
 	set category = "Object"
@@ -860,7 +864,19 @@
 			slowdown = initial(slowdown)
 			usr.visible_message("<span class='notice'>[usr]'s suit inflates and pressurizes.</span>")
 			armor = space_armor
+		if(magpulse)
+			slowdown += boots.slowdown_off
 		update_icon(usr)
+		update_item_actions()
+
+/obj/item/clothing/suit/space/rig/syndi/disable_magpulse(mob/user)
+	flags &= ~(NOSLIP | AIR_FLOW_PROTECT)
+	if(combat_mode)
+		slowdown = combat_slowdown
+	else
+		slowdown = initial(slowdown)
+	magpulse = FALSE
+	to_chat(user, "You disable \the [src] the mag-pulse traction system.")
 
 /obj/item/clothing/head/helmet/space/rig/syndi/heavy
 	name = "heavy hybrid helmet"
@@ -1040,11 +1056,14 @@
 	max_mounted_devices = 4
 	initial_modules = list(/obj/item/rig_module/simple_ai, /obj/item/rig_module/selfrepair, /obj/item/rig_module/device/flash)
 
-	action_button_name = "Toggle Hardsuit Light"
 	var/brightness_on = 2 //luminosity when on
 	var/on = 0
 
 	light_color = "#ff00ff"
+	item_action_types = list(/datum/action/item_action/hands_free/toggle_hardsuit_light)
+
+/datum/action/item_action/hands_free/toggle_hardsuit_light
+	name = "Toggle Hardsuit Light"
 
 /obj/item/clothing/suit/space/rig/security/attack_self(mob/user)
 	if(!isturf(user.loc))
@@ -1052,14 +1071,11 @@
 		return
 	on = !on
 	icon_state = "rig-sec[on ? "-light" : ""]"
-	usr.update_inv_wear_suit()
+	update_inv_mob()
+	update_item_actions()
 
 	if(on)	set_light(brightness_on)
 	else	set_light(0)
-
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		H.update_inv_wear_suit()
 
 //HoS Rig
 /obj/item/clothing/head/helmet/space/rig/security/hos
@@ -1078,7 +1094,7 @@
 	max_mounted_devices = 6
 	initial_modules = list(/obj/item/rig_module/simple_ai/advanced, /obj/item/rig_module/selfrepair, /obj/item/rig_module/mounted/taser, /obj/item/rig_module/med_teleport, /obj/item/rig_module/chem_dispenser/combat, /obj/item/rig_module/grenade_launcher/flashbang)
 
-	action_button_name = FALSE
+	item_action_types = null
 
 //Atmospherics Rig (BS12)
 /obj/item/clothing/head/helmet/space/rig/atmos

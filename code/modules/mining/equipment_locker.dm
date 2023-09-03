@@ -109,7 +109,7 @@
 		updateUsrDialog()
 		return
 	if(panel_open)
-		if(iscrowbar(W))
+		if(isprying(W))
 			empty_content()
 			default_deconstruction_crowbar(W)
 		return 1
@@ -284,11 +284,11 @@
 		EQUIPMENT("Elite capsule(Bar)",				/obj/item/weapon/survivalcapsule/elite,											3000),
 	)
 	prize_list["Upgrades"] = list(
-		EQUIPMENT("Accelerator resources upgrade",	/obj/item/kinetic_upgrade/resources,											1750),
-		EQUIPMENT("Accelerator damage upgrade",		/obj/item/kinetic_upgrade/damage,												2000),
-		EQUIPMENT("Accelerator recharge upgrade",	/obj/item/kinetic_upgrade/speed,												2250),
-		EQUIPMENT("Accelerator range upgrade",		/obj/item/kinetic_upgrade/range,												2500),
-		EQUIPMENT("Expander for accelerator",		/obj/item/kinetic_expander,														3000),
+		EQUIPMENT("Accelerator resources upgrade",	/obj/item/kinetic_upgrade/resources,											900),
+		EQUIPMENT("Accelerator damage upgrade",		/obj/item/kinetic_upgrade/damage,												1000),
+		EQUIPMENT("Accelerator recharge upgrade",	/obj/item/kinetic_upgrade/speed,												1250),
+		EQUIPMENT("Accelerator range upgrade",		/obj/item/kinetic_upgrade/range,												1250),
+		EQUIPMENT("Expander for accelerator",		/obj/item/kinetic_expander,														1500),
 	)
 	prize_list["Miscellaneous"] = list(
 		EQUIPMENT("Chili",							/obj/item/weapon/reagent_containers/food/snacks/hotchili,						150),
@@ -418,7 +418,7 @@
 		tgui_interact(user)
 		return
 	if(panel_open)
-		if(iscrowbar(I))
+		if(isprying(I))
 			default_deconstruction_crowbar(I)
 		return
 	return ..()
@@ -603,7 +603,7 @@
 
 /obj/item/weapon/resonator/proc/lower_recharge_time()
 	recharge_time = max(recharge_time * 0.965, 1.1 SECOND) // speed up reloading by 3.5% for each shot
-	addtimer(CALLBACK(src, .proc/reset_recharge_time), 5 SECOND, TIMER_UNIQUE|TIMER_OVERRIDE) // reset the recharge time if we haven't fired for 5 seconds
+	addtimer(CALLBACK(src, PROC_REF(reset_recharge_time)), 5 SECOND, TIMER_UNIQUE|TIMER_OVERRIDE) // reset the recharge time if we haven't fired for 5 seconds
 
 /obj/item/weapon/resonator/proc/reset_recharge_time()
 	recharge_time = initial(recharge_time)
@@ -619,7 +619,7 @@
 		charged = FALSE
 		playsound(src, 'sound/items/resonator_use.ogg', VOL_EFFECTS_MASTER)
 		new /obj/effect/resonance(get_turf(target))
-		addtimer(CALLBACK(src, .proc/recharge), recharge_time)
+		addtimer(CALLBACK(src, PROC_REF(recharge)), recharge_time)
 		lower_recharge_time()
 
 /obj/item/weapon/resonator/attack_self(mob/user)
@@ -740,7 +740,7 @@
 	projectilesound = 'sound/weapons/guns/kenetic_accel.ogg'
 
 /mob/living/simple_animal/hostile/mining_drone/attackby(obj/item/I, mob/user)
-	if(iswelder(I))
+	if(iswelding(I))
 		var/obj/item/weapon/weldingtool/W = I
 		user.SetNextMove(CLICK_CD_INTERACT)
 		if(W.use(0, user) && stat == CONSCIOUS)
@@ -801,7 +801,7 @@
 	minimum_distance = 3
 	icon_state = "mining_drone_offense"
 
-/mob/living/simple_animal/hostile/mining_drone/AttackingTarget()
+/mob/living/simple_animal/hostile/mining_drone/UnarmedAttack(atom/target)
 	if(istype(target, /obj/item/weapon/ore))
 		CollectOre()
 		return
@@ -911,14 +911,9 @@
 		return
 
 /obj/item/weapon/lazarus_injector/attack(mob/living/M, mob/living/user, def_zone)
-	if(!..())
-		return TRUE
-
-/obj/item/weapon/lazarus_injector/afterattack(atom/target, mob/user, proximity, params)
-	if(!loaded)
-		return
-	if(isliving(target) && proximity)
-		revive(target, user)
+	..()
+	if(loaded)
+		revive(M, user)
 
 /obj/item/weapon/lazarus_injector/examine(mob/user)
 	..()

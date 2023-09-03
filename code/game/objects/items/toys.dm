@@ -68,6 +68,8 @@
 	return ..()
 
 /obj/item/toy/balloon/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	if(..())
+		return
 	if(src.reagents.total_volume >= 1)
 		visible_message("<span class='warning'>The [src] bursts!</span>","You hear a pop and a splash.")
 		reagents.reaction(get_turf(hit_atom))
@@ -140,7 +142,7 @@
 
 	. = ..()
 
-/obj/item/toy/throw_at(atom/target, range, speed, mob/thrower, spin = TRUE, diagonals_first = FALSE, datum/callback/callback)
+/obj/item/toy/spinningtoy/throw_at(atom/target, range, speed, mob/thrower, spin = TRUE, diagonals_first = FALSE, datum/callback/callback)
 	return
 
 /obj/item/toy/spinningtoy/attack_hand(mob/user)
@@ -329,7 +331,7 @@
 /obj/item/toy/ammo/gun
 	name = "ammo-caps"
 	desc = "There are 7 caps left! Make sure to recyle the box in an autolathe when it gets empty."
-	icon = 'icons/obj/ammo.dmi'
+	icon = 'icons/obj/ammo/magazines.dmi'
 	icon_state = "357-7"
 	flags = CONDUCT
 	w_class = SIZE_MINUSCULE
@@ -481,10 +483,7 @@
 		src.item_state = "sword0"
 		src.w_class = SIZE_TINY
 
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		H.update_inv_l_hand()
-		H.update_inv_r_hand()
+	update_inv_mob()
 
 	add_fingerprint(user)
 	return
@@ -514,7 +513,8 @@
 	w_class = SIZE_MINUSCULE
 
 /obj/item/toy/snappop/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	..()
+	if(..())
+		return
 	var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 	s.set_up(3, 1, src)
 	s.start()
@@ -991,11 +991,11 @@ Owl & Griffin toys
 	cooldown = world.time + 3 MINUTES
 	user.visible_message("<span class='warning'>[user] presses a button on [src].</span>", "<span class='notice'>You activate [src], it plays a loud noise!</span>", "<span class='italics'>You hear the click of a button.</span>")
 	icon_state = "nuketoy"
-	addtimer(CALLBACK(src, .proc/alarm), 5, TIMER_STOPPABLE)
+	addtimer(CALLBACK(src, PROC_REF(alarm)), 5, TIMER_STOPPABLE)
 
 /obj/item/toy/nuke/proc/alarm() //first timer
 	playsound(src, 'sound/machines/Alarm.ogg', VOL_EFFECTS_MASTER, null, FALSE)
-	addtimer(CALLBACK(src, .proc/boom), 115, TIMER_STOPPABLE)
+	addtimer(CALLBACK(src, PROC_REF(boom)), 115, TIMER_STOPPABLE)
 
 /obj/item/toy/nuke/proc/boom() //second timer
 	if(emagged)
@@ -1026,12 +1026,14 @@ Owl & Griffin toys
 	w_class = SIZE_TINY
 
 /obj/item/toy/minimeteor/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	if(!..())
-		playsound(src, 'sound/effects/meteorimpact.ogg', VOL_EFFECTS_MASTER)
-		for(var/mob/M in orange(10, src))
-			if(M.stat == CONSCIOUS && !isAI(M))\
-				shake_camera(M, 3, 1)
-		qdel(src)
+	if(..())
+		return
+
+	playsound(src, 'sound/effects/meteorimpact.ogg', VOL_EFFECTS_MASTER)
+	for(var/mob/M in orange(10, src))
+		if(M.stat == CONSCIOUS && !isAI(M))\
+			shake_camera(M, 3, 1)
+	qdel(src)
 
 /*
  * A Deck of Cards
@@ -1389,11 +1391,7 @@ Owl & Griffin toys
 /obj/item/toy/prize/poly/polycompanion/attack_self(mob/user)
 	to_chat(user, "<span class='notice'>You have clicked a switch behind the toy.</span>")
 	src.icon_state = "poly_companion" + pick("1","2","")
-
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		H.update_inv_l_hand()
-		H.update_inv_r_hand()
+	update_inv_mob()
 
 /obj/item/toy/prize/poly/polygold
 	name = "golden Poly"
@@ -1408,10 +1406,7 @@ Owl & Griffin toys
 /obj/item/toy/prize/poly/polyspecial/attack_self(mob/user)
 	to_chat(user, "<span class='notice'>You have clicked a switch behind the toy.</span>")
 	src.icon_state = "poly_special" + pick("1","2","")
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		H.update_inv_l_hand()
-		H.update_inv_r_hand()
+	update_inv_mob()
 
 /*
  * Carp plushie

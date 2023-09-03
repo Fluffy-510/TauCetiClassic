@@ -99,7 +99,7 @@
 		user.drop_from_inventory(C, src)
 		cell = C
 		updateDialog()
-	else if(isscrewdriver(I))
+	else if(isscrewing(I))
 		if(locked)
 			to_chat(user, "<span class='notice'>The maintenance hatch cannot be opened or closed while the controls are locked.</span>")
 			return
@@ -116,7 +116,7 @@
 		updateDialog()
 	else if(is_wire_tool(I))
 		wires.interact(user)
-	else if (iswrench(I))
+	else if (iswrenching(I))
 		if (get_integrity() < max_integrity)
 			repair_damage(25)
 			user.visible_message(
@@ -587,7 +587,7 @@
 // calculates a path to the current destination
 // given an optional turf to avoid
 /obj/machinery/bot/mulebot/proc/calc_path(turf/avoid = null)
-	src.path = get_path_to(src.loc, src.target, /turf/proc/Distance_cardinal, 0, 250, id=botcard, exclude=avoid)
+	src.path = get_path_to(src.loc, src.target, TYPE_PROC_REF(/turf, Distance_cardinal), 0, 250, id=botcard, exclude=avoid)
 
 
 // sets the current destination

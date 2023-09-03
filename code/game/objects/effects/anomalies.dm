@@ -13,13 +13,15 @@
 /obj/effect/anomaly/atom_init()
 	. = ..()
 	set_light(3, 5, light_color)
-	aSignal = new(src)
+
+	var/freq = rand(1200, 1599)
+	if(IS_MULTIPLE(freq, 2))//signaller frequencies are always uneven!
+		freq++
+
+	aSignal = new(src, freq)
+	aSignal.frequency = freq
 	aSignal.name = "[name] core"
 	aSignal.code = rand(1,100)
-
-	aSignal.frequency = rand(1200, 1599)
-	if(IS_MULTIPLE(aSignal.frequency, 2))//signaller frequencies are always uneven!
-		aSignal.frequency++
 
 /obj/effect/anomaly/proc/anomalyEffect()
 	if(prob(50))
@@ -249,7 +251,7 @@
 	need_bound = bound
 
 	enable()
-	notify_ghosts("Появился портал культа. Нажмите на него, чтобы стать конструктом.")
+	notify_ghosts("Появился портал культа. Нажмите на него, чтобы стать конструктом.", source = src, action = NOTIFY_ATTACK, header = "Cult Portal")
 
 /obj/effect/anomaly/bluespace/cult_portal/Destroy()
 	disable()
@@ -269,7 +271,7 @@
 	if(ismob(B.parent))
 		var/mob/M = B.parent
 		if(M.ckey)
-			extencion_timers[M.ckey] = addtimer(CALLBACK(src, .proc/extencion, B), extencion_cd, TIMER_STOPPABLE)
+			extencion_timers[M.ckey] = addtimer(CALLBACK(src, PROC_REF(extencion), B), extencion_cd, TIMER_STOPPABLE)
 
 /obj/effect/anomaly/bluespace/cult_portal/proc/remove_beam(datum/source)
 	beams -= source
@@ -291,8 +293,8 @@
 			P.icon_state = "pylon_glow"
 			if(prob(30)) // activate() is return /mob/living/simple_animal/hostile/pylon and since there is dynamic typing, it works
 				P = P.activate(null, global.cult_religion)
-			var/datum/beam/B = P.Beam(src, "drainblood", time = INFINITY, beam_sleep_time = 1 MINUTE, beam_plane = ABOVE_LIGHTING_PLANE)
-			RegisterSignal(B, list(COMSIG_PARENT_QDELETING), .proc/remove_beam)
+			var/datum/beam/B = P.Beam(src, "drainblood", time = INFINITY, beam_sleep_time = 1 MINUTE, beam_plane = LIGHTING_LAMPS_PLANE)
+			RegisterSignal(B, list(COMSIG_PARENT_QDELETING), PROC_REF(remove_beam))
 			beams += B
 
 		// Iterating through all possible coordinates
@@ -356,7 +358,7 @@
 				30; /mob/living/simple_animal/construct/builder,\
 				10;/mob/living/simple_animal/construct/harvester,\
 				1;  /mob/living/simple_animal/construct/behemoth)
-		INVOKE_ASYNC(src, .proc/create_shell, slave, type)
+		INVOKE_ASYNC(src, PROC_REF(create_shell), slave, type)
 		spawns--
 
 	if(spawns == 0)
@@ -383,4 +385,4 @@
 		var/datum/component/bounded/B = C.AddComponent(/datum/component/bounded, src, 0, 7)
 		var/mob/M = B.parent
 		if(M.ckey)
-			extencion_timers[M.ckey] = addtimer(CALLBACK(src, .proc/extencion, B), extencion_cd, TIMER_STOPPABLE)
+			extencion_timers[M.ckey] = addtimer(CALLBACK(src, PROC_REF(extencion), B), extencion_cd, TIMER_STOPPABLE)

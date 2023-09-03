@@ -20,7 +20,7 @@
 
 /obj/structure/mineral_door/atom_init()
 	. = ..()
-	update_nearby_tiles(need_rebuild = TRUE)
+	update_nearby_tiles()
 
 /obj/structure/mineral_door/Destroy()
 	update_nearby_tiles()
@@ -129,7 +129,7 @@
 			to_chat(user, "<span class='notice'>You finished digging!</span>")
 			deconstruct(TRUE)
 
-	else if(iswrench(W) && can_unwrench)
+	else if(iswrenching(W) && can_unwrench)
 		if(user.is_busy(src))
 			return
 		if(anchored)
@@ -172,7 +172,7 @@
 	sheetType = /obj/item/stack/sheet/metal
 
 /obj/structure/mineral_door/metal/attackby(obj/item/weapon/W, mob/user)
-	if(iswelder(W))
+	if(iswelding(W))
 		if(user.is_busy())
 			return
 		var/obj/item/weapon/weldingtool/WT = W
@@ -222,7 +222,7 @@
 	sheetType = /obj/item/stack/sheet/mineral/phoron
 
 /obj/structure/mineral_door/transparent/phoron/attackby(obj/item/weapon/W, mob/user)
-	if(iswelder(W))
+	if(iswelding(W))
 		var/obj/item/weapon/weldingtool/WT = W
 		if(WT.use(0, user))
 			TemperatureAct(100)
@@ -272,19 +272,18 @@
 	can_unwrench = FALSE
 	var/close_delay = 100
 
-/obj/structure/mineral_door/mineral_door/CanPass(atom/movable/mover, turf/target, height)
-	if(istype(mover))
-		return ..()
-	return FALSE
+/obj/structure/mineral_door/resin/c_airblock(turf/other)
+	return BLOCKED
 
-/obj/structure/mineral_door/resin/Bumped(atom/M)
-	if(isxeno(M) && !isSwitchingStates)
-		add_fingerprint(M)
-		Open()
+/obj/structure/mineral_door/resin/MobChecks(mob/user)
+	return isxeno(user)
+
+/obj/structure/mineral_door/resin/MechChecks(obj/mecha/user)
+	return FALSE
 
 /obj/structure/mineral_door/resin/Open()
 	..()
-	addtimer(CALLBACK(src, .proc/TryToClose), close_delay)
+	addtimer(CALLBACK(src, PROC_REF(TryToClose)), close_delay)
 
 /obj/structure/mineral_door/resin/proc/TryToClose()
 	if(!isSwitchingStates && !close_state)
