@@ -35,6 +35,7 @@
 	slowdown = 0.5
 	armor = list(melee = 60, bullet = 35, laser = 30,energy = 15, bomb = 30, bio = 30, rad = 30)
 	species_restricted = list("exclude" , DIONA)
+	equip_time = 20
 
 /obj/item/clothing/head/helmet/space/syndicate/update_icon(mob/user)
 	. = ..()
