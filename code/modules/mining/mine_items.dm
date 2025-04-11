@@ -520,6 +520,8 @@ var/global/mining_shuttle_location = 0 // 0 = station 13, 1 = mining station
 				else
 					target.ex_act(EXPLODE_DEVASTATE)
 
+				explosion(location, 0, 2, 4)
+				target.ex_act(EXPLODE_DEVASTATE)
 				if(src)
 					qdel(src)
 
