@@ -193,7 +193,7 @@
 			with suppressors."
 	item = /obj/item/weapon/gun/projectile/automatic/pistol/stechkin
 <<<<<<< Updated upstream
-	cost = 6
+	cost = 4
 	uplink_types = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_TRAITOR, UPLINK_TYPE_DEALER)
 =======
 	cost = 4
@@ -457,7 +457,7 @@
 	desc = "A speedloader that contains seven additional rounds for the revolver, made using an automatic lathe."
 	item = /obj/item/ammo_box/speedloader/a357
 <<<<<<< Updated upstream
-	cost = 2
+	cost = 1
 	uplink_types = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_TRAITOR)
 =======
 	cost = 1
