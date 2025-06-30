@@ -192,8 +192,13 @@
 	desc = "A small, easily concealable handgun that uses 9mm auto rounds in 7-round or 16-round magazines and is compatible \
 			with suppressors."
 	item = /obj/item/weapon/gun/projectile/automatic/pistol/stechkin
+<<<<<<< Updated upstream
 	cost = 6
 	uplink_types = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_TRAITOR, UPLINK_TYPE_DEALER)
+=======
+	cost = 4
+	uplink_types = list("nuclear", "traitor", "dealer")
+>>>>>>> Stashed changes
 
 /datum/uplink_item/dangerous/deagle
 	name = "Desert Eagle"
@@ -451,8 +456,13 @@
 	name = "Speedloader-.357"
 	desc = "A speedloader that contains seven additional rounds for the revolver, made using an automatic lathe."
 	item = /obj/item/ammo_box/speedloader/a357
+<<<<<<< Updated upstream
 	cost = 2
 	uplink_types = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_TRAITOR)
+=======
+	cost = 1
+	uplink_types = list("nuclear", "traitor")
+>>>>>>> Stashed changes
 
 /datum/uplink_item/ammo/smg
 	name = "Ammo-.45 ACP"
