@@ -156,7 +156,8 @@
 	desc = "Сегмент кластерной гранаты. Лучше убегай."
 	icon = 'icons/obj/grenade.dmi'
 	icon_state = "clusterbang_segment"
-	numspawned = 2
+	numspawned = 3
+	det_time = 1
 
 /obj/item/weapon/grenade/clusterbuster/segment/atom_init(mapload, payload_type = /obj/item/weapon/grenade/flashbang/cluster)
 	. = ..()
@@ -164,14 +165,14 @@
 	payload = payload_type
 	active = TRUE
 	walk_away(src,loc,rand(1,4))
-	addtimer(CALLBACK(src, PROC_REF(prime)), rand(15,60))
+	addtimer(CALLBACK(src, PROC_REF(prime)), rand(1,5))
 
 /obj/item/weapon/grenade/clusterbuster/segment/prime()
 	for(var/i in 1 to numspawned)
 		var/obj/item/weapon/grenade/P = new payload(src.loc)
 		P.active = 1
 		walk_away(P,loc,rand(1,4))
-		addtimer(CALLBACK(P, TYPE_PROC_REF(/obj/item/weapon/grenade, prime)), rand(15,60))
+		addtimer(CALLBACK(P, TYPE_PROC_REF(/obj/item/weapon/grenade, prime)), rand(1,5))
 	playsound(src, 'sound/weapons/armbomb.ogg', VOL_EFFECTS_MASTER, null, FALSE, null, -3)
 	qdel(src)
 
