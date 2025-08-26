@@ -1,7 +1,7 @@
 /obj/item/weapon/grenade/spawnergrenade
 	name = "delivery grenade"
 	cases = list("граната", "гранаты", "гранате", "гранату", "гранатой", "гранате")
-	desc = "Таймер установлен на 5 секунд. Она высвободит случайную аномалию поблизости."
+	desc = "Она высвободит случайную аномалию поблизости."
 	icon = 'icons/obj/grenade.dmi'
 	icon_state = "delivery"
 	item_state = "flashbang"
@@ -28,15 +28,19 @@
 /obj/item/weapon/grenade/spawnergrenade/manhacks
 	name = "manhack delivery grenade"
 	spawner_type = /mob/living/simple_animal/hostile/viscerator
-	deliveryamt = 5
+	deliveryamt = 2
 	origin_tech = "materials=3;magnets=4;syndicate=4"
+	det_time = 1
 
 /obj/item/weapon/grenade/spawnergrenade/spesscarp
 	name = "carp delivery grenade"
 	spawner_type = /mob/living/simple_animal/hostile/carp
-	deliveryamt = 5
+	deliveryamt = 2
 	origin_tech = "materials=3;magnets=4;syndicate=4"
+	det_time = 1
 
 /obj/item/weapon/grenade/spawnergrenade/syndiesoap
 	name = "Mister Scrubby"
 	spawner_type = /obj/item/weapon/reagent_containers/food/snacks/soap/syndie
+	deliveryamt = 1
+	det_time = 1
