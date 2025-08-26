@@ -652,6 +652,14 @@
 	item = /obj/item/toy/carpplushie/dehy_carp
 	cost = 2
 	uplink_types = list(UPLINK_TYPE_NUCLEAR)
+
+/datum/uplink_item/stealthy_weapons/сluster_carp
+	name = "Cluster Space Carp grenade"
+	desc = "Cluster grenade with well-pressed carp inside, it is immoral to use this."
+	item = /obj/item/weapon/grenade/clusterbuster/spawner_spesscarp
+	cost = 15
+	uplink_types = list(UPLINK_TYPE_NUCLEAR)
+
 /*
 /datum/uplink_item/stealthy_weapons/silencer
 	name = "Stetchkin Silencer"
