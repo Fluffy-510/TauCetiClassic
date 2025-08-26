@@ -334,6 +334,13 @@
 	if(HAS_ROUND_ASPECT(ROUND_ASPECT_MECHAS))
 		cost = 2
 
+/datum/uplink_item/dangerous/emp_cluster
+	name = "Electromagnetic Storm Grenade"
+	desc = "Cluster Electromagnetic Storm. Useful to disrupt communication and silicon lifeforms."
+	item = /obj/item/weapon/grenade/clusterbuster/emp
+	cost = 3
+	uplink_types = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_TRAITOR)
+
 /datum/uplink_item/dangerous/syndicate_minibomb
 	name = "Syndicate Minibomb"
 	desc = "The Minibomb is a grenade with a five-second fuse."
@@ -341,11 +348,18 @@
 	cost = 6
 	uplink_types = list(UPLINK_TYPE_NUCLEAR)
 
+/datum/uplink_item/dangerous/syndicate_minibomb_cluster
+	name = "Cluster SyndiWrath"
+	desc = "The Cluster Minibomb is a grenade with a five-second fuse."
+	/obj/item/weapon/grenade/clusterbuster/syndieminibomb
+	cost = 10
+	uplink_types = list(UPLINK_TYPE_NUCLEAR)
+
 /datum/uplink_item/dangerous/viscerators
 	name = "Viscerator Delivery Grenade"
 	desc = "A unique grenade that deploys a swarm of viscerators upon activation, which will chase down and shred any non-operatives in the area."
-	item = /obj/item/weapon/grenade/spawnergrenade/manhacks
-	cost = 3
+	item = /obj/item/weapon/grenade/clusterbuster/spawner_manhacks
+	cost = 4
 	uplink_types = list(UPLINK_TYPE_NUCLEAR)
 /*
 /datum/uplink_item/dangerous/bioterror
