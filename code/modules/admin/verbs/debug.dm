@@ -14,7 +14,25 @@
 
 	feedback_add_details("admin_verb","DG2") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
+/client/proc/toggle_profiler()
+	set category = "Debug"
+	set name = "Toggle Profiler"
 
+	if(!check_rights(R_DEBUG))
+		return
+
+	if(tgui_alert(usr, "Be sure you know what you are doing. You want to [config.auto_profile ? "STOP": "START"] Byond Profiler?",, list("Yes","No")) != "Yes")
+		return
+
+	config.auto_profile = !config.auto_profile
+
+	if(config.auto_profile)
+		SSprofiler.StartProfiling()
+	else
+		SSprofiler.StopProfiling()
+
+	message_admins("[key_name(src)] toggled byond profiler [config.auto_profile ? "on" : "off"].")
+	log_admin("[key_name(src)] toggled byond profiler [config.auto_profile ? "on" : "off"].")
 
 /* 21st Sept 2010
 Updated by Skie -- Still not perfect but better!
@@ -159,7 +177,7 @@ But you can call procs that are of type /mob/living/carbon/human/proc for that p
 		tgui_alert(usr, "Wait until the game starts")
 		return
 	log_admin("[key_name(src)] has blobized [key_name(M)].")
-	addtimer(CALLBACK(M, /mob/proc/Blobize), 1 SECOND)
+	addtimer(CALLBACK(M, TYPE_PROC_REF(/mob, Blobize)), 1 SECOND)
 
 //TODO: merge the vievars version into this or something maybe mayhaps
 /client/proc/cmd_debug_del_all()
@@ -384,9 +402,9 @@ But you can call procs that are of type /mob/living/carbon/human/proc for that p
 		to_chat(world, "* [areatype]")
 
 /client/proc/robust_dress_shop()
-	var/list/baseoutfits = list("Naked", "As Job...")
+	var/list/baseoutfits = list("Naked", "As Job...", "As Responder...")
 	var/list/outfits = list()
-	var/list/paths = subtypesof(/datum/outfit) - typesof(/datum/outfit/job)
+	var/list/paths = subtypesof(/datum/outfit) - typesof(/datum/outfit/job) - typesof(/datum/outfit/responders)
 
 	for(var/datum/outfit/O as anything in paths)
 		if(initial(O.name))
@@ -409,6 +427,18 @@ But you can call procs that are of type /mob/living/carbon/human/proc for that p
 		dresscode = job_outfits[dresscode]
 		if(isnull(dresscode))
 			return
+
+	else if(dresscode == "As Responder...")
+		var/list/responder_paths = subtypesof(/datum/outfit/responders)
+		var/list/responder_outfits = list()
+		for(var/datum/outfit/O as anything in responder_paths)
+			responder_outfits[initial(O.name)] = O
+
+		dresscode = input("Select responder equipment", "Robust quick dress shop") as null|anything in sortList(responder_outfits)
+		dresscode = responder_outfits[dresscode]
+		if(isnull(dresscode))
+			return
+
 
 	return dresscode
 
@@ -624,8 +654,8 @@ But you can call procs that are of type /mob/living/carbon/human/proc for that p
 
 /datum/debug_color_matrix/proc/edit(client/user)
 	var/static/editor = file2text('html/admin/color_matrix.html')
-	user << browse(editor, "window=colormatrix;size=410x500;")
-	addtimer(CALLBACK(src, .proc/callJsFunc, usr, "setRef", list("\ref[src]")), 10) //This is shit but without it, it calls the JS before the window is open and doesn't work.
+	user << browse(replacetext(editor, "/* custom style */", get_browse_zoom_style(user)), "window=colormatrix;[get_browse_size_parameter(user, 410, 500)];")
+	addtimer(CALLBACK(src, PROC_REF(callJsFunc), usr, "setRef", list("\ref[src]")), 10) //This is shit but without it, it calls the JS before the window is open and doesn't work.
 
 /datum/debug_color_matrix/Topic(href, href_list)
 	if(!islist(usr.client.color))
@@ -659,3 +689,46 @@ But you can call procs that are of type /mob/living/carbon/human/proc for that p
 /datum/debug_color_matrix/proc/callJsFunc(client, funcName, list/params)
 	var/paramsJS = list2params(params)
 	client << output(paramsJS,"colormatrix.browser:[funcName]")
+
+/client/proc/burn_tile()
+	set category = "Debug"
+	set name = "Floor: Burn"
+
+	var/turf/simulated/floor/T = get_turf(usr)
+	if(!istype(T))
+		return
+
+	T.burn_tile()
+
+/client/proc/break_tile()
+	set category = "Debug"
+	set name = "Floor: Break"
+
+	var/turf/simulated/floor/T = get_turf(usr)
+	if(!istype(T))
+		return
+
+	T.break_tile()
+
+/client/proc/fix_tile()
+	set category = "Debug"
+	set name = "Floor: Fix"
+
+	var/turf/simulated/floor/T = get_turf(usr)
+	if(!istype(T))
+		return
+
+	T.burnt = 0
+	T.broken = 0
+	T.update_icon()
+
+/client/proc/allow_browser_inspect()
+	set category = "Debug"
+	set name = "Allow Browser Inspect"
+	set desc = "Allow browser debugging via inspect"
+
+	if(!check_rights(R_DEBUG))
+		return
+
+	to_chat(src, "<span class='info'>You can now right click to use inspect on browsers.</span>")
+	winset(src, "", "browser-options=byondstorage,find,devtools,refresh")

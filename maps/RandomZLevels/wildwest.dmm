@@ -12,11 +12,6 @@
 /obj/structure/cult/pylon,
 /turf/simulated/floor/engine/cult,
 /area/awaymission/wildwest/vault)
-"ae" = (
-/turf/simulated/shuttle/plating{
-	icon_state = "cultdamage5"
-	},
-/area/awaymission/wildwest/vault)
 "af" = (
 /mob/living/simple_animal/hostile/faithless,
 /turf/simulated/floor/engine/cult,
@@ -36,16 +31,6 @@
 	name = "Blocker"
 	},
 /turf/simulated/wall/cult,
-/area/awaymission/wildwest/vault)
-"aj" = (
-/turf/simulated/shuttle/plating{
-	icon_state = "cultdamage3"
-	},
-/area/awaymission/wildwest/vault)
-"ak" = (
-/turf/simulated/shuttle/plating{
-	icon_state = "cultdamage6"
-	},
 /area/awaymission/wildwest/vault)
 "al" = (
 /obj/structure/cult/anomaly/timewhole,
@@ -160,11 +145,6 @@
 /obj/structure/cult/pylon,
 /turf/simulated/shuttle/plating{
 	icon_state = "bcircuitoff"
-	},
-/area/awaymission/wildwest/vault)
-"aC" = (
-/turf/simulated/shuttle/plating{
-	icon_state = "cultdamage2"
 	},
 /area/awaymission/wildwest/vault)
 "aD" = (
@@ -657,28 +637,16 @@
 /area/awaymission/wildwest/mansion)
 "cp" = (
 /obj/structure/closet/secure_closet/freezer/kitchen,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
-/area/awaymission/wildwest/mansion)
-"cq" = (
-/obj/structure/table/woodentable,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "cr" = (
 /obj/structure/table/woodentable,
 /obj/machinery/kitchen_machine/microwave,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "cs" = (
 /obj/structure/closet/secure_closet/freezer/fridge,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "ct" = (
 /obj/structure/lattice,
@@ -708,11 +676,6 @@
 /obj/structure/stool/bed/chair/wood/wings,
 /turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
-"cz" = (
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
-/area/awaymission/wildwest/mansion)
 "cA" = (
 /obj/effect/decal/cleanable/blood/splatter,
 /turf/simulated/floor/wood,
@@ -729,7 +692,7 @@
 /area/awaymission/wildwest/mansion)
 "cD" = (
 /obj/structure/table/woodentable,
-/obj/item/clothing/gloves/yellow,
+/obj/item/clothing/gloves/insulated,
 /obj/item/device/multitool,
 /turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
@@ -743,19 +706,11 @@
 /obj/structure/table/woodentable,
 /turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
-"cG" = (
-/mob/living/simple_animal/hostile/creature,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
-/area/awaymission/wildwest/mansion)
 "cH" = (
 /obj/effect/landmark/corpse/chef{
 	mobname = "Chef"
 	},
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "cI" = (
 /obj/structure/bookcase{
@@ -825,23 +780,17 @@
 "cV" = (
 /obj/structure/table/woodentable,
 /obj/item/weapon/reagent_containers/food/snacks/monkeysdelight,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "cW" = (
 /obj/structure/table/woodentable,
 /obj/item/weapon/kitchenknife/butch,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "cX" = (
 /obj/structure/table/woodentable,
 /obj/item/weapon/reagent_containers/food/snacks/soup/stew,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "cY" = (
 /obj/structure/stool/bed/chair/comfy/black{
@@ -850,7 +799,7 @@
 /turf/simulated/floor/wood,
 /area/awaymission/wildwest/mines)
 "cZ" = (
-/obj/structure/stool/bed/chair/comfy/teal{
+/obj/structure/stool/bed/chair/comfy/green{
 	dir = 8
 	},
 /turf/simulated/floor/wood,
@@ -873,23 +822,17 @@
 "dd" = (
 /obj/structure/table/woodentable,
 /obj/item/weapon/reagent_containers/food/snacks/sliceable/bread/cheese,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "de" = (
 /obj/structure/table/woodentable,
 /obj/item/weapon/kitchen/rollingpin,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "df" = (
 /obj/structure/table/woodentable,
 /obj/item/weapon/reagent_containers/food/snacks/sliceable/cake/lemon,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion{
 	dir = 1;
 	icon_state = "fwindow"
@@ -939,9 +882,7 @@
 "dq" = (
 /obj/structure/table/woodentable,
 /obj/item/weapon/reagent_containers/food/drinks/bottle/wine,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "dr" = (
 /obj/structure/table/woodentable,
@@ -949,16 +890,12 @@
 /obj/item/weapon/reagent_containers/food/drinks/drinkingglass,
 /obj/item/weapon/reagent_containers/food/drinks/drinkingglass,
 /obj/item/weapon/reagent_containers/food/drinks/drinkingglass,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "ds" = (
 /obj/structure/table/woodentable,
 /obj/item/weapon/reagent_containers/food/drinks/bottle/patron,
-/turf/simulated/floor{
-	icon_state = "stage_bleft"
-	},
+/turf/simulated/floor/wood,
 /area/awaymission/wildwest/mansion)
 "dt" = (
 /obj/effect/decal/cleanable/blood/tracks,
@@ -1046,7 +983,7 @@
 /turf/simulated/floor/carpet,
 /area/awaymission/wildwest/mines)
 "dK" = (
-/obj/structure/stool/bed/chair/comfy/beige,
+/obj/structure/stool/bed/chair/comfy/white,
 /turf/simulated/floor/carpet,
 /area/awaymission/wildwest/mines)
 "dL" = (
@@ -1108,7 +1045,7 @@
 	},
 /area/awaymission/wildwest/mines)
 "dX" = (
-/obj/structure/stool/bed/chair/comfy/beige{
+/obj/structure/stool/bed/chair/comfy/white{
 	dir = 4
 	},
 /turf/simulated/floor/carpet,
@@ -1134,7 +1071,7 @@
 /turf/simulated/floor/carpet,
 /area/awaymission/wildwest/mines)
 "ec" = (
-/obj/structure/stool/bed/chair/comfy/beige{
+/obj/structure/stool/bed/chair/comfy/white{
 	dir = 8
 	},
 /turf/simulated/floor/carpet,
@@ -1329,7 +1266,7 @@
 /turf/simulated/floor/carpet,
 /area/awaymission/wildwest/mines)
 "eH" = (
-/obj/structure/stool/bed/chair/comfy/beige{
+/obj/structure/stool/bed/chair/comfy/white{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/blood/gibs/body{
@@ -1402,7 +1339,7 @@
 /turf/simulated/floor/wood,
 /area/awaymission/wildwest/mines)
 "eU" = (
-/obj/structure/stool/bed/chair/comfy/beige{
+/obj/structure/stool/bed/chair/comfy/white{
 	dir = 1;
 	icon_state = "comfychair_beige"
 	},
@@ -1562,7 +1499,7 @@
 /turf/simulated/wall/mineral/sandstone,
 /area/awaymission/wildwest/mines)
 "fu" = (
-/obj/structure/stool/bed/chair/comfy/beige{
+/obj/structure/stool/bed/chair/comfy/white{
 	dir = 4
 	},
 /turf/simulated/floor/wood,
@@ -1864,7 +1801,7 @@
 /turf/simulated/floor/wood,
 /area/awaymission/wildwest/mines)
 "gs" = (
-/obj/structure/stool/bed/chair/comfy/beige{
+/obj/structure/stool/bed/chair/comfy/white{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/blood/gibs/body{
@@ -1891,7 +1828,7 @@
 /turf/simulated/floor/wood,
 /area/awaymission/wildwest/mines)
 "gw" = (
-/obj/item/weapon/gun/projectile/automatic/silenced,
+/obj/item/weapon/gun/projectile/automatic/pistol/silenced,
 /turf/simulated/floor/wood,
 /area/awaymission/wildwest/mines)
 "gx" = (
@@ -2045,6 +1982,31 @@
 	},
 /turf/simulated/floor/plating/ironsand,
 /area/awaymission/wildwest/mines)
+"oV" = (
+/obj/machinery/door/airlock/vault{
+	locked = 1;
+	dir = 4
+	},
+/turf/simulated/floor/engine/cult,
+/area/awaymission/wildwest/vaultdoors)
+"pt" = (
+/obj/machinery/door/airlock/sandstone{
+	dir = 4
+	},
+/turf/simulated/floor/plating,
+/area/awaymission/wildwest/refinery)
+"xE" = (
+/obj/machinery/door/airlock/sandstone{
+	dir = 4
+	},
+/turf/simulated/floor/wood,
+/area/awaymission/wildwest/mines)
+"GZ" = (
+/obj/machinery/door/airlock/external{
+	dir = 4
+	},
+/turf/simulated/floor,
+/area/awaymission/wildwest/refinery)
 
 (1,1,1) = {"
 aa
@@ -12274,13 +12236,13 @@ bR
 bY
 bP
 cp
-cz
-cz
-cz
-cz
-cz
-cG
-cz
+cn
+cn
+cn
+cn
+cn
+cN
+cn
 dq
 bP
 bY
@@ -12530,14 +12492,14 @@ bw
 bR
 bY
 bP
-cq
-cz
-cz
-cz
-cz
+cF
+cn
+cn
+cn
+cn
 cV
 dd
-cz
+cn
 dq
 bP
 bY
@@ -12788,13 +12750,13 @@ bR
 bY
 bP
 cr
-cz
-cG
-cz
-cz
+cn
+cN
+cn
+cn
 cW
 de
-cz
+cn
 dr
 bP
 bY
@@ -13044,14 +13006,14 @@ bv
 bR
 bY
 bP
-cq
-cz
+cF
+cn
 cH
-cz
-cz
+cn
+cn
 cX
 df
-cz
+cn
 ds
 bP
 bY
@@ -13302,13 +13264,13 @@ bR
 bY
 bP
 cs
-cz
-cz
-cz
-cz
-cz
-cz
-cz
+cn
+cn
+cn
+cn
+cn
+cn
+cn
 ds
 bP
 bY
@@ -15380,7 +15342,7 @@ br
 aa
 aa
 eO
-fd
+GZ
 eO
 aa
 aa
@@ -16151,7 +16113,7 @@ et
 et
 eJ
 eR
-fd
+GZ
 eR
 eR
 eR
@@ -21457,7 +21419,7 @@ ac
 ac
 ah
 ac
-aj
+ac
 ac
 ac
 ah
@@ -22282,8 +22244,8 @@ aL
 aL
 aX
 aW
-bd
-bd
+pt
+pt
 aW
 aL
 aL
@@ -22487,7 +22449,7 @@ ac
 ah
 ac
 ac
-ak
+ac
 ac
 ac
 ac
@@ -23004,7 +22966,7 @@ ac
 ac
 ac
 ac
-ae
+ac
 ac
 ac
 af
@@ -23265,10 +23227,10 @@ ac
 ac
 ac
 ac
-aj
 ac
 ac
-ak
+ac
+ac
 ac
 ac
 ah
@@ -23769,17 +23731,6 @@ ac
 ah
 ac
 ac
-ae
-ac
-ac
-ac
-ac
-ac
-ac
-ac
-ac
-ah
-ac
 ac
 ac
 ac
@@ -23791,6 +23742,17 @@ ac
 ac
 ah
 ac
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+ah
+ac
 ah
 ah
 ac
@@ -23799,8 +23761,8 @@ ac
 ac
 ac
 ah
-aF
-aF
+oV
+oV
 ah
 ah
 ah
@@ -24036,13 +23998,13 @@ ac
 ac
 ah
 ac
-ak
+ac
 ac
 ac
 ah
 ac
 ac
-aj
+ac
 ac
 ac
 ac
@@ -24817,7 +24779,7 @@ ac
 ac
 ac
 ac
-ak
+ac
 ac
 af
 ac
@@ -25056,7 +25018,7 @@ ac
 ac
 ac
 ac
-ae
+ac
 ac
 ac
 ac
@@ -25317,7 +25279,7 @@ ac
 ac
 ac
 ac
-ak
+ac
 ac
 ac
 af
@@ -25326,12 +25288,12 @@ ac
 ac
 ac
 ac
-ae
+ac
 ah
 ah
 ac
 ac
-aj
+ac
 ah
 ac
 ac
@@ -25579,7 +25541,7 @@ ah
 ac
 ac
 ac
-ak
+ac
 ac
 ac
 ac
@@ -26615,7 +26577,7 @@ ac
 ac
 ac
 ac
-aj
+ac
 ac
 ac
 ac
@@ -26630,7 +26592,7 @@ aD
 ah
 aD
 ac
-aj
+ac
 ac
 ac
 ah
@@ -26854,7 +26816,6 @@ ab
 ac
 ac
 ac
-aj
 ac
 ac
 ac
@@ -26863,12 +26824,13 @@ ac
 ac
 ac
 ac
-ae
 ac
 ac
 ac
 ac
-aj
+ac
+ac
+ac
 ac
 ac
 ac
@@ -27130,7 +27092,7 @@ ac
 ac
 ac
 ac
-ak
+ac
 ac
 ac
 ac
@@ -27647,7 +27609,7 @@ ac
 af
 ac
 ah
-aj
+ac
 ac
 ac
 ac
@@ -27891,7 +27853,7 @@ ac
 ag
 ac
 ac
-aj
+ac
 ac
 ag
 ac
@@ -28925,7 +28887,7 @@ ac
 ac
 ac
 ac
-aC
+ac
 ac
 ac
 ac
@@ -29441,7 +29403,7 @@ ac
 ac
 ac
 ac
-ak
+ac
 ac
 ac
 ac
@@ -30478,7 +30440,7 @@ ac
 ac
 ac
 ac
-ak
+ac
 ac
 ac
 ac
@@ -31229,7 +31191,7 @@ ac
 ac
 ag
 ag
-aj
+ac
 ac
 ag
 af
@@ -31739,7 +31701,7 @@ aa
 ab
 ac
 ac
-aj
+ac
 ac
 ag
 ag
@@ -31764,7 +31726,7 @@ ac
 ac
 ac
 ac
-ak
+ac
 ac
 ac
 ac
@@ -33050,7 +33012,7 @@ ac
 ac
 ac
 ac
-ae
+ac
 ac
 ac
 ac
@@ -33312,7 +33274,7 @@ ac
 ac
 ac
 ac
-ak
+ac
 ac
 ac
 ac
@@ -33798,7 +33760,7 @@ ac
 ac
 ag
 ag
-aj
+ac
 an
 an
 ag
@@ -33830,7 +33792,7 @@ ac
 ac
 ac
 ac
-ak
+ac
 ac
 ac
 ac
@@ -34083,7 +34045,7 @@ ac
 ac
 ac
 ac
-ak
+ac
 ac
 ac
 ac
@@ -35108,7 +35070,7 @@ ac
 ac
 ac
 ac
-ak
+ac
 ac
 ac
 ac
@@ -35628,7 +35590,7 @@ ac
 ac
 ac
 ac
-ak
+ac
 ac
 ac
 ac
@@ -36139,7 +36101,7 @@ ac
 ac
 ac
 ac
-ae
+ac
 ac
 ac
 ac
@@ -37731,14 +37693,14 @@ bj
 bj
 bu
 bu
-dL
+xE
 bu
 bu
 bu
 bu
 bu
 bu
-dL
+xE
 bu
 bu
 bj
@@ -39790,11 +39752,11 @@ bu
 bu
 bu
 bu
-dL
+xE
 bu
 bu
 bu
-dL
+xE
 bu
 bu
 bu

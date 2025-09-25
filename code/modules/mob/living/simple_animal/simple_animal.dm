@@ -1,6 +1,6 @@
 /mob/living/simple_animal
 	name = "animal"
-	desc = "Just simple animal"
+	desc = "Просто существует."
 	icon = 'icons/mob/animal.dmi'
 	health = 20
 	maxHealth = 20
@@ -67,6 +67,8 @@
 
 	// See atom_init below.
 	moveset_type = null
+	// used for growing creatures
+	var/evolv_stage = 0
 
 /mob/living/simple_animal/atom_init()
 	if(!moveset_type)
@@ -80,6 +82,14 @@
 	. = ..()
 	if(footstep_type)
 		AddComponent(/datum/component/footstep, footstep_type)
+
+/mob/living/simple_animal/LateLogin()
+	. = ..()
+	stop_automated_movement = TRUE
+
+/mob/living/simple_animal/Logout()
+	. = ..()
+	stop_automated_movement = initial(stop_automated_movement)
 
 /mob/living/simple_animal/Grab(atom/movable/target, force_state, show_warnings = TRUE)
 	return

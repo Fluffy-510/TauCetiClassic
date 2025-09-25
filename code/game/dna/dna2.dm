@@ -45,8 +45,9 @@ var/global/list/datum/dna/gene/dna_genes[0]
 	var/list/UI[DNA_UI_LENGTH]
 
 	// From old dna.
-	var/b_type = "A+"  // Should probably change to an integer => string map but I'm lazy.
+	var/b_type = BLOOD_A_PLUS  // Should probably change to an integer => string map but I'm lazy.
 	var/real_name          // Stores the real name of the person who originally got this dna datum. Used primarily for changelings,
+	var/original_character_name //Stores THE REAL NAME for changeling transform sting
 
 	// New stuff
 	var/species = HUMAN
@@ -82,7 +83,8 @@ var/global/list/datum/dna/gene/dna_genes[0]
 	for(var/i=1,i<=DNA_UI_LENGTH,i++)
 		switch(i)
 			if(DNA_UI_SKIN_TONE)
-				SetUIValueRange(DNA_UI_SKIN_TONE,rand(1,220),220,1) // Otherwise, it gets fucked
+				var/max = length(global.skin_tones_by_name)
+				SetUIValueRange(DNA_UI_SKIN_TONE,rand(1,max),max,1) // Otherwise, it gets fucked
 			else
 				UI[i]=rand(0,4095)
 	if(!defer)
@@ -120,8 +122,12 @@ var/global/list/datum/dna/gene/dna_genes[0]
 	SetUIValueRange(DNA_UI_SKIN_G,    character.g_skin,    255,    1)
 	SetUIValueRange(DNA_UI_SKIN_B,    character.b_skin,    255,    1)
 
+	SetUIValueRange(DNA_UI_BELLY_R,   character.r_belly,   255,    1)
+	SetUIValueRange(DNA_UI_BELLY_G,   character.g_belly,   255,    1)
+	SetUIValueRange(DNA_UI_BELLY_B,   character.b_belly,   255,    1)
 
-	SetUIValueRange(DNA_UI_SKIN_TONE, 35-character.s_tone, 220,    1) // Value can be negative.
+	var/s_tone_index = global.skin_tones_by_name.Find(character.s_tone)
+	SetUIValueRange(DNA_UI_SKIN_TONE, s_tone_index, length(global.skin_tones_by_name),    1)
 
 	SetUIState(DNA_UI_GENDER,         character.gender!=MALE,      1)
 
@@ -332,7 +338,7 @@ var/global/list/datum/dna/gene/dna_genes[0]
 		if(length(struc_enzymes)!= 3*DNA_SE_LENGTH)
 			ResetSE()
 
-		if(length(unique_enzymes) != DNA_UNIQUE_ENZYMES_LEN)
+		if(length(unique_enzymes) != DNA_UNIQUE_ENZYMES_LEN && !character.species.flags[NO_DNA])
 			unique_enzymes = md5(character.real_name)
 	else
 		if(length(uni_identity) != 3*DNA_UI_LENGTH)
@@ -347,8 +353,10 @@ var/global/list/datum/dna/gene/dna_genes[0]
 
 	ResetSE()
 
-	unique_enzymes = md5(character.real_name)
-	reg_dna[unique_enzymes] = character.real_name
+	unique_enzymes = ""
+	if(!character.species.flags[NO_DNA])
+		unique_enzymes = md5(character.real_name)
+		reg_dna[unique_enzymes] = character.real_name
 
 /datum/dna/proc/generate_unique_enzymes(mob/living/holder)
 	. = ""

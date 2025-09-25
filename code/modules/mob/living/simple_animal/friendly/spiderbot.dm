@@ -14,7 +14,7 @@
 	var/list/req_access = list(access_robotics) //Access needed to pop out the brain.
 
 	name = "Spider-bot"
-	desc = "A skittering robotic friend!"
+	desc = "Ползучий друг-робот!"
 	icon = 'icons/mob/robots.dmi'
 	icon_state = "spiderbot-chassis"
 	icon_living = "spiderbot-chassis"
@@ -39,7 +39,7 @@
 	speed = -1                    //Spiderbots gotta go fast.
 	//pass_flags = PASSTABLE      //Maybe griefy?
 	w_class = SIZE_MINUSCULE
-	speak_emote = list("beeps","clicks","chirps")
+	speak_emote = list("гудит","жужит","пищит")
 
 /mob/living/simple_animal/spiderbot/attackby(obj/item/O, mob/user)
 
@@ -208,7 +208,7 @@
 		held_item.loc = loc
 		held_item = null
 
-	robogibs(loc)
+	new /obj/effect/gibspawner/robot(get_turf(loc))
 	qdel(src)
 
 //copy paste from alien/larva, if that func is updated please update this one alsoghost
@@ -266,6 +266,8 @@
 
 	var/list/items = list()
 	for(var/obj/item/I in view(1,src))
+		if(istype(I, /obj/item/weapon/disk/nuclear))
+			continue
 		if(I.loc != src && I.w_class <= SIZE_TINY)
 			items.Add(I)
 

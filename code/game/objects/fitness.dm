@@ -40,8 +40,6 @@
 		user.apply_effect(pain_amount, AGONY, 0)
 		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "swole", /datum/mood_event/swole, pain_amount)
 
-	user.update_body()
-
 	var/finishmessage = pick("You feel stronger!","You feel like you can take on the world!","You feel robust!","You feel indestructible!")
 	to_chat(user, "<span class='notice'>[finishmessage]</span>")
 
@@ -67,7 +65,7 @@
 		to_chat(user, "You should get off the [user.buckled] first.")
 		return
 
-	if(gymnast.halloss > 80 || gymnast.shock_stage > 80)
+	if(gymnast.getHalLoss() > 80 || gymnast.traumatic_shock > 80)
 		to_chat(user, "You are too exausted.")
 		return
 
@@ -82,7 +80,7 @@
 	if((HULK in user.mutations) && user.hulk_activator == ACTIVATOR_HEAVY_MUSCLE_LOAD)
 		to_chat(user, "<span class='notice'>You feel unbearable muscle pain, but you like it!</span>")
 
-	INVOKE_ASYNC(src, .proc/try_pump, user)
+	INVOKE_ASYNC(src, PROC_REF(try_pump), user)
 
 /obj/structure/weightlifter
 	name = "Weight Machine"
@@ -148,8 +146,6 @@
 		user.apply_effect(pain_amount, AGONY, 0)
 		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "swole", /datum/mood_event/swole, pain_amount)
 
-	user.update_body()
-
 	var/finishmessage = pick("You feel stronger!","You feel like you can take on the world!","You feel robust!","You feel indestructible!")
 	to_chat(user, "<span class='notice'>[finishmessage]</span>")
 
@@ -171,7 +167,7 @@
 	if(user.buckled && user.buckled != src)
 		to_chat(user, "You should get off the [user.buckled] first.")
 		return
-	if(user.halloss > 80 || user.shock_stage > 80)
+	if(user.getHalLoss() > 80 || user.traumatic_shock > 80)
 		to_chat(user, "You are too exausted.")
 		return
 
@@ -185,7 +181,7 @@
 	user.visible_message("<B>[user] is [bragmessage]!</B>")
 	user.pixel_y = 5
 
-	INVOKE_ASYNC(src, .proc/try_pump, user)
+	INVOKE_ASYNC(src, PROC_REF(try_pump), user)
 
 /obj/structure/dumbbells_rack
 	name = "dumbbells rack"
@@ -210,8 +206,8 @@
 	dumbbells.set_slots(slots = 4, slot_size = SIZE_BIG)
 	dumbbells.can_hold = list(/obj/item/weapon/dumbbell)
 
-	RegisterSignal(dumbbells, list(COMSIG_STORAGE_ENTERED), .proc/add_dumbbell)
-	RegisterSignal(dumbbells, list(COMSIG_STORAGE_EXITED), .proc/remove_dumbbell)
+	RegisterSignal(dumbbells, list(COMSIG_STORAGE_ENTERED), PROC_REF(add_dumbbell))
+	RegisterSignal(dumbbells, list(COMSIG_STORAGE_EXITED), PROC_REF(remove_dumbbell))
 
 	var/list/dumbbells_to_add = list()
 
@@ -287,7 +283,6 @@
 	force = 7.0
 	sharp = 0
 	throwforce = 5.0
-	throw_speed = 5
 	throw_range = 3
 	w_class = SIZE_NORMAL
 
@@ -302,7 +297,7 @@
 	force = 10.0
 	sharp = 0
 	throwforce = 8.0
-	throw_speed = 5
+	throw_speed = 1
 	throw_range = 1
 	w_class = SIZE_NORMAL
 
@@ -328,7 +323,6 @@
 	var/pain_amount = 3 * BP.adjust_pumped(mass, max_pumped)
 	H.apply_effect(pain_amount, AGONY, 0)
 	SEND_SIGNAL(H, COMSIG_ADD_MOOD_EVENT, "swole", /datum/mood_event/swole, pain_amount)
-	H.update_body()
 
 	H.nutrition -= 2 * mass
 	H.overeatduration -= 2 * mass

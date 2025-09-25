@@ -31,7 +31,7 @@
 /var/const/access_cargo = 31
 /var/const/access_construction = 32
 /var/const/access_chemistry = 33
-/var/const/access_cargo_bot = 34
+/var/const/access_cargoshop = 34
 /var/const/access_hydroponics = 35
 /var/const/access_manufacturing = 36
 /var/const/access_library = 37
@@ -71,6 +71,7 @@
 /var/const/access_engineering_lobby = 71
 /var/const/access_medbay_storage = 72
 /var/const/access_oldstation = 73
+/var/const/access_space_traders = 74
 
 	//BEGIN CENTCOM ACCESS
 	/*Should leave plenty of room if we need to add more access levels.
@@ -95,35 +96,53 @@
 /obj/var/list/req_access = list()
 /obj/var/list/req_one_access = list()
 
-//returns 1 if this mob has sufficient access to use this object
-/obj/proc/allowed(mob/M) // todo: rename to try_access or something
+///returns 1 if this atom has sufficient access to use this object
+/obj/proc/allowed(atom/movable/AM)
 	//check if it doesn't require any access at all
 	if(check_access(null))
 		return TRUE
-	if(issilicon(M))
-		var/mob/living/silicon/S = M
-		if(check_access(S))
-			return TRUE
-	if(IsAdminGhost(M))
+	if(IsAdminGhost(AM))
 		//Access can't stop the abuse
 		return TRUE
-	if(istype(M) && SEND_SIGNAL(M, COMSIG_MOB_TRIED_ACCESS, src) & COMSIG_ACCESS_ALLOWED)
+	if(ismob(AM))
+		var/mob/M = AM
+		if(SEND_SIGNAL(M, COMSIG_MOB_TRIED_ACCESS, src) & COMSIG_ACCESS_ALLOWED)
+			return TRUE
+	if(AM.try_access(src))
 		return TRUE
-	else if(ishuman(M))
-		var/mob/living/carbon/human/H = M
-		//if they are holding or wearing a card that has access, that works
-		if(check_access(H.wear_id) || check_access(H.get_active_hand()) || check_access(H.get_inactive_hand()))
-			return TRUE
-	else if(isIAN(M))
-		var/mob/living/carbon/ian/IAN = M
-		if(check_access(IAN.mouth) || check_access(IAN.neck))
-			return TRUE
-	else if(ismonkey(M) || isxenoadult(M))
-		var/mob/living/carbon/george = M
-		//they can only hold things :(
-		if(check_access(george.get_active_hand()))
-			return TRUE
 	return FALSE
+
+///Internal proc. Use allowed() if possible. TRUE if src has the necessary access for obj
+/atom/movable/proc/try_access(obj/O)
+	return FALSE
+
+/mob/living/silicon/try_access(obj/O)
+	return O.check_access(src)
+
+/mob/living/carbon/try_access(obj/O)
+	return O.check_access(get_active_hand())
+
+/mob/living/carbon/human/try_access(obj/O) //if they are holding or wearing a card that has access, that works
+	for(var/obj/item/I in list(wear_id) + get_hand_slots())
+		if(O.check_access(I))
+			return TRUE
+
+/mob/living/carbon/ian/try_access(obj/O)
+	for(var/obj/item/I in list(neck) + get_hand_slots())
+		if(O.check_access(I))
+			return TRUE
+
+/obj/machinery/bot/try_access(obj/O)
+	return O.check_access(botcard)
+
+/obj/mecha/try_access(obj/O)
+	return occupant && (O.allowed(occupant) || O.check_access_list(operation_req_access))
+
+/obj/structure/stool/bed/chair/wheelchair/try_access(obj/O)
+	return pulling && O.allowed(pulling)
+
+/obj/item/try_access(obj/O)
+	return O.check_access(src)
 
 /atom/movable/proc/GetAccess()
 	return list()
@@ -137,6 +156,9 @@
 /mob/living/silicon/robot/drone/syndi/GetAccess()
 	return list(access_maint_tunnels, access_syndicate, access_external_airlocks) //syndicate basic access
 
+/mob/living/silicon/robot/drone/maintenance/malfuction/GetAccess()
+	return list(access_maint_tunnels)
+
 /obj/item/proc/GetID()
 	return null
 
@@ -146,7 +168,7 @@
 		if(Machine.emagged)
 			return TRUE
 
-	if(!req_access.len && !req_one_access.len) //no requirements
+	if(!length(req_access) && !length(req_one_access)) //no requirements
 		return TRUE
 	if(!AM)
 		return FALSE
@@ -198,7 +220,7 @@
 
 /proc/get_all_accesses()
 	return list(access_security, access_sec_doors, access_brig, access_armory, access_forensics_lockers, access_blueshield,
-	            access_medical, access_genetics, access_morgue, access_rd,
+	            access_medical, access_genetics, access_morgue, access_rd, access_cargoshop,
 	            access_tox, access_tox_storage, access_chemistry, access_engine, access_engine_equip, access_maint_tunnels,
 	            access_external_airlocks, access_change_ids, access_ai_upload,
 	            access_teleporter, access_eva, access_heads, access_captain, access_all_personal_lockers,
@@ -232,7 +254,7 @@
 		if(6) //station general
 			return list(access_kitchen,access_bar, access_hydroponics, access_barber, access_janitor, access_chapel_office, access_crematorium, access_library, access_lawyer, access_theatre)
 		if(7) //supply
-			return list(access_mailsorting, access_mining, access_mining_station, access_cargo, access_recycler, access_qm)
+			return list(access_mailsorting, access_cargoshop, access_mining, access_mining_station, access_cargo, access_recycler, access_qm)
 
 /proc/get_region_accesses_name(code)
 	switch(code)
@@ -262,8 +284,8 @@
 			return "Recycler"
 		if(access_detective)
 			return "Detective"
-		if(access_cargo_bot)
-			return "Cargo Bot Delivery"
+		if(access_cargoshop)
+			return "Cargo Delivery/Supply Console"
 		if(access_security)
 			return "Security"
 		if(access_blueshield)
@@ -450,7 +472,6 @@
 		"Emergency Response Team",
 		"Emergency Response Team Leader",
 		"Organized Crimes Department",
-		"NanoTrasen Representative",
 		)
 
 /proc/get_all_velocity_jobs()
@@ -530,7 +551,15 @@
 			return ID.registered_name
 
 /proc/get_all_job_icons() //For all existing HUD icons
-	return joblist + list("Prisoner")
+	return joblist
+
+/proc/get_all_misc_job_icons() //Use for all misc and custom job hud icons if you ever need one!
+	return list("Prisoner",
+				"Marine",
+				"Marine Squad Leader",
+				"Senior Engineer",
+				"Senior Medic",
+				"Space Trader")
 
 /obj/proc/GetJobName() //Used in secHUD icon generation
 	if (!istype(src, /obj/item/device/pda) && !istype(src,/obj/item/weapon/card/id))
@@ -558,6 +587,8 @@
 	if(jobName in get_all_centcom_jobs()) //Return with the NT logo if it is a Centcom job
 		return "Centcom"
 	if(jobName in get_all_velocity_jobs())
+		return jobName
+	if(jobName in get_all_misc_job_icons())
 		return jobName
 	return "Unknown" //Return unknown if none of the above apply
 

@@ -82,6 +82,7 @@
 	name = "wet floor sign"
 	icon = 'icons/obj/janitor.dmi'
 	icon_state = "caution"
+	item_state_world = "caution_world"
 	force = 1.0
 	throwforce = 3.0
 	throw_speed = 1
@@ -93,6 +94,9 @@
 	desc = "This cone is trying to warn you of something!"
 	name = "warning cone"
 	icon_state = "cone"
+	item_state_world = "cone_world"
+	body_parts_covered = HEAD
+	slot_flags = SLOT_FLAGS_HEAD
 
 /obj/item/weapon/rack_parts
 	name = "rack parts"
@@ -176,7 +180,7 @@
 		return ..()
 
 /obj/item/weapon/shard/Crossed(atom/movable/AM)
-	if(ismob(AM) && !HAS_TRAIT(AM, TRAIT_LIGHT_STEP))
+	if(ismob(AM) && !HAS_TRAIT(AM, TRAIT_LIGHT_STEP) && !HAS_TRAIT(AM, TRAIT_NO_MINORCUTS))
 		var/mob/M = AM
 		to_chat(M, "<span class='warning'><B>You step on the [src]!</B></span>")
 		playsound(src, on_step_sound, VOL_EFFECTS_MASTER)
@@ -189,9 +193,6 @@
 			if(H.wear_suit && (H.wear_suit.body_parts_covered & LEGS) && H.wear_suit.pierce_protection & LEGS)
 				return
 
-			if(H.species.flags[NO_MINORCUTS])
-				return
-
 			if(H.buckled)
 				return
 
@@ -200,7 +201,7 @@
 				if(BP.is_robotic())
 					return
 				BP.take_damage(5, 0)
-				if(!H.species.flags[NO_PAIN])
+				if(!HAS_TRAIT(H, TRAIT_NO_PAIN))
 					H.Stun(1)
 					H.Weaken(3)
 				H.updatehealth()
@@ -211,21 +212,22 @@
 						"<span class='danger'>[user] is slitting \his throat with the shard of glass! It looks like \he's trying to commit suicide.</span>"))
 	return (BRUTELOSS)
 
-/obj/item/weapon/shard/afterattack(atom/target, mob/user, proximity, params)
+/obj/item/weapon/shard/afterattack(atom/target, mob/living/user, proximity, params)
 	if(!proximity)
 		return
 	if(isturf(target))
 		return
+	if(HAS_TRAIT(user, TRAIT_NO_MINORCUTS))
+		return
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
-		if(!H.gloves && !H.species.flags[NO_MINORCUTS]) //specflags please..
+		if(!H.gloves)
 			to_chat(H, "<span class='warning'>[src] cuts into your hand!</span>")
 			var/obj/item/organ/external/BP = H.bodyparts_by_name[H.hand ? BP_L_ARM : BP_R_ARM]
 			BP.take_damage(force / 2, null, damage_flags())
-	else if(ismonkey(user))
-		var/mob/living/carbon/monkey/M = user
-		to_chat(M, "<span class='warning'>[src] cuts into your hand!</span>")
-		M.adjustBruteLoss(force / 2)
+	else if(istype(user))
+		to_chat(user, "<span class='warning'>[src] cuts into your hand!</span>")
+		user.adjustBruteLoss(force / 2)
 
 // phoron shard object
 /obj/item/weapon/shard/phoron
@@ -359,6 +361,17 @@
 	table_type = /obj/structure/table/reinforced
 	debris = list(/obj/item/stack/sheet/metal, /obj/item/stack/rods)
 
+/obj/item/weapon/table_parts/rglass
+	name = "reinforced glass table parts"
+	desc = "No longer fragile"
+	icon = 'icons/obj/items.dmi'
+	icon_state = "rglass_tableparts"
+	m_amt = 2500
+	g_amt = 3750
+	flags = CONDUCT
+	table_type = /obj/structure/table/rglass
+	debris = list(/obj/item/stack/rods, /obj/item/stack/sheet/glass)
+
 /obj/item/weapon/table_parts/stall
 	name = "stall table parts"
 	desc = "Stall table parts."
@@ -430,11 +443,13 @@
 /obj/item/weapon/module/card_reader
 	name = "card reader module"
 	icon_state = "card_mod"
+	item_state_world = "card_mod_w"
 	desc = "An electronic module for reading data and ID cards."
 
 /obj/item/weapon/module/power_control
 	name = "power control module"
 	icon_state = "power_mod"
+	item_state_world = "power_mod_w"
 	desc = "Heavy-duty switching circuits for power control."
 	m_amt = 50
 	g_amt = 50
@@ -442,16 +457,19 @@
 /obj/item/weapon/module/id_auth
 	name = "ID authentication module"
 	icon_state = "id_mod"
+	item_state_world = "id_mod_w"
 	desc = "A module allowing secure authorization of ID cards."
 
 /obj/item/weapon/module/cell_power
 	name = "power cell regulator module"
 	icon_state = "power_mod"
+	item_state_world = "power_mod_w"
 	desc = "A converter and regulator allowing the use of power cells."
 
 /obj/item/weapon/module/cell_power
 	name = "power cell charger module"
 	icon_state = "power_mod"
+	item_state_world = "power_mod_w"
 	desc = "Charging circuits for power cells."
 
 /obj/item/weapon/syntiflesh
@@ -631,38 +649,39 @@
 	desc = "A basic capacitor used in the construction of a variety of devices."
 	icon_state = "capacitor"
 	origin_tech = "powerstorage=1"
-	m_amt = 50
-	g_amt = 50
+	m_amt = 150
+	g_amt = 150
 
 /obj/item/weapon/stock_parts/scanning_module
 	name = "scanning module"
 	desc = "A compact, high resolution scanning module used in the construction of certain devices."
 	icon_state = "scan_module"
 	origin_tech = "magnets=1"
-	m_amt = 50
-	g_amt = 20
+	m_amt = 100
+	g_amt = 120
 
 /obj/item/weapon/stock_parts/manipulator
 	name = "micro-manipulator"
 	desc = "A tiny little manipulator used in the construction of certain devices."
 	icon_state = "micro_mani"
 	origin_tech = "materials=1;programming=1"
-	m_amt = 30
+	m_amt = 100
+	g_amt = 80
 
 /obj/item/weapon/stock_parts/micro_laser
 	name = "micro-laser"
 	desc = "A tiny laser used in certain devices."
 	icon_state = "micro_laser"
 	origin_tech = "magnets=1"
-	m_amt = 10
-	g_amt = 20
+	m_amt = 100
+	g_amt = 120
 
 /obj/item/weapon/stock_parts/matter_bin
 	name = "matter bin"
 	desc = "A container for hold compressed matter awaiting re-construction."
 	icon_state = "matter_bin"
 	origin_tech = "materials=1"
-	m_amt = 80
+	m_amt = 300
 
 //Rank 2
 
@@ -672,8 +691,8 @@
 	icon_state = "adv_capacitor"
 	origin_tech = "powerstorage=3"
 	rating = 2
-	m_amt = 50
-	g_amt = 50
+	m_amt = 250
+	g_amt = 250
 
 /obj/item/weapon/stock_parts/scanning_module/adv
 	name = "advanced scanning module"
@@ -681,8 +700,8 @@
 	icon_state = "adv_scan_module"
 	origin_tech = "magnets=3"
 	rating = 2
-	m_amt = 50
-	g_amt = 20
+	m_amt = 250
+	g_amt = 220
 
 /obj/item/weapon/stock_parts/manipulator/nano
 	name = "nano-manipulator"
@@ -690,7 +709,8 @@
 	icon_state = "nano_mani"
 	origin_tech = "materials=3,programming=2"
 	rating = 2
-	m_amt = 30
+	m_amt = 230
+	g_amt = 220
 
 /obj/item/weapon/stock_parts/micro_laser/high
 	name = "high-power micro-laser"
@@ -698,8 +718,8 @@
 	icon_state = "high_micro_laser"
 	origin_tech = "magnets=3"
 	rating = 2
-	m_amt = 10
-	g_amt = 20
+	m_amt = 210
+	g_amt = 220
 
 /obj/item/weapon/stock_parts/matter_bin/adv
 	name = "advanced matter bin"
@@ -707,7 +727,8 @@
 	icon_state = "advanced_matter_bin"
 	origin_tech = "materials=3"
 	rating = 2
-	m_amt = 80
+	m_amt = 280
+	g_amt = 220
 
 //Rating 3
 
@@ -717,8 +738,8 @@
 	icon_state = "super_capacitor"
 	origin_tech = "powerstorage=5;materials=4"
 	rating = 3
-	m_amt = 50
-	g_amt = 50
+	m_amt = 350
+	g_amt = 350
 
 /obj/item/weapon/stock_parts/scanning_module/adv/phasic
 	name = "phasic scanning module"
@@ -726,8 +747,8 @@
 	icon_state = "super_scan_module"
 	origin_tech = "magnets=5"
 	rating = 3
-	m_amt = 50
-	g_amt = 20
+	m_amt = 350
+	g_amt = 320
 
 /obj/item/weapon/stock_parts/manipulator/nano/pico
 	name = "pico-manipulator"
@@ -735,7 +756,8 @@
 	icon_state = "pico_mani"
 	origin_tech = "materials=5,programming=2"
 	rating = 3
-	m_amt = 30
+	m_amt = 330
+	g_amt = 320
 
 /obj/item/weapon/stock_parts/micro_laser/high/ultra
 	name = "ultra-high-power micro-laser"
@@ -743,8 +765,8 @@
 	desc = "A tiny laser used in certain devices."
 	origin_tech = "magnets=5"
 	rating = 3
-	m_amt = 10
-	g_amt = 20
+	m_amt = 310
+	g_amt = 320
 
 /obj/item/weapon/stock_parts/matter_bin/adv/super
 	name = "super matter bin"
@@ -752,7 +774,8 @@
 	icon_state = "super_matter_bin"
 	origin_tech = "materials=5"
 	rating = 3
-	m_amt = 80
+	m_amt = 380
+	g_amt = 320
 
 //Rating 4
 
@@ -762,8 +785,8 @@
 	icon_state = "quadratic_capacitor"
 	origin_tech = "powerstorage=6;materials=5"
 	rating = 4
-	m_amt = 50
-	g_amt = 50
+	m_amt = 350
+	g_amt = 350
 
 /obj/item/weapon/stock_parts/scanning_module/adv/phasic/triphasic
 	name = "triphasic scanning module"
@@ -771,8 +794,8 @@
 	icon_state = "triphasic_scan_module"
 	origin_tech = "magnets=6"
 	rating = 4
-	m_amt = 50
-	g_amt = 20
+	m_amt = 350
+	g_amt = 320
 
 /obj/item/weapon/stock_parts/manipulator/nano/pico/femto
 	name = "femto-manipulator"
@@ -780,7 +803,7 @@
 	icon_state = "femto_mani"
 	origin_tech = "materials=6;programming=3"
 	rating = 4
-	m_amt = 30
+	m_amt = 330
 
 /obj/item/weapon/stock_parts/micro_laser/high/ultra/quadultra
 	name = "quad-ultra micro-laser"
@@ -788,8 +811,8 @@
 	desc = "A tiny laser used in certain devices."
 	origin_tech = "magnets=6"
 	rating = 4
-	m_amt = 10
-	g_amt = 20
+	m_amt = 80
+	g_amt = 220
 
 /obj/item/weapon/stock_parts/matter_bin/adv/super/bluespace
 	name = "bluespace matter bin"
@@ -797,7 +820,7 @@
 	icon_state = "bluespace_matter_bin"
 	origin_tech = "materials=6"
 	rating = 4
-	m_amt = 80
+	m_amt = 380
 
 // Subspace stock parts
 

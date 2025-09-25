@@ -10,7 +10,7 @@
 	slot_flags = SLOT_FLAGS_BELT
 	throwforce = 3
 	w_class = SIZE_TINY
-	throw_speed = 5
+	throw_speed = 4
 	throw_range = 10
 	//matter = list("metal" = 200)
 	origin_tech = "magnets=1;biotech=1"
@@ -71,7 +71,7 @@
 	var/BU = M.getFireLoss() > 50 	? 	"<b>[M.getFireLoss()]</b>" 		: M.getFireLoss()
 	var/BR = M.getBruteLoss() > 50 	? 	"<b>[M.getBruteLoss()]</b>" 	: M.getBruteLoss()
 
-	message += "<span class='notice'>Analyzing Results for [M]:<br>&emsp; Overall Status: [M.stat > 1 ? "fully disabled" : "[M.health - M.halloss]% functional"]</span><br>"
+	message += "<span class='notice'>Analyzing Results for [M]:<br>&emsp; Overall Status: [M.stat > 1 ? "fully disabled" : "[M.health - M.getHalLoss()]% functional"]</span><br>"
 	message += "&emsp; Key: <font color='#FFA500'>Electronics</font>/<font color='red'>Brute</font><br>"
 	message += "&emsp; Damage Specifics: <font color='#FFA500'>[BU]</font> - <font color='red'>[BR]</font><br>"
 	if(M.tod && M.stat == DEAD)

@@ -1,3 +1,9 @@
+// some thought on how to make it less complicated:
+// several modvals for different types of movement speed (walking, running, crawling, flying)
+// move to modvals more constant modificators like from races, traits, mutations, items slowdown
+// still need to keep dynamic modificators like slowdown from damage or hunger out of modvals and calculate it here
+// ... or check tg datum system
+
 /mob/living/carbon/human/movement_delay()
 	var/tally = 0
 	var/nullify_debuffs = FALSE
@@ -8,11 +14,12 @@
 			tally -= 2.5
 			nullify_debuffs = TRUE
 
-	if(!has_gravity(src))
+	if(!has_gravity(src) && !lying)
 		return tally - 1 // It's hard to be slowed down in space by... anything
 
 	if(iszombie(src))
 		nullify_debuffs = TRUE
+		tally += 0.5
 
 	tally += species.speed_mod
 
@@ -21,6 +28,8 @@
 
 	if(lying)
 		tally += 7
+	if(m_intent == MOVE_INTENT_WALK && HAS_TRAIT(src, TRAIT_FAST_WALKER))
+		tally -= 1.5
 
 	if(!nullify_debuffs)
 		if(is_type_organ(O_HEART, /obj/item/organ/internal/heart/ipc)) // IPC's heart is a servomotor, damaging it influences speed.
@@ -33,16 +42,12 @@
 		if(embedded_flag)
 			handle_embedded_objects() // Moving with objects stuck in you can cause bad times.
 
-		var/health_deficiency = (100 - health + halloss)
-		if(health_deficiency >= 40)
-			tally += health_deficiency / 25
+		if(traumatic_shock >= TRAUMATIC_SHOCK_INTENSE)
+			tally += traumatic_shock * 0.05
 
-		var/hungry = 500 - get_satiation()
-		if(hungry >= 350) // Slow down if nutrition <= 150
+		var/hungry = NUTRITION_LEVEL_FULL - get_satiation()
+		if(hungry >= NUTRITION_LEVEL_NORMAL) // Slow down if nutrition <= 40%
 			tally += hungry / 250 // 1,4 - 2
-
-		if(shock_stage >= 10)
-			tally += round(log(3.5, shock_stage), 0.1) // (40 = ~3.0) and (starts at ~1.83)
 
 		if(bodytemperature < species.cold_level_1)
 			tally += 1.75 * (species.cold_level_1 - bodytemperature) / 10
@@ -83,7 +88,7 @@
 
 	// cola removes equipment slowdowns (no blood = no chemical effects).
 	var/chem_nullify_debuff = nullify_debuffs
-	if(!species.flags[NO_BLOOD] && (reagents.has_reagent("hyperzine") || reagents.has_reagent("nuka_cola")))
+	if(!HAS_TRAIT(src, TRAIT_NO_BLOOD) && (reagents.has_reagent("hyperzine") || reagents.has_reagent("nuka_cola")))
 		chem_nullify_debuff = TRUE
 
 	// Currently there is a meme that `slowdown` var is not really weight, it's just a speed modifier
@@ -91,7 +96,7 @@
 	if(item_slowdown)
 		if(item_slowdown < 0)
 			tally += item_slowdown
-		else if(!(species.flags[IS_SYNTHETIC] || chem_nullify_debuff))
+		else if(!chem_nullify_debuff)
 			weight_tally += item_slowdown
 
 	item_slowdown = back?.slowdown
@@ -130,17 +135,16 @@
 					tally += 2
 
 	var/turf/T = get_turf(src)
-	if(T)
+	if(T && (get_species() != SKRELL || shoes))
+		tally += T.get_fluid_depth() * 0.0075 // in basic, waterpool have 800 depth
+	if(T.slowdown)
 		tally += T.slowdown
-		var/obj/effect/fluid/F = locate(/obj/effect/fluid) in T
-		if(F)
-			tally += F.fluid_amount * 0.005
 
 	if(get_species() == UNATHI && bodytemperature > species.body_temperature)
 		tally -= min((bodytemperature - species.body_temperature) / 10, 1) //will be on the border of heat_level_1
 
-	if(mood_additive_speed_modifier < 0 || !nullify_debuffs)
-		tally += mood_additive_speed_modifier
+	if(HAS_TRAIT(src, TRAIT_AUTOFIRE_SHOOTS)) // so that you can’t run at full speed and shoot everyone and everything
+		tally += 0.75
 
 	return (tally + config.human_delay)
 

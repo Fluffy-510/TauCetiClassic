@@ -1,6 +1,6 @@
 /mob/living/simple_animal/hostile/syndicate
 	name = "Syndicate Operative"
-	desc = "Death to Nanotrasen."
+	desc = "Смерть НаноТрейзен."
 	icon_state = "syndicate"
 	icon_living = "syndicate"
 	icon_dead = "syndicate_dead"
@@ -59,9 +59,9 @@
 ///////////////Sword and shield////////////
 
 /mob/living/simple_animal/hostile/syndicate/melee
-	melee_damage = 23
 	icon_state = "syndicatemelee"
 	icon_living = "syndicatemelee"
+	melee_damage = 23
 	weapon1 = /obj/item/weapon/melee/energy/sword/red
 	weapon2 = /obj/item/weapon/shield/energy
 	attacktext = "slash"
@@ -90,6 +90,10 @@
 	return PROJECTILE_ABSORBED
 
 /mob/living/simple_animal/hostile/syndicate/melee/space
+	name = "Syndicate Commando"
+	icon_state = "syndicatemeleespace"
+	icon_living = "syndicatemeleespace"
+	speed = 0
 	min_oxy = 0
 	max_oxy = 0
 	min_tox = 0
@@ -99,20 +103,17 @@
 	min_n2 = 0
 	max_n2 = 0
 	minbodytemp = 0
-	icon_state = "syndicatemeleespace"
-	icon_living = "syndicatemeleespace"
-	name = "Syndicate Commando"
 	corpse = /obj/effect/landmark/mobcorpse/syndicatecommando
-	speed = 0
 
 /mob/living/simple_animal/hostile/syndicate/melee/space/Process_Spacemove(movement_dir = 0)
-	return
+	if(client)
+		return TRUE
 
 /mob/living/simple_animal/hostile/syndicate/ranged
-	ranged = TRUE
-	amount_shoot = 3
 	icon_state = "syndicateranged"
 	icon_living = "syndicateranged"
+	ranged = TRUE
+	amount_shoot = 3
 	casingtype = /obj/item/ammo_casing/a12mm
 	projectilesound = 'sound/weapons/guns/gunshot_light.ogg'
 	projectiletype = /obj/item/projectile/bullet/midbullet2
@@ -122,9 +123,9 @@
 	weapon1 = /obj/item/weapon/gun/projectile/automatic/c20r
 
 /mob/living/simple_animal/hostile/syndicate/ranged/space
+	name = "Syndicate Commando"
 	icon_state = "syndicaterangedpsace"
 	icon_living = "syndicaterangedpsace"
-	name = "Syndicate Commando"
 	min_oxy = 0
 	max_oxy = 0
 	min_tox = 0
@@ -138,12 +139,13 @@
 	speed = 0
 
 /mob/living/simple_animal/hostile/syndicate/ranged/space/elite
+	name = "Elite Syndicate Commando"
 	icon_state = "elitesyndicaterangedpsace"
 	icon_living = "elitesyndicaterangedpsace"
-	name = "Elite Syndicate Commando"
 	maxHealth = 220
 	health = 220
 	projectiletype = /obj/item/projectile/bullet/rifle3
+	speed = 0
 	min_oxy = 0
 	max_oxy = 0
 	min_tox = 0
@@ -154,17 +156,17 @@
 	max_n2 = 0
 	minbodytemp = 0
 	corpse = /obj/effect/landmark/mobcorpse/syndicatecommando
-	speed = 0
 
 	weapon1 = /obj/item/weapon/gun/projectile/automatic/c20r
 	weapon2 = /obj/item/weapon/shield/energy
 
 /mob/living/simple_animal/hostile/syndicate/ranged/space/Process_Spacemove(movement_dir = 0)
-	return
+	if(client)
+		return TRUE
 
 /mob/living/simple_animal/hostile/viscerator
 	name = "viscerator"
-	desc = "A small, twin-bladed machine capable of inflicting very deadly lacerations."
+	desc = "Небольшая машина с двумя лезвиями, способная наносить смертельные раны."
 	icon_state = "viscerator_attack"
 	icon_living = "viscerator_attack"
 	pass_flags = PASSTABLE

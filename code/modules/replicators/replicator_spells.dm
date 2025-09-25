@@ -43,7 +43,7 @@
 	var/datum/faction/replicators/FR = get_or_create_replicators_faction()
 	FR.adjust_materials(-material_cost, adjusted_by=user_replicator.last_controller_ckey)
 
-	var/datum/callback/checks = CALLBACK(src, .proc/replicator_checks_do_after_handler)
+	var/datum/callback/checks = CALLBACK(src, PROC_REF(replicator_checks_do_after_handler))
 	. = user_replicator.do_after_objections(objection_delay, message, extra_checks=checks)
 	if(!.)
 		FR.adjust_materials(material_cost, adjusted_by=user_replicator.last_controller_ckey)
@@ -84,7 +84,7 @@
 
 	var/node_proximity = FALSE
 	for(var/obj/structure/forcefield_node/FN as anything in global.forcefield_nodes)
-		if(get_dist(FN, src) >= 2)
+		if(get_dist(FN, user) > 1)
 			continue
 		if(locate(/obj/machinery/power/replicator_generator) in FN.loc)
 			continue
@@ -101,7 +101,7 @@
 /obj/effect/proc_holder/spell/no_target/replicator_construct/replicate/cast(list/targets, mob/user = usr)
 	var/mob/living/simple_animal/hostile/replicator/user_replicator = user
 	var/datum/faction/replicators/FR = get_or_create_replicators_faction()
-	var/datum/callback/checks = CALLBACK(src, .proc/replicator_checks_do_after_handler)
+	var/datum/callback/checks = CALLBACK(src, PROC_REF(replicator_checks_do_after_handler))
 
 	FR.adjust_materials(-material_cost, adjusted_by=user_replicator.ckey)
 	FR.bandwidth_borrowed += 1
@@ -500,13 +500,13 @@
 
 	var/on = FALSE
 
-/obj/effect/proc_holder/spell/no_target/toggle_light/cast(list/targets, mob/user = usr)
+/obj/effect/proc_holder/spell/no_target/toggle_light/cast(list/targets, mob/user)
 	on = !on
 	if(on)
-		set_light(2)
+		user.set_light(2)
 		user.playsound_local(src, 'sound/effects/click_on.ogg', VOL_EFFECTS_MASTER, 25, FALSE)
 	else
-		set_light(0)
+		user.set_light(0)
 		user.playsound_local(src, 'sound/effects/click_off.ogg', VOL_EFFECTS_MASTER, 25, FALSE)
 
 

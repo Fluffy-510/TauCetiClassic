@@ -30,7 +30,7 @@
 	desc = "Black synthcloth hat."
 	icon_state = "tacticool_hat"
 	item_state = "tacticool_hat"
-	flags = BLOCKHAIR
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	siemens_coefficient = 2.0
 
 
@@ -66,7 +66,8 @@
 	name = "hastur's hood"
 	desc = "It's unspeakably stylish."
 	icon_state = "hasturhood"
-	flags = HEADCOVERSEYES|BLOCKHAIR
+	flags = HEADCOVERSEYES
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	body_parts_covered = HEAD|FACE|EYES
 
 /obj/item/clothing/head/nursehat
@@ -81,7 +82,7 @@
 	icon_state = "syndicate-helm"
 	item_state = "syndicate-helm"
 	desc = "A plastic replica of a syndicate agent's space helmet, you'll look just like a real murderous syndicate agent in this! This is a toy, it is not made for use in space!"
-	flags = BLOCKHAIR
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE
 	siemens_coefficient = 2.0
 	body_parts_covered = HEAD|FACE|EYES
@@ -90,7 +91,8 @@
 	name = "cueball helmet"
 	desc = "A large, featureless white orb mean to be worn on your head. How do you even see out of this thing?"
 	icon_state = "cueball"
-	flags = HEADCOVERSEYES|HEADCOVERSMOUTH|BLOCKHAIR
+	flags = HEADCOVERSEYES|HEADCOVERSMOUTH
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	item_state="cueball"
 	flags_inv = 0
 	body_parts_covered = HEAD|FACE|EYES
@@ -121,7 +123,8 @@
 	desc = "Fight for what's righteous!"
 	icon_state = "justicered"
 	item_state = "justicered"
-	flags = HEADCOVERSEYES|HEADCOVERSMOUTH|BLOCKHAIR
+	flags = HEADCOVERSEYES|HEADCOVERSMOUTH
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE
 	body_parts_covered = HEAD|FACE|EYES
 
@@ -202,7 +205,7 @@
 	desc = "Eeeee~heheheheheheh!"
 	icon_state = "witch"
 	item_state = "witch"
-	flags = BLOCKHAIR
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	siemens_coefficient = 2.0
 
 /obj/item/clothing/head/chicken
@@ -210,7 +213,7 @@
 	desc = "Bkaw!"
 	icon_state = "chickenhead"
 	item_state = "chickensuit"
-	flags = BLOCKHAIR
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	siemens_coefficient = 2.0
 	body_parts_covered = HEAD|FACE|EYES
 
@@ -219,7 +222,7 @@
 	desc = "Fuzzy."
 	icon_state = "bearpelt"
 	item_state = "bearpelt"
-	flags = BLOCKHAIR
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	siemens_coefficient = 2.0
 
 /obj/item/clothing/head/headscarf
@@ -259,7 +262,7 @@
 	icon_state = "xenos"
 	item_state = "xenos_helm"
 	desc = "A helmet made out of chitinous alien hide."
-	flags = BLOCKHAIR
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE
 	siemens_coefficient = 2.0
 	body_parts_covered = HEAD|FACE|EYES
@@ -269,7 +272,10 @@
 	icon_state = "fedora"
 	item_state = "fedora"
 	desc = "Unless you are good at guessing, it is not much use being a detective." // Hercule Poirot reference
-	action_button_name = "Tip Fedora"
+	item_action_types = list(/datum/action/item_action/hands_free/tip_fedora)
+
+/datum/action/item_action/hands_free/tip_fedora
+	name = "Tip Fedora"
 
 /obj/item/clothing/head/fedora/attack_self(mob/user)
 	fedoraproc(user)
@@ -312,7 +318,8 @@
 	desc = "It's not who you are underneath, it's what you do that defines you."
 	icon_state = "batman_helmet"
 	item_state = "batman_helmet"
-	flags = HEADCOVERSEYES | HEADCOVERSMOUTH | BLOCKHAIR
+	flags = HEADCOVERSEYES | HEADCOVERSMOUTH
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE
 	body_parts_covered = HEAD|FACE|EYES
 
@@ -356,7 +363,8 @@
 	desc = "It's hood that covers the head."
 	icon_state = "necromancer"
 	item_state = "necromancer"
-	flags = HEADCOVERSEYES|BLOCKHAIR
+	flags = HEADCOVERSEYES
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	siemens_coefficient = 0.9
 
 /obj/item/clothing/head/chaplain_hood/brown
@@ -378,14 +386,16 @@
 	icon_state = "carp_casual"
 	body_parts_covered = HEAD
 	cold_protection = HEAD
-	flags_inv = BLOCKHAIR|HIDEEARS
+	flags_inv = HIDEEARS
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 
 /obj/item/clothing/head/hooded/ian_hood
 	name = "corgi hood"
 	desc = "A hood that looks just like a corgi's head, it won't guarantee dog biscuits."
 	icon_state = "ian"
 	body_parts_covered = HEAD
-	flags_inv = BLOCKHAIR|HIDEEARS
+	flags_inv = HIDEEARS
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 
 /obj/item/clothing/head/byzantine_hat
 	name = "Byzantine skiadion"
@@ -393,19 +403,7 @@
 	icon_state = "Byzantine_hat"
 	item_state = "Byzantine_hat"
 	body_parts_covered = HEAD
-	flags_inv = BLOCKHAIR
-
-/obj/item/clothing/head/WAFFEN_SS_Cap
-	name = "Waffen SS Cap"
-	desc = "An officer's SS cap."
-	icon_state = "SS_cap"
-	item_state = "that"
-
-/obj/item/clothing/head/Nazi_Officer_Cap
-	name = "Nazi Officer Cap"
-	desc = "A nazi officer's cap."
-	icon_state = "officer_cap"
-	item_state = "that"
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 
 /obj/item/clothing/head/orange_bandana
 	name = "orange bandana"
@@ -417,3 +415,9 @@
 	desc = "Stripe of red cloth.You can wear it on your head."
 	icon_state = "kung_headband"
 	item_state = "kung_headband"
+
+/obj/item/clothing/head/soviet_peaked_cap
+	name = "comissar's peaked cap"
+	desc = "Not a step back."
+	icon_state = "soviet_peakedcap"
+	item_state = "soviet_peakedcap"

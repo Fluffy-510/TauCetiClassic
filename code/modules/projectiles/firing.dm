@@ -22,7 +22,6 @@
 			newshot()
 			BB.pixel_x += rand(-8, 8) // so they will look more spreaded and not all in one (good for shotguns).
 			BB.pixel_y += rand(-8, 8)
-	user.next_move = world.time + 4
 	update_icon()
 	return 1
 
@@ -41,6 +40,8 @@
 		curloc = curloc.loc
 	if(ismob(curloc))
 		curloc = curloc.loc
+	if(istype(curloc, /obj/item/rig_module/mounted)) // curloc = /obj/item/rig_module/mounted != turf istype
+		curloc = user.loc
 	if (!istype(targloc) || !istype(curloc) || !BB)
 		return 0
 	if(targloc == curloc)
@@ -49,6 +50,7 @@
 		qdel(BB)
 		BB = null
 		return 1
+	BB.dispersion += weapon.spread
 	BB.loc = get_turf(src)
 	BB.starting = get_turf(src)
 	BB.current = curloc

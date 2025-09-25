@@ -2,11 +2,12 @@
 #define SAVEFILE_VERSION_MIN 8
 
 //This is the current version, anything below this will attempt to update (if it's not obsolete)
-#define SAVEFILE_VERSION_MAX 41
+
+#define SAVEFILE_VERSION_MAX 54
 
 //For repetitive updates, should be the same or below SAVEFILE_VERSION_MAX
 //set this to (current SAVEFILE_VERSION_MAX)+1 when you need to update:
-#define SAVEFILE_VERSION_SPECIES_JOBS 41 // job preferences after breaking changes to any /datum/job/
+#define SAVEFILE_VERSION_SPECIES_JOBS 51 // job preferences after breaking changes to any /datum/job/
 #define SAVEFILE_VERSION_QUIRKS 30 // quirks preferences after breaking changes to any /datum/quirk/
 //breaking changes is when you remove any existing quirk/job or change their restrictions
 //Don't forget to bump SAVEFILE_VERSION_MAX too
@@ -70,6 +71,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		for(var/role in be_role)
 			if(!CanBeRole(role))
 				be_role -= role
+
+	if(current_version < 44)
+		custom_emote_panel = global.emotes_for_emote_panel
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 17)
@@ -228,13 +232,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(h_style in deleted_hairstyles)
 			h_style = "Skrell Long Tentacles"
 
-	// if you change a values in global.special_roles_ignore_question, you can copypaste this code
-	if(current_version < 38)
-		if(ignore_question && ignore_question.len)
-			var/list/diff = ignore_question - global.full_ignore_question
-			if(diff.len)
-				S["ignore_question"] << ignore_question - diff
-
 	if(current_version < 38)
 		if("Raider" in be_role)
 			be_role -= "Raider"
@@ -250,6 +247,285 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				ignore_question -= "Lavra"
 				ignore_question |= IGNORE_LARVA
 				S["ignore_question"] << ignore_question
+
+	if(current_version < 42)
+		if(ROLE_NINJA in be_role)
+			be_role -= ROLE_NINJA
+		if(ROLE_ABDUCTOR in be_role)
+			be_role -= ROLE_ABDUCTOR
+		S["be_role"] << be_role
+
+	// if you change a values in global.special_roles_ignore_question, you can copypaste this code
+	if(current_version < 45)
+		if(ignore_question && ignore_question.len)
+			var/list/diff = ignore_question - global.full_ignore_question
+			if(diff.len)
+				S["ignore_question"] << ignore_question - diff
+
+	if(current_version < 48)
+		S["b_type"] << null
+
+	if(current_version < 49)
+		if("Imposter" in be_role)
+			be_role -= "Imposter"
+			S["be_role"] << be_role
+
+	if(current_version < 50)
+
+		if(player_alt_titles && (player_alt_titles["Assistant"] in list("Reporter")))
+			player_alt_titles -= "Assistant"
+		if(player_alt_titles && (player_alt_titles["Librarian"] in list("Journalist")))
+			player_alt_titles -= "Librarian"
+
+	if(current_version < 52)
+		var/static/list/pre_52_hairstyles_to_modern_ones = list (
+			"Bald" = "Bald",
+			"Short Hair" = "Arnold - Short",
+			"Short Hair 2" = "Arnold - Short",
+			"Cut Hair" = "Crew Cut- Super Short",
+			"Shoulder-length Hair" = "Hime Cut - New Fashion",
+			"Long Hair" = "Emo - Long",
+			"Long Over Eye" = "Emo - Long",
+			"Very Long Hair" = "Emo - Long",
+			"Long Fringe" = "Longe Fringe Pirat - Movie",
+			"Longer Fringe" = "Longe Fringe Pirat - Movie",
+			"Gentle" = "Gentle - Short",
+			"Half-banged Hair" = "Lbang - Short",
+			"Half-banged Hair 2" = "Lbang - Short",
+			"Ponytail" = "Ponytail",
+			"Ponytail 2" = "Ponytail 2",
+			"Ponytail 3" = "Ponytail 3",
+			"Side Pony" = "Ponytail (f)",
+			"Side Pony 2" = "Ponytail (f)",
+			"Side Pony tail" = "Ponytail (f)",
+			"One Shoulder" = "Side Tail - New Fashion",
+			"Tress Shoulder" = "Side Tail - New Fashion",
+			"Parted" = "Parted - Short",
+			"Pompadour" = "Fastline Dandy - Movie",
+			"Big Pompadour" = "Fastline Dandy - Movie",
+			"Quiff" = "Quiff - Short",
+			"Bedhead" = "Bedhead",
+			"Bedhead 2" = "Bedhead 2",
+			"Bedhead 3" = "Bedhead 3",
+			"Messy" = "Messy - Short",
+			"Beehive" = "Beehive",
+			"Bobcurl" = "Bobcurl",
+			"Bob" = "Bobcut",
+			"Bowl" = "Bowlcut",
+			"Buzzcut" = "Buzz Cut",
+			"Crewcut" = "Crew Cut - Super Short",
+			"Cotton Hair" = "Side Tail - New Fashion",
+			"Braided Hair" = "African - Long",
+			"African Pigtails" = "African - Long",
+			"Square" = "Square - Short",
+			"Combover" = "Cowboy - Short",
+			"Devil Lock" = "Devil - Super Short",
+			"Dreadlocks" = "Dreads - Short",
+			"Curls" =  "Bobcurl",
+			"Afro" = "Afro 1 - Short",
+			"Afro 2" = "Afro 2 - Short",
+			"Big Afro" = "Afro 2 - Short",
+			"Flat Top" = "Flat top - Short",
+			"Emo" = "Demo - Short",
+			"Flow Hair" = "Feather 1 - Short",
+			"Feather" = "Feather 1 - Short",
+			"Hitop" = "Feather 1 - Short",
+			"Mohawk" = "Mohawk Randy - Movie",
+			"Jensen Hair" = "Feather 1 - Short",
+			"Gelled Back" = "Gelled - Super Short",
+			"Spiky" = "Spiky - Short",
+			"Spiky 2" = "Spiky - Short",
+			"Spiky 3" = "Spiky - Short",
+			"Slightly long" = "Slight Messy Tereza 1 - Movie",
+			"Kusanagi Hair" = "Gelled - Super Short",
+			"Kagami Hair" = "Gelled - Super Short",
+			"Pigtails" = "Side Tail - New Fashion",
+			"Pigtails 2" = "Side Tail - New Fashion",
+			"Hime Cut" = "Hime Cut - New Fashion",
+			"Ahoge" = "Bunstick",
+			"Low Braid" = "Braid - Long",
+			"High Braid" = "Braid - Long",
+			"Floorlength Braid" = "Bunstick",
+			"Odango" = "Bunstick",
+			"Ombre" = "Ombre - Short",
+			"Updo" = "Updo - Short",
+			"Skinhead" = "Skinhead - Super Short",
+			"Balding Hair" = "Skinhead - Super Short",
+			"Bun Head" = "Bun",
+			"Braided Tail" = "Braided Sanny - Movie",
+			"Drill Hair" = "Braided Sanny 2 - Movie",
+			"Keanu Hair" = "Braided Sanny 2 - Movie",
+			"Swept Back Hair 2" = "Braided Sanny - Movie",
+			"Business Hair 3" = "Business",
+			"Business Hair 4" = "Business 2",
+			"Hedgehog Hair" = "Spiky - Short",
+			"Bob Hair" = "Bobcut",
+			"Bob Hair 2" = "Bobcurl",
+			"Long Hair 1" = "Side Part - Long",
+			"Mega Eyebrows" = "Megabrows - Super Short",
+			"Flaired Hair" = "Braid - Long",
+			"Big tails" = "Wisp - Ponytail",
+			"Long bedhead" = "Bedhead - Long",
+			"Fluttershy" = "Fluttershy - Long",
+			"Judge" = "Judge - Long",
+			"Long braid" = "Braid - Long",
+			"Elize" = "Elize - Short",
+			"Elize2" = "Elize 2 - Short",
+			"Female undercut" = "Zorg - Short",
+			"Emo right" = "Zorg - Short",
+			"Applejack" = "Wisp - Ponytail",
+			"Rosa" = "Rosa - Short",
+			"Dave" =  "Dave - Short",
+			"Aradia" = "Aradia - Long",
+			"Nepeta" = "Nepeta - Short",
+			"Kanaya" = "Kanaya - Short",
+			"Terezi" = "Slight Messy Tereza 1 - Movie",
+			"Vriska" = "Vriska - New Fashion",
+			"Equius" = "Nepeta - Short",
+			"Gamzee" = "Gamzee - Short",
+			"Feferi" = "Gamzee - Short",
+			"Rose" = "Rose - New Fashion",
+			"Ramona" = "CIA - Short",
+			"Dirk" = "Dirk - Short",
+			"Jade" = "Dirk - Short",
+			"Roxy" = "Roxy - Short",
+			"Side tail 3" = "Side Tail - New Fashion",
+			"Big Flat Top" = "Flat top - Short",
+			"Dubs Hair " = "Dubs - Short",
+			"Swept Back Hair" = "Dubs - Short",
+			"Metal" = "Mentalist - Short",
+			"Mentalist" = "Mentalist - Short",
+			"fujisaki" = "Fujiyabash - New Fashion",
+			"Twin Buns" = "Double Bun",
+			"Fujiyabashi" = "Fujiyabash - New Fashion",
+			"Shinibu" =  "Double Bun",
+			"Combed Hair" = "Dad 2 - Short",
+			"Long Sideparts" = "Side Part - Long",
+			"Blunt Bangs" = "Bluntbangs - Long",
+			"Combed Bob" = "Dad 2 - Short",
+			"Long Half Shaved" = "Halfshaved - Long",
+			"Slightly Messed" = "Messy - Short",
+			"Long Gypsy" = "Gipsy - Long",
+			"Geisha" =  "Geisha - Short",
+			"Hair Over Eye" = "Over Eye - New Fashion",
+			"Chub" = "Chub - Short",
+			"Ponytail female" = "Ponytail (f)",
+			"Wisp" = "Wisp - Ponytail",
+			"Half-Shaved Emo" = "Emo - Long",
+			"Long Hair Alt 2" = "Wild - Long",
+			"Bun 4" = "Double Bun 2",
+			"Double-Bun" = "Double Bun 3",
+			"Rows" = "Rows - Gang",
+			"Rows 2" = "Rows 2 - Gang",
+			"Twintail" = "Nitori - New Fashion",
+			"Coffee House Cut" = "Hime Cut - New Fashion",
+			"Overeye Very Short" = "Over Eye - New Fashion",
+			"Oxton" = "Oxton - Short",
+			"Zieglertail" = "Ziegler - Ponytail",
+			"Emo Fringe" = "Emo - Long",
+			"Poofy2" = "Poofy - Short",
+			"Fringetail" = "Ponytail (f)",
+			"Bun 3" = "Bunstick",
+			"Overeye Very Short, Alternate" = "Ougi - Short",
+			"Undercut Swept Right" = "Blackswordcut",
+			"Spiky Ponytail" = "Brazeska - Ponytail",
+			"Grande Braid" = "Braid - Long",
+			"Row Bun" = "Row bun - Gang",
+			"Row Dual Braid" = "Row bun - Gang",
+			"Row Braid" = "Row bun - Gang",
+			"Regulation Mohawk" = "Mohawk Randy - Movie",
+			"Topknot" = "Chao Topknot - Gang",
+			"Ronin" = "Jensen - Short",
+			"Bowl 2" = "Bowlcut",
+			"Manbun" = "Small Beehive",
+			"Country" = "Ponytail (f)",
+			"Ougi" = "Ougi - Short",
+			"Half Zingertail" = "Half Ziegler - Ponytail",
+			"Lbangs 2" = "Lbang - Short",
+			"Slight Messy 2" = "Slight Messy Tereza 2 - Movie",
+			"Ragby" = "Rabby - Ponytail",
+			"Bun 5" = "Double Bun 3",
+			"Maya" = "Maya - Short",
+			"Dolly" = "Dolly - Short",
+			"Longside Partstraight 2" = "Side Part 2 - Long",
+			"Elly" = "Elly - Short",
+			"Wild 1" = "Wild - Long",
+			"Wild 2" = "Wild Princess - Movie",
+			"Millenium" = "Millenium - Short",
+			"Feather 2" = "Feathe 2 - Short",
+			"Braided Hair 2" = "Braided Sanny 2 - Movie",
+			"Fridge" = "Fridge - Short",
+			"Rabby" = "Rabby - Ponytail",
+			"Zoey" = "Zoe - Ponytail",
+			"Kitty" = "Kitty - Short",
+			"Star" = "Star - Movie",
+			"Pear" = "Pear - Short",
+			"Spicy" = "Spicy - Short",
+			"Piggy" = "Piggy - Short",
+		)
+		if (pre_52_hairstyles_to_modern_ones[h_style])
+			h_style = pre_52_hairstyles_to_modern_ones[h_style]
+
+	if(current_version < 53)
+		ipc_head = initial(ipc_head)
+		// fuck named hairstyles, we should just move it to indexes
+		var/static/list/ipc_hairstyles_reset = list(
+			"alien IPC screen", 
+			"double IPC screen", 
+			"pillar IPC screen", 
+			"human IPC screen"
+		)
+		if(h_style in ipc_hairstyles_reset)
+			h_style = /datum/sprite_accessory/hair/ipc_screen_alert::name
+
+	if(current_version < 54)
+		// cap dark colors for old preferences, should be part of pref sanitize but better to wait for datumized preferences
+		var/new_hex = color_luminance_min(rgb(r_skin, g_skin, b_skin), 10)
+		r_skin = HEX_VAL_RED(new_hex)
+		g_skin = HEX_VAL_GREEN(new_hex)
+		b_skin = HEX_VAL_BLUE(new_hex)
+
+		new_hex = color_luminance_min(rgb(r_belly, g_belly, b_belly), 10)
+		r_belly = HEX_VAL_RED(new_hex)
+		g_belly = HEX_VAL_GREEN(new_hex)
+		b_belly = HEX_VAL_BLUE(new_hex)
+
+		// converts old skin tone to approximate datum
+		switch(clamp(35 - s_tone, 1, 220))
+			if(1 to 14)
+				s_tone = /datum/skin_tone/albino::name
+			if(15 to 28)
+				s_tone = /datum/skin_tone/porcelain::name
+			if(29 to 41)
+				s_tone = /datum/skin_tone/ivory::name
+			if(42 to 55)
+				s_tone = /datum/skin_tone/light_peach::name
+			if(56 to 69)
+				s_tone = /datum/skin_tone/beige::name
+			if(70 to 83)
+				s_tone = /datum/skin_tone/light_brown::name
+			if(84 to 97)
+				s_tone = /datum/skin_tone/peach::name
+			if(98 to 110)
+				s_tone = /datum/skin_tone/light_beige::name
+			if(111 to 124)
+				s_tone = /datum/skin_tone/olive::name
+			if(125 to 138)
+				s_tone = /datum/skin_tone/chestnut::name
+			if(139 to 152)
+				s_tone = /datum/skin_tone/macadamia::name
+			if(153 to 165)
+				s_tone = /datum/skin_tone/walnut::name
+			if(166 to 179)
+				s_tone = /datum/skin_tone/coffee::name
+			if(180 to 193)
+				s_tone = /datum/skin_tone/brown::name
+			if(194 to 207)
+				s_tone = /datum/skin_tone/medium_brown::name
+			if(208 to 220)
+				s_tone = /datum/skin_tone/dark_brown::name
+			else
+				s_tone = initial(s_tone)
 
 //
 /datum/preferences/proc/repetitive_updates_character(current_version, savefile/S)
@@ -298,12 +574,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!addedbind)
 			notadded += kb
 	if(length(notadded))
-		addtimer(CALLBACK(src, .proc/announce_conflict, notadded), 5 SECONDS)
+		addtimer(CALLBACK(src, PROC_REF(announce_conflict), notadded), 5 SECONDS)
 
 /datum/preferences/proc/announce_conflict(list/notadded)
 	to_chat(parent, "<span class='userdanger'>KEYBINDING CONFLICT!!!\n\
 	There are new keybindings that have defaults bound to keys you already set, They will default to Unbound. You can bind them in Setup Character or Game Preferences\n\
-	<a href='?_src_=prefs;preference=tab;tab=3'>Or you can click here to go straight to the keybindings page</a></span>")
+	<a href='byond://?_src_=prefs;preference=tab;tab=3'>Or you can click here to go straight to the keybindings page</a></span>")
 	for(var/item in notadded)
 		var/datum/keybinding/conflicted = item
 		to_chat(parent, "<span class='userdanger'>[conflicted.category]: [conflicted.full_name] needs updating</span>")
@@ -328,10 +604,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(needs_update == SAVEFILE_TOO_OLD) // fatal, can't load any data
 		return 0
 
-	//Account data
-	S["cid_list"]			>> cid_list
-	S["ignore_cid_warning"]	>> ignore_cid_warning
-
 	//General preferences
 	S["ooccolor"]          >> ooccolor
 	S["aooccolor"]         >> aooccolor
@@ -345,10 +617,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["toggles"]           >> toggles
 	S["chat_ghostsight"]   >> chat_ghostsight
 	S["randomslot"]        >> randomslot
-	S["permamuted"]        >> permamuted
-	S["permamuted"]        >> muted
 	S["parallax"]          >> parallax
 	S["ambientocclusion"]  >> ambientocclusion
+	S["glowlevel"]         >> glowlevel
+	S["lampsexposure"]     >> lampsexposure
+	S["lampsglare"]        >> lampsglare
+	S["eye_blur_effect"]   >> eye_blur_effect
 	S["auto_fit_viewport"] >> auto_fit_viewport
 	S["lobbyanimation"]    >> lobbyanimation
 	S["tooltip"]           >> tooltip
@@ -358,6 +632,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["outline_color"]     >> outline_color
 	S["eorg_enabled"]      >> eorg_enabled
 	S["show_runechat"]     >> show_runechat
+	S["emote_panel"]       >> custom_emote_panel
 
 	// Custom hotkeys
 	S["key_bindings"] >> key_bindings
@@ -367,6 +642,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	//TGUI
 	S["tgui_fancy"]		>> tgui_fancy
 	S["tgui_lock"]		>> tgui_lock
+	S["window_scale"]	>> window_scale
 
 	//Sound preferences
 	S["snd_music_vol"]                      >> snd_music_vol
@@ -401,8 +677,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	hotkeys 		= sanitize_integer(hotkeys, 0, 1, initial(hotkeys))
 	tgui_fancy		= sanitize_integer(tgui_fancy, 0, 1, initial(tgui_fancy))
 	tgui_lock		= sanitize_integer(tgui_lock, 0, 1, initial(tgui_lock))
+	window_scale		= sanitize_integer(window_scale, 0, 1, initial(window_scale))
 	parallax		= sanitize_integer(parallax, PARALLAX_INSANE, PARALLAX_DISABLE, PARALLAX_HIGH)
 	ambientocclusion	= sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
+	glowlevel		= sanitize_integer(glowlevel, GLOW_HIGH, GLOW_DISABLE, initial(glowlevel))
+	eye_blur_effect = sanitize_integer(eye_blur_effect, 0, 1, initial(eye_blur_effect))
+	lampsexposure	= sanitize_integer(lampsexposure, 0, 1, initial(lampsexposure))
+	lampsglare		= sanitize_integer(lampsglare, 0, 1, initial(lampsglare))
 	lobbyanimation	= sanitize_integer(lobbyanimation, 0, 1, initial(lobbyanimation))
 	auto_fit_viewport	= sanitize_integer(auto_fit_viewport, 0, 1, initial(auto_fit_viewport))
 	tooltip = sanitize_integer(tooltip, 0, 1, initial(tooltip))
@@ -411,9 +692,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	outline_color 	= normalize_color(sanitize_hexcolor(outline_color, initial(outline_color)))
 	eorg_enabled 	= sanitize_integer(eorg_enabled, 0, 1, initial(eorg_enabled))
 	show_runechat	= sanitize_integer(show_runechat, 0, 1, initial(show_runechat))
-	if(!cid_list)
-		cid_list = list()
-	ignore_cid_warning	= sanitize_integer(ignore_cid_warning, 0, 1, initial(ignore_cid_warning))
+	custom_emote_panel  = sanitize_emote_panel(custom_emote_panel)
 
 	snd_music_vol	= sanitize_integer(snd_music_vol, 0, 100, initial(snd_music_vol))
 	snd_ambient_vol = sanitize_integer(snd_ambient_vol, 0, 100, initial(snd_ambient_vol))
@@ -451,10 +730,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	S["version"] << SAVEFILE_VERSION_MAX
 
-	//Account data
-	S["cid_list"]           << cid_list
-	S["ignore_cid_warning"] << ignore_cid_warning
-
 	//general preferences
 	S["ooccolor"]          << ooccolor
 	S["aooccolor"]         << aooccolor
@@ -468,14 +743,18 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["chat_toggles"]      << chat_toggles
 	S["chat_ghostsight"]   << chat_ghostsight
 	S["randomslot"]        << randomslot
-	S["permamuted"]        << permamuted
 	S["parallax"]          << parallax
 	S["ambientocclusion"]  << ambientocclusion
+	S["glowlevel"]         << glowlevel
+	S["eye_blur_effect"]   << eye_blur_effect
+	S["lampsexposure"]     << lampsexposure
+	S["lampsglare"]        << lampsglare
 	S["lobbyanimation"]    << lobbyanimation
 	S["auto_fit_viewport"] << auto_fit_viewport
 	S["tooltip"]           << tooltip
 	S["tooltip_size"]      << tooltip_size
 	S["tooltip_font"]      << tooltip_font
+	S["emote_panel"]       << custom_emote_panel
 
 
 	// Custom hotkeys
@@ -489,6 +768,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	//TGUI
 	S["tgui_fancy"]		<< tgui_fancy
 	S["tgui_lock"]		<< tgui_lock
+	S["window_scale"]		<< window_scale
 
 	//Sound preferences
 	S["snd_music_vol"]                      << snd_music_vol
@@ -517,6 +797,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["real_name"]             >> real_name
 	S["name_is_always_random"] >> be_random_name
 	S["gender"]                >> gender
+	S["neuter_gender_voice"]   >> neuter_gender_voice
 	S["age"]                   >> age
 	S["height"]                >> height
 	S["species"]               >> species
@@ -549,8 +830,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["undershirt"]        >> undershirt
 	S["socks"]             >> socks
 	S["backbag"]           >> backbag
-	S["b_type"]            >> b_type
 	S["use_skirt"]         >> use_skirt
+	S["pda_ringtone"]      >> chosen_ringtone
+	S["pda_custom_melody"] >> custom_melody
 
 	//Load prefs
 	S["alternate_option"] >> alternate_option
@@ -578,6 +860,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["nanotrasen_relation"] >> nanotrasen_relation
 	S["home_system"]         >> home_system
 	S["citizenship"]         >> citizenship
+	S["insurance"]           >> insurance
 	S["faction"]             >> faction
 	S["religion"]            >> religion
 	S["vox_rank"]            >> vox_rank
@@ -606,7 +889,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!gear) gear = list()
 	if(!custom_items) custom_items = list()
 	be_random_name	= sanitize_integer(be_random_name, 0, 1, initial(be_random_name))
-	gender			= sanitize_gender(gender)
+	gender			= sanitize_gender(gender, species_obj.flags[NO_GENDERS])
 	age				= sanitize_integer(age, species_obj.min_age, species_obj.max_age, initial(age))
 	height			= sanitize_inlist(height, heights_list, initial(height))
 	r_hair			= sanitize_integer(r_hair, 0, 255, initial(r_hair))
@@ -618,7 +901,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	r_facial		= sanitize_integer(r_facial, 0, 255, initial(r_facial))
 	g_facial		= sanitize_integer(g_facial, 0, 255, initial(g_facial))
 	b_facial		= sanitize_integer(b_facial, 0, 255, initial(b_facial))
-	s_tone			= sanitize_integer(s_tone, -185, 34, initial(s_tone))
+	s_tone			= sanitize_inlist(s_tone, global.skin_tones_by_name, initial(s_tone))
 	r_skin			= sanitize_integer(r_skin, 0, 255, initial(r_skin))
 	g_skin			= sanitize_integer(g_skin, 0, 255, initial(g_skin))
 	b_skin			= sanitize_integer(b_skin, 0, 255, initial(b_skin))
@@ -632,8 +915,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	undershirt		= sanitize_integer(undershirt, 1, undershirt_t.len, initial(undershirt))
 	socks			= sanitize_integer(socks, 1, socks_t.len, initial(socks))
 	backbag			= sanitize_integer(backbag, 1, backbaglist.len, initial(backbag))
-	b_type			= sanitize_text(b_type, initial(b_type))
+	var/list/pref_ringtones = global.ringtones_by_names + CUSTOM_RINGTONE_NAME
+	chosen_ringtone  = sanitize_inlist(chosen_ringtone, pref_ringtones, initial(chosen_ringtone))
+	custom_melody = sanitize(custom_melody, MAX_CUSTOM_RINGTONE_LENGTH, extra = FALSE, ascii_only = TRUE)
 	alternate_option = sanitize_integer(alternate_option, 0, 2, initial(alternate_option))
+	neuter_gender_voice = sanitize_gender_voice(neuter_gender_voice)
 
 	all_quirks = SANITIZE_LIST(all_quirks)
 	positive_quirks = SANITIZE_LIST(positive_quirks)
@@ -648,6 +934,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	if(!home_system) home_system = "None"
 	if(!citizenship) citizenship = "None"
+	if(!insurance)   insurance = INSURANCE_STANDARD
 	if(!faction)     faction =     "None"
 	if(!religion)    religion =    "None"
 	if(!vox_rank)    vox_rank =    "Larva"
@@ -711,6 +998,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["real_name"]             << real_name
 	S["name_is_always_random"] << be_random_name
 	S["gender"]                << gender
+	S["neuter_gender_voice"]   << neuter_gender_voice
 	S["age"]                   << age
 	S["height"]                << height
 	S["species"]               << species
@@ -741,8 +1029,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["undershirt"]            << undershirt
 	S["socks"]                 << socks
 	S["backbag"]               << backbag
-	S["b_type"]                << b_type
 	S["use_skirt"]             << use_skirt
+	S["pda_ringtone"]          << chosen_ringtone
+	S["pda_custom_melody"]     << custom_melody
 	//Write prefs
 	S["alternate_option"]      << alternate_option
 	S["job_preferences"]       << job_preferences
@@ -769,6 +1058,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["nanotrasen_relation"] << nanotrasen_relation
 	S["home_system"]         << home_system
 	S["citizenship"]         << citizenship
+	S["insurance"]           << insurance
 	S["faction"]             << faction
 	S["religion"]            << religion
 	S["vox_rank"]            << vox_rank
@@ -783,6 +1073,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!length(base_bindings[key]))
 			base_bindings -= key
 	return base_bindings
+
+/proc/sanitize_emote_panel(value)
+	var/list/emote_panel = SANITIZE_LIST(value)
+	var/list/sanitized_emote_panel = list()
+	for(var/key in emote_panel)
+		if(!(key in global.emotes_for_emote_panel))
+			continue
+		sanitized_emote_panel |= key
+	return sanitized_emote_panel
 
 #undef SAVEFILE_TOO_OLD
 #undef SAVEFILE_UP_TO_DATE

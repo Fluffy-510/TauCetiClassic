@@ -200,6 +200,14 @@
 		else
 			msg += "[t_He] [t_has] [bicon(wear_mask)] \a [wear_mask] on [t_his] face.\n"
 
+	if(neck)
+		if(neck.dirt_overlay)
+			msg += "<span class='warning'>[t_He] [t_has] [bicon(neck)] [neck.gender==PLURAL?"some":"a"] [neck.dirt_description()] on [t_his] neck!</span>\n"
+		else if(neck.wet)
+			msg += "<span class='wet'>[t_He] [t_has] [bicon(neck)] [neck.gender==PLURAL?"some":"a"] wet [neck.name] on [t_his] neck!</span>\n"
+		else
+			msg += "[t_He] [t_has] [bicon(neck)] \a [neck] on [t_his] neck.\n"
+
 	//eyes
 	if(!skipeyes)
 		if(glasses)
@@ -249,6 +257,9 @@
 		if(BP && BP.status & ORGAN_SPLINTED)
 			msg += "<span class='warning'>[t_He] [t_has] a splint on [t_his] [BP.name]!</span>\n"
 
+	if(pale)
+		msg += "<span class='warning'>[t_He] looks pale.</span>\n"
+
 	if(suiciding)
 		msg += "<span class='warning'>[t_He] appears to have commited suicide... there is no hope of recovery.</span>\n"
 
@@ -280,7 +291,7 @@
 		var/obj/item/weapon/stock_parts/cell/C = locate(/obj/item/weapon/stock_parts/cell) in IO
 		if(C)
 			if(nutrition < (C.maxcharge*0.1))
-				msg += "His indicator of charge blinks red.\n"
+				msg += "[t_His] indicator of charge blinks red.\n"
 		else
 			msg += "[t_He] has no battery!\n"
 
@@ -459,11 +470,10 @@
 	for(var/implant in implants)
 		var/obj/item/organ/external/BP = implants[implant]
 		msg += "<span class='warning'><b>[src] has \a [implant] sticking out of their [BP.name]!</b></span>\n"
-	if(digitalcamo)
-		msg += "<span class='warning'>[t_He] [t_is] moving [t_his] body in an unnatural and blatantly inhuman manner.</span>\n"
+
 	if(ischangeling(src))
 		var/datum/role/changeling/C = mind.GetRoleByType(/datum/role/changeling)
-		if(C.isabsorbing)
+		if(HAS_TRAIT_FROM(src, TRAIT_CHANGELING_ABSORBING, GENERIC_TRAIT))
 			msg += "<span class='warning'><b>[t_He] sucking fluids from someone through a giant proboscis!</b></span>\n"
 		if(species.name == ABOMINATION)
 			if(C.absorbed_dna.len)
@@ -477,8 +487,11 @@
 		if(istype(BP) && BP.disfigured)
 			msg += "<span class='warning'><b>[t_His] face is violently disfigured!</b></span>\n"
 
-	if((!skipface || !skipjumpsuit || !skipgloves) && (HUSK in mutations))
-		msg += "<span class='warning'><b>[t_His] skin is looking cadaveric!</b></span>\n"
+	if((!skipface || !skipjumpsuit || !skipgloves))
+		if(HAS_TRAIT(src, TRAIT_BURNT))
+			msg += "<span class='warning'><b>[t_His] skin looks burnt!</b></span>\n"
+		else if(HAS_TRAIT(src, TRAIT_HUSK))
+			msg += "<span class='warning'><b>[t_His] skin looks drained!</b></span>\n"
 
 	if(!skipface)
 		var/obj/item/organ/external/head/robot/ipc/BP = bodyparts_by_name[BP_HEAD]
@@ -505,14 +518,15 @@
 						if(R.fields["id"] == E.fields["id"])
 							criminal = R.fields["criminal"]
 
-			msg += "<span class = 'deptradio'>Criminal status:</span> <a href='?src=\ref[src];criminal=1'>\[[criminal]\]</a>\n"
-			msg += "<span class = 'deptradio'>Security records:</span> <a href='?src=\ref[src];secrecord=`'>\[View\]</a>  <a href='?src=\ref[src];secrecordadd=`'>\[Add comment\]</a>\n"
+			msg += "<span class = 'deptradio'>Criminal status:</span> <a href='byond://?src=\ref[src];criminal=1'>\[[criminal]\]</a>\n"
+			msg += "<span class = 'deptradio'>Security records:</span> <a href='byond://?src=\ref[src];secrecord=`'>\[View\]</a>  <a href='byond://?src=\ref[src];secrecordadd=`'>\[Add comment\]</a>\n"
 
 	if(hasHUD(user,"medical"))
 		if(hasHUD(user,"security"))
 			msg += "---------\n"
 		var/perpname = "wot"
 		var/medical = "None"
+		var/insurance_type
 
 		if(wear_id)
 			if(istype(wear_id,/obj/item/weapon/card/id))
@@ -528,29 +542,15 @@
 				for (var/datum/data/record/R in data_core.general)
 					if (R.fields["id"] == E.fields["id"])
 						medical = R.fields["p_stat"]
+						insurance_type = R.fields["insurance_type"]
 
-		msg += "<span class = 'deptradio'>Physical status:</span> <a href='?src=\ref[src];medical=1'>\[[medical]\]</a>\n"
-		msg += "<span class = 'deptradio'>Medical records:</span> <a href='?src=\ref[src];medrecord=`'>\[View\]</a> <a href='?src=\ref[src];medrecordadd=`'>\[Add comment\]</a>\n"
-
+		msg += "<span class = 'deptradio'>Physical status:</span> <a href='byond://?src=\ref[src];medical=1'>\[[medical]\]</a>\n"
+		msg += "<span class = 'deptradio'>Medical records:</span> <a href='byond://?src=\ref[src];medrecord=`'>\[View\]</a> <a href='byond://?src=\ref[src];medrecordadd=`'>\[Add comment\]</a>\n"
+		if(insurance_type)
+			msg += "<span class = 'deptradio'>Страховка: [insurance_type]</span>\n"
 		var/obj/item/clothing/under/C = w_uniform
 		if(C?.sensor_mode >= SUIT_SENSOR_VITAL)
 			msg += "<span class = 'deptradio'>Damage Specifics:</span> (<font color='blue'>[round(getOxyLoss(), 1)]</font>/<font color='green'>[round(getToxLoss(), 1)]</font>/<font color='#FFA500'>[round(getFireLoss(), 1)]</font>/<font color='red'>[round(getBruteLoss(), 1)]</font>)<br>"
-
-	var/datum/component/mood/mood = GetComponent(/datum/component/mood)
-	if(!skipface && mood)
-		switch(mood.shown_mood)
-			if(-INFINITY to MOOD_LEVEL_SAD4)
-				msg += "[t_He] appears to be depressed.\n"
-			if(MOOD_LEVEL_SAD4 to MOOD_LEVEL_SAD3)
-				msg += "[t_He] appears to be very sad.\n"
-			if(MOOD_LEVEL_SAD3 to MOOD_LEVEL_SAD2)
-				msg += "[t_He] appears to be a bit down.\n"
-			if(MOOD_LEVEL_HAPPY2 to MOOD_LEVEL_HAPPY3)
-				msg += "[t_He] appears to be quite happy.\n"
-			if(MOOD_LEVEL_HAPPY3 to MOOD_LEVEL_HAPPY4)
-				msg += "[t_He] appears to be very happy.\n"
-			if(MOOD_LEVEL_HAPPY4 to INFINITY)
-				msg += "[t_He] appears to be ecstatic.\n"
 
 	if(w_class)
 		msg += "[t_He] [t_is] a [get_size_flavor()] sized creature.\n"
@@ -572,13 +572,8 @@
 	//someone here, but who?
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
-		if(H.species && H.species.name != ABDUCTOR)
-			for(var/obj/item/clothing/suit/armor/abductor/vest/V in list(wear_suit))
-				if(V.stealth_active)
-					to_chat(H, "<span class='notice'>You can't focus your eyes on [src].</span>")
-					return
-		if(H.isimplantedblueshield() && mind && (mind.assigned_role in protected_by_blueshield_list))
-			for(var/obj/item/weapon/implant/blueshield/B in H)
+		if(isimplantedblueshield(H) && mind && (mind.assigned_role in protected_by_blueshield_list))
+			for(var/obj/item/weapon/implant/blueshield/B in H.implants)
 				B.last_examined = world.time
 			SEND_SIGNAL(H, COMSIG_CLEAR_MOOD_EVENT, "blueshield")
 
@@ -594,6 +589,8 @@
 		SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "naked", /datum/mood_event/naked)
 
 	to_chat(user, msg)
+
+	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user)
 
 //Helper procedure. Called by /mob/living/carbon/human/examine() and /mob/living/carbon/human/Topic() to determine HUD access to security and medical records.
 // Only used for humans and other personal of station.

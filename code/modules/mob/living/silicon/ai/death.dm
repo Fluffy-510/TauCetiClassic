@@ -47,13 +47,16 @@
 
 	if(explosive)
 		spawn(10)
-			explosion(src.loc, 3, 6, 12, 15)
+			explosion(src.loc, 3, 6, 12, 14)
 
 	for(var/obj/machinery/ai_status_display/O in ai_status_display_list) //change status
 		spawn( 0 )
 		O.mode = 2
 		if (istype(loc, /obj/item/device/aicard))
+			var/obj/item/device/aicard/ai = loc
 			loc.icon_state = "aicard-404"
+			ai.item_state_world = "aicard-404_world"
+			ai.item_state_inventory = "aicard-404"
 
 	tod = worldtime2text() //weasellos time of death patch
 	if(mind)	mind.store_memory("Time of death: [tod]", 0)

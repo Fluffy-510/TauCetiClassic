@@ -20,8 +20,8 @@
 		"Cult of Blood" = /turf/simulated/floor/carpet/black
 	)
 
-	carpet_dir_by_name = list(
-		"Cult of Blood" = 9
+	decal_by_name = list(
+		"Cult of Blood",
 	)
 
 	binding_rites = list(
@@ -35,7 +35,7 @@
 	area_type = /area/custom/cult
 	build_agent_type = /datum/building_agent/structure/cult
 	rune_agent_type = /datum/building_agent/rune/cult
-	tech_agent_type = /datum/building_agent/tech/cult
+	tech_agent_type = /datum/religion_tech/cult
 	wall_types = list(/turf/simulated/wall/cult, /turf/simulated/wall/cult/runed, /turf/simulated/wall/cult/runed/anim)
 	floor_types = list(/turf/simulated/floor/engine/cult, /turf/simulated/floor/engine/cult/lava)
 	door_types = list(/obj/structure/mineral_door/cult)
@@ -105,13 +105,29 @@
 		coord_started_anomalies += C
 	next_anomaly = world.time + spawn_anomaly_cd
 
-	RegisterSignal(area, list(COMSIG_AREA_ENTERED), .proc/area_entered)
-	RegisterSignal(area, list(COMSIG_AREA_EXITED), .proc/area_exited)
+	RegisterSignal(area, list(COMSIG_AREA_ENTERED), PROC_REF(area_entered))
+	RegisterSignal(area, list(COMSIG_AREA_EXITED), PROC_REF(area_exited))
 
 	START_PROCESSING(SSreligion, src)
 
 /datum/religion/cult/setup_religions()
 	global.cult_religion = src
+
+/datum/religion/cult/gen_tech_agent_lists()
+	..()
+	var/list/aspect_types = subtypesof(/datum/aspect)
+	for(var/type in aspect_types)
+		var/datum/aspect/A = new type
+		if(!A.name)
+			qdel(A)
+			continue
+		var/datum/religion_tech/upgrade_aspect/tech = new
+		tech.id = A.name
+		tech.aspect_type = type
+		tech.info = new /datum/building_agent/tech/aspect(A.name, A.icon, A.icon_state)
+		tech.calculate_costs(src)
+		available_techs += tech
+		qdel(A)
 
 /datum/religion/cult/process()
 	adjust_favor(passive_favor_gain)
@@ -152,13 +168,13 @@
 				var/image/I = image(icon = 'icons/mob/human.dmi', icon_state = pick("husk_s", "electrocuted_generic", "ghost", "zombie", "skeleton", "abductor_s", "electrocuted_base"), layer = INFRONT_MOB_LAYER, loc = target)
 				I.override = TRUE
 				target.add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/one_person, "nar-sie_hall", I, H)
-				addtimer(CALLBACK(src, .proc/remove_spook_effect, target), 3 MINUTES)
+				addtimer(CALLBACK(src, PROC_REF(remove_spook_effect), target), 3 MINUTES)
 			else
 				if(!H.contents.len)
 					return
 				var/obj/item/I = pick(H.contents)
 				I.add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/one_person, "nar-sie_hall", null, H, /obj/effect/decal/remains/human, I)
-				addtimer(CALLBACK(src, .proc/remove_spook_effect, I), 3 MINUTES)
+				addtimer(CALLBACK(src, PROC_REF(remove_spook_effect), I), 3 MINUTES)
 
 
 		else if(prob(1)) // temp alt_apperance of nar-sie
@@ -166,7 +182,7 @@
 				return
 			var/obj/structure/altar_of_gods/altar = pick(altars)
 			altar.add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/one_person, "nar-sie_hall", null, H, /atom/movable/narsie, altar)
-			addtimer(CALLBACK(src, .proc/remove_spook_effect, altar), 10 MINUTES)
+			addtimer(CALLBACK(src, PROC_REF(remove_spook_effect), altar), 10 MINUTES)
 
 		else if(prob(1)) // 6/100000000 chance, or 0,000006% wow
 			H.say(pick(possible_human_phrases))
@@ -195,7 +211,7 @@
 		var/anom = pick(strange_anomalies)
 		var/rand_time = force ? 0 : rand(1 SECOND, 1 MINUTE)
 		time += rand_time
-		addtimer(CALLBACK(src, .proc/create_anomaly, anom, T, C), rand_time)
+		addtimer(CALLBACK(src, PROC_REF(create_anomaly), anom, T, C), rand_time)
 
 	if(!force)
 		next_anomaly = world.time + spawn_anomaly_cd + time
@@ -222,18 +238,16 @@
 
 	M.AddSpell(new type(src))
 
-/datum/religion/cult/can_convert(mob/M)
-	if(M.my_religion)
+/datum/religion/cult/can_convert(mob/living/L)
+	if(L.my_religion && !istype(L.my_religion, /datum/religion/pluvia))
 		return FALSE
-	if(M.stat == DEAD)
+	if(L.stat == DEAD)
 		return FALSE
-	if(jobban_isbanned(M, ROLE_CULTIST) || jobban_isbanned(M, "Syndicate")) // Nar-sie will punish people with a jobban, it's funny (used for objective)
+	if(jobban_isbanned(L, ROLE_CULTIST) || jobban_isbanned(L, "Syndicate")) // Nar-sie will punish people with a jobban, it's funny (used for objective)
 		return FALSE
-	if(ishuman(M))
-		var/mob/living/carbon/human/H = M
-		if(H.species.flags[NO_BLOOD])
-			return FALSE
-	if(M.ismindprotect())
+	if(HAS_TRAIT(L, TRAIT_NO_BLOOD) || L?.mind?.pluvian_blessed)
+		return FALSE
+	if(ismindprotect(L))
 		return FALSE
 	return TRUE
 

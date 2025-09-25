@@ -18,6 +18,7 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 	. = ..()
 	lid_open = round(rand(0, 1))
 	update_icon()
+	AddComponent(/datum/component/fishing, list(/obj/item/weapon/reagent_containers/food/snacks/badrecipe = 10, /mob/living/simple_animal/mouse = 3, /mob/living/simple_animal/mouse/rat = 2, /mob/living/simple_animal/hostile/giant_spider = 1), 10 SECONDS, rand(1, 3) , 20)
 
 /obj/structure/toilet/attack_hand(mob/living/user)
 	user.SetNextMove(CLICK_CD_MELEE * 1.5)
@@ -48,7 +49,7 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 		user.set_dir(dir)
 		to_chat(user, "<span class='notice'>You start doing your business...</span>")
 		playsound(src, SOUNDIN_RUSTLE, VOL_EFFECTS_MASTER, vol = 50)
-		
+
 		if(do_after(user, rand(5, 20) SECONDS, needhand = FALSE, target = src))
 			COOLDOWN_START(user, wc_use_cooldown, 30 MINUTES)
 			playsound(src, 'sound/effects/toilet_flush.ogg', VOL_EFFECTS_MASTER)
@@ -68,7 +69,8 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 			if(prob(problem_chance))
 				broken = TRUE
 				START_PROCESSING(SSobj, src)
-				addtimer(CALLBACK(user, /mob.proc/playsound_local, null, 'sound/misc/s_asshole_short.ogg', VOL_EFFECTS_MASTER, 100, FALSE, null, null, null, null, null, TRUE), 2 SECOND) // so many nulls just to enable ignore_environment
+				user.playsound_local_timed(2 SECOND, turf_source = null, soundin = 'sound/misc/s_asshole_short.ogg', volume_channel = VOL_EFFECTS_MASTER, vol = 100, vary = FALSE, ignore_environment = TRUE)
+
 				if(HAS_TRAIT(user, TRAIT_CLUMSY))
 					SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "clown_evil", /datum/mood_event/clown_evil)
 					to_chat(user, "<span class='notice bold'>Oh yes!</span>")
@@ -92,13 +94,17 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 	icon_state = "toilet[lid_open][cistern_open]"
 
 /obj/structure/toilet/attackby(obj/item/I, mob/living/user)
-	if(iswrenching(I) && broken) // we don't have any plunger around, so wrench is good
-		to_chat(user, "<span class='notice'>You start fixing \the [src].</span>")
-		if(I.use_tool(src, user, 60, volume = 100))
-			broken = FALSE
-			to_chat(user, "<span class='notice'>You fixed \the [src].</span>")
+	if(iswrenching(I))
+		if(broken)
+			to_chat(user, "<span class='notice'>You start fixing \the [src].</span>")
+			if(I.use_tool(src, user, 60, volume = 100))
+				broken = FALSE
+				to_chat(user, "<span class='notice'>You fixed \the [src].</span>")
+		else
+			default_unfasten_wrench(user, I)
 		return
-	else if(isprying(I))
+
+	if(isprying(I))
 		if(user.is_busy()) return
 		to_chat(user, "<span class='notice'>You start to [cistern_open ? "replace the lid on the cistern" : "lift the lid off the cistern"].</span>")
 		playsound(src, 'sound/effects/stonedoor_openclose.ogg', VOL_EFFECTS_MASTER)
@@ -106,9 +112,9 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 			user.visible_message("<span class='notice'>[user] [cistern_open ? "replaces the lid on the cistern" : "lifts the lid off the cistern"]!</span>", "<span class='notice'>You [cistern_open ? "replace the lid on the cistern" : "lift the lid off the cistern"]!</span>", "You hear grinding porcelain.")
 			cistern_open = !cistern_open
 			update_icon()
-			return
+		return
 
-	else if(istype(I, /obj/item/weapon/grab))
+	if(istype(I, /obj/item/weapon/grab))
 		var/obj/item/weapon/grab/G = I
 
 		if(isliving(G.affecting))
@@ -174,7 +180,7 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 		user.set_dir(turn(dir, 180))
 		to_chat(user, "<span class='notice'>You start doing your business...</span>")
 		playsound(src, SOUNDIN_RUSTLE, VOL_EFFECTS_MASTER, vol = 50)
-		
+
 		if(do_after(user, rand(5, 10) SECONDS, needhand = TRUE, target = src))
 			COOLDOWN_START(user, wc_use_cooldown, 30 MINUTES)
 			playsound(src, 'sound/effects/toilet_flush.ogg', VOL_EFFECTS_MASTER, vol = 50)
@@ -359,7 +365,6 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 
 /obj/machinery/shower
 	name = "shower"
-	desc = "The HS-451. Installed in the 2550s by the Nanotrasen Hygiene Division."
 	icon = 'icons/obj/watercloset.dmi'
 	icon_state = "shower"
 	density = FALSE
@@ -373,6 +378,10 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 	var/mobpresent = 0		//true if there is a mob on the shower's loc, this is to ease process()
 	var/payed_time = 0
 	var/cost_per_activation = 10
+
+/obj/machinery/shower/atom_init()
+  	. = ..()
+  	desc = "The HS-451. Installed in the [round(global.gamestory_start_year, 10)]s by the Nanotrasen Hygiene Division."
 
 //add heat controls? when emagged, you can freeze to death in it?
 
@@ -431,12 +440,9 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 				var/obj/item/weapon/card/C = I
 				visible_message("<span class='info'>[usr] swipes a card through [src].</span>")
 				if(station_account)
-					var/datum/money_account/D = get_account(C.associated_account_number)
-					var/attempt_pin = 0
-					if(D.security_level > 0)
-						attempt_pin = input("Enter pin code", "Transaction") as num
-					if(attempt_pin)
-						D = attempt_account_access(C.associated_account_number, attempt_pin, 2)
+					var/datum/money_account/D = attempt_account_access_with_user_input(C.associated_account_number, ACCOUNT_SECURITY_LEVEL_MAXIMUM, user)
+					if(user.incapacitated() || !Adjacent(user))
+						return
 					if(D)
 						var/transaction_amount = cost_per_activation
 						if(transaction_amount <= D.money)
@@ -487,12 +493,12 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 			return
 		if(!ismist)
 			if(on)
-				addtimer(CALLBACK(src, .proc/create_mist), 50)
+				addtimer(CALLBACK(src, PROC_REF(create_mist)), 50)
 		else
 			create_mist()
 	else if(ismist)
 		create_mist()
-		addtimer(CALLBACK(src, .proc/del_mist), 250)
+		addtimer(CALLBACK(src, PROC_REF(del_mist)), 250)
 		if(!on)
 			del_mist()
 
@@ -561,7 +567,7 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 					washglasses = !(H.wear_mask.flags_inv & HIDEEYES)
 			else
 				H.lip_style = null
-				H.update_body()
+				H.update_body(BP_HEAD, update_preferences = TRUE)
 
 			if(H.head)
 				H.head.make_wet(1) //<= wet
@@ -671,7 +677,12 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 	icon_state = "rubberducky"
 	item_state = "rubberducky"
 
-
+/obj/item/weapon/bikehorn/rubberducky/cap
+	name = "captain rubber ducky"
+	desc = "Captain Duck! Yellow rubber friend!"
+	icon = 'icons/obj/watercloset.dmi'
+	icon_state = "caprubberducky"
+	item_state = "rubberducky"
 
 /obj/structure/sink
 	name = "sink"
@@ -709,6 +720,9 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 		busy = FALSE
 
 /obj/structure/sink/attackby(obj/item/O, mob/user)
+	. = ..()
+	if(.)
+		return
 	if(user.is_busy())
 		return
 	if(busy)
@@ -727,7 +741,7 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 		if (B.charges > 0 && B.status == 1)
 			flick("baton_active", src)
 			user.Stun(10)
-			user.setStuttering(10)
+			user.Stuttering(10)
 			user.Weaken(10)
 			if(isrobot(user))
 				var/mob/living/silicon/robot/R = user
@@ -785,12 +799,16 @@ ADD_TO_GLOBAL_LIST(/obj/structure/toilet, toilet_list)
 	desc = "The puddle looks infinitely deep and infinitely lonely on the space station."
 	icon_state = "puddle"
 
+/obj/structure/sink/puddle/atom_init()
+	. = ..()
+	AddComponent(/datum/component/fishing, list(/obj/item/fish_carp = 10, /obj/item/fish_carp/mega = 2), 10 SECONDS, rand(1, 30) , 20)
+
 /obj/structure/sink/puddle/attack_hand(mob/M)
 	icon_state = "puddle-splash"
 	..()
 	icon_state = "puddle"
 
 /obj/structure/sink/puddle/attackby(obj/item/O, mob/user)
+	. = ..()
 	icon_state = "puddle-splash"
-	..()
 	icon_state = "puddle"

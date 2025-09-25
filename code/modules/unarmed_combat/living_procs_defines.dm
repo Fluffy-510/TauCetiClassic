@@ -25,7 +25,10 @@
 	var/attack_push_vis_effect
 	var/attack_disarm_vis_effect
 
-/mob/living/verb/read_possible_combos()
+	var/original_body
+	var/wabbajacked = 0
+
+/mob/living/proc/read_possible_combos()
 	set name = "Combos Cheat Sheet"
 	set desc = "A list of all possible combos with rough descriptions."
 	set category = "IC"
@@ -45,7 +48,6 @@
 		dat += "<span style='font-size: 8px'><i>(Permitted by: [combo_sources])</i></span>"
 
 		dat += "</p></hr>"
-
 
 	var/datum/browser/popup = new(usr, "combos_list", "Combos Cheat Sheet", 500, 350)
 	popup.set_content(dat)
@@ -245,6 +247,7 @@
 	playsound(src, 'sound/weapons/thudswoosh.ogg', VOL_EFFECTS_MASTER)
 	if(show_message)
 		visible_message("<span class='warning'><B>[attacker] pushed [src]!</B></span>")
+
 	return TRUE
 
 /mob/living/proc/grabReaction(mob/living/carbon/human/attacker, show_message = TRUE)
@@ -269,6 +272,7 @@
 		return FALSE
 
 	log_combat(attacker, "[damVerb]ed")
+	SEND_SIGNAL(attacker, COMSIG_HUMAN_HARMED_OTHER, src)
 
 	var/armor_block = 0
 	var/obj/item/organ/external/BP = attacker.get_targetzone() // apply_damage accepts both the bodypart and the zone.
@@ -387,3 +391,8 @@
 /mob/living/proc/remove_moveset_source(source)
 	for(var/datum/combat_moveset/moveset in movesets_by_source[source])
 		remove_moveset(moveset, source)
+
+/mob/living/turn_light_off()
+	. = ..()
+	for(var/obj/item/F in contents)
+		F.turn_light_off()

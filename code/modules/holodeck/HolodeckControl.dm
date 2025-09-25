@@ -41,10 +41,10 @@
 	for(var/prog in supported_programs)
 		if(prog == "Empty")
 			continue
-		dat += "<A href='?src=\ref[src];program=[supported_programs[prog]]'>([prog])</A><BR>"
+		dat += "<A href='byond://?src=\ref[src];program=[supported_programs[prog]]'>([prog])</A><BR>"
 
 	dat += "<BR>"
-	dat += "<A href='?src=\ref[src];program=turnoff'>(Turn Off)</A><BR>"
+	dat += "<A href='byond://?src=\ref[src];program=turnoff'>(Turn Off)</A><BR>"
 
 	dat += "<BR>"
 	dat += "Please ensure that only holographic weapons are used in the holodeck if a combat simulation has been loaded.<BR>"
@@ -55,15 +55,15 @@
 			if (emagged)
 				dat += "<span class='red'><b>ERROR</b>: Cannot re-enable Safety Protocols.</span><BR>"
 			else
-				dat += "<A class='green' href='?src=\ref[src];AIoverride=1'>Re-Enable Safety Protocols</A><BR>"
+				dat += "<A class='green' href='byond://?src=\ref[src];AIoverride=1'>Re-Enable Safety Protocols</A><BR>"
 		else
-			dat += "<A class='red' href='?src=\ref[src];AIoverride=1'>Override Safety Protocols</A><BR>"
+			dat += "<A class='red' href='byond://?src=\ref[src];AIoverride=1'>Override Safety Protocols</A><BR>"
 
 	dat += "<BR>"
 
 	if(safety_disabled)
 		for(var/prog in restricted_programs)
-			dat += "<A class='red' href='?src=\ref[src];program=[restricted_programs[prog]]'>Begin [prog]</A><BR>"
+			dat += "<A class='red' href='byond://?src=\ref[src];program=[restricted_programs[prog]]'>Begin [prog]</A><BR>"
 			dat += "Ensure the holodeck is empty before testing.<BR>"
 			dat += "<BR>"
 		dat += "Safety Protocols are <span class='red'> DISABLED </span><BR>"
@@ -71,9 +71,9 @@
 		dat += "Safety Protocols are <span class='green'> ENABLED </span><BR>"
 
 	if(linkedholodeck.has_gravity)
-		dat += "Gravity is <A class='green' href='?src=\ref[src];gravity=1'>ON</A><BR>"
+		dat += "Gravity is <A class='green' href='byond://?src=\ref[src];gravity=1'>ON</A><BR>"
 	else
-		dat += "Gravity is <A class='blue' href='?src=\ref[src];gravity=1'>OFF</A><BR>"
+		dat += "Gravity is <A class='blue' href='byond://?src=\ref[src];gravity=1'>OFF</A><BR>"
 
 	var/datum/browser/popup = new(user, "computer", "Holodeck Control System", 400, 500)
 	popup.set_content(dat)
@@ -235,7 +235,7 @@
 	loadProgram()
 
 /obj/machinery/computer/HolodeckControl/proc/loadProgram()
-
+	set waitfor = FALSE
 	if(world.time < (last_change + 25))
 		audible_message("<b>ERROR. Recalibrating projection apparatus.</b>")
 		return
@@ -272,12 +272,12 @@
 		holo_obj.flags_2 |= HOLOGRAM_2
 		holo_obj.price = 0
 
-	addtimer(CALLBACK(src, .proc/initEnv), 30, TIMER_UNIQUE)
+	addtimer(CALLBACK(src, PROC_REF(initEnv)), 30, TIMER_UNIQUE)
 
 /obj/machinery/computer/HolodeckControl/proc/initEnv()
 	for(var/obj/effect/landmark/L in linkedholodeck)
 		if(L.name=="Atmospheric Test Start")
-			addtimer(CALLBACK(src, .proc/startFire, L), 20)
+			addtimer(CALLBACK(src, PROC_REF(startFire), L), 20)
 
 		if(L.name=="Holocarp Spawn")
 			holographic_mobs += new /mob/living/simple_animal/hostile/carp/holodeck(L.loc)
@@ -327,3 +327,14 @@
 	active = 0
 	set_power_use(IDLE_POWER_USE)
 	current_scene = null
+
+/obj/machinery/computer/HolodeckControl/horizontal
+	supported_programs = list( \
+	"Empty Court" = "emptycourt", \
+	"Beach" = "beach",	\
+	"Desert" = "desert",	\
+	"Space" = "space",	\
+	"Snow Field" = "snowfield",	\
+	"Meeting Hall" = "meetinghall",	\
+	"Theatre" = "theatre", \
+	)

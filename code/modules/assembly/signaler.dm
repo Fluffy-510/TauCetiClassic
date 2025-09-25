@@ -26,7 +26,7 @@
 	. = ..()
 	if(my_new_frequency)
 		frequency = my_new_frequency
-	addtimer(CALLBACK(src, .proc/set_frequency, frequency), 40)
+	addtimer(CALLBACK(src, PROC_REF(set_frequency), frequency), 40)
 
 /obj/item/device/assembly/signaler/Destroy()
 	if(radio_controller)
@@ -39,7 +39,7 @@
 	if(cooldown > 0)
 		return FALSE
 	cooldown = 2
-	addtimer(CALLBACK(src, .proc/process_cooldown), 10)
+	addtimer(CALLBACK(src, PROC_REF(process_cooldown)), 10)
 	signal()
 	return TRUE
 
@@ -51,7 +51,7 @@
 /obj/item/device/assembly/signaler/interact(mob/user, flag1)
 	var/t1 = "-------"
 //	if ((src.b_stat && !( flag1 )))
-//		t1 = text("-------<BR>\nGreen Wire: []<BR>\nRed Wire:   []<BR>\nBlue Wire:  []<BR>\n", (src.wires & 4 ? text("<A href='?src=\ref[];wires=4'>Cut Wire</A>", src) : text("<A href='?src=\ref[];wires=4'>Mend Wire</A>", src)), (src.wires & 2 ? text("<A href='?src=\ref[];wires=2'>Cut Wire</A>", src) : text("<A href='?src=\ref[];wires=2'>Mend Wire</A>", src)), (src.wires & 1 ? text("<A href='?src=\ref[];wires=1'>Cut Wire</A>", src) : text("<A href='?src=\ref[];wires=1'>Mend Wire</A>", src)))
+//		t1 = text("-------<BR>\nGreen Wire: []<BR>\nRed Wire:   []<BR>\nBlue Wire:  []<BR>\n", (src.wires & 4 ? text("<A href='byond://?src=\ref[];wires=4'>Cut Wire</A>", src) : text("<A href='byond://?src=\ref[];wires=4'>Mend Wire</A>", src)), (src.wires & 2 ? text("<A href='byond://?src=\ref[];wires=2'>Cut Wire</A>", src) : text("<A href='byond://?src=\ref[];wires=2'>Mend Wire</A>", src)), (src.wires & 1 ? text("<A href='byond://?src=\ref[];wires=1'>Cut Wire</A>", src) : text("<A href='byond://?src=\ref[];wires=1'>Mend Wire</A>", src)))
 //	else
 //		t1 = "-------"	Speaker: [src.listening ? "<A href='byond://?src=\ref[src];listen=0'>Engaged</A>" : "<A href='byond://?src=\ref[src];listen=1'>Disengaged</A>"]<BR>
 	var/dat = {"

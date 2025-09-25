@@ -1,4 +1,3 @@
-
 /mob/living/simple_animal/bee
 	name = "bees"
 	icon = 'icons/obj/apiary_bees_etc.dmi'
@@ -11,7 +10,7 @@
 	var/turf/target_turf
 	var/mob/target_mob
 	var/obj/machinery/apiary/parent
-	pass_flags = PASSTABLE
+	pass_flags = PASSMOB | PASSTABLE
 	turns_per_move = 6
 	w_class = SIZE_MINUSCULE
 	var/obj/machinery/hydroponics/my_hydrotray
@@ -47,7 +46,7 @@
 				if( prob(sting_prob) && (M.stat == CONSCIOUS || (M.stat == UNCONSCIOUS && prob(25))) ) // Try to sting! If you're not moving, think about stinging.
 					M.apply_damage(min(strength, 2) + mut, BRUTE, null, null, DAM_SHARP) // Stinging. The more mutated I am, the harder I sting.
 					M.apply_damage((round(feral/10,1)*(max((round(strength/20,1)),1)))+toxic, TOX) // Bee venom based on how angry I am and how many there are of me!
-					to_chat(M, "<span class='warning'>You have been stung!</span>")
+					to_chat(M, "<span class='warning'>Ай! Они жалятся!</span>")
 
 		//if we're chasing someone, get a little bit angry
 		if(target_mob && prob(5))
@@ -79,7 +78,7 @@
 
 		//make some noise
 		if(prob(0.5))
-			visible_message("<span class='notice'>[pick("Buzzzz.","Hmmmmm.","Bzzz.")]</span>")
+			visible_message("<span class='notice'>[pick("Жжжжжжжжжж.")]</span>")
 
 		//smoke, water and steam calms us down
 		var/calming = 0
@@ -98,7 +97,7 @@
 
 		if(calming)
 			if(feral > 0)
-				visible_message("<span class='notice'>The bees calm down!</span>")
+				visible_message("<span class='notice'>Пчелы успокаиваются.</span>")
 			feral = -10
 			target_mob = null
 			target_turf = null
@@ -126,10 +125,8 @@
 						qdel(src)
 						return
 					src.icon_state = "bees[B.strength]"
-					var/turf/simulated/floor/T = get_turf(get_step(src, pick(1,2,4,8)))
 					density = TRUE
-					if(T.Enter(src, get_turf(src)))
-						src.loc = T
+					step(src, pick(NORTH,SOUTH,EAST,WEST))
 					density = FALSE
 				break
 
@@ -144,7 +141,7 @@
 					break
 
 		if(target_turf)
-			if(AStar(src, target_turf, /turf/proc/Distance, 1))
+			if(AStar(src, target_turf, TYPE_PROC_REF(/turf, Distance), 1))
 				Move(get_step(src, get_dir(src,target_turf)))
 				if (prob(0.1))
 					visible_message("<span class='notice'>The bees swarm after [target_mob]!</span>")

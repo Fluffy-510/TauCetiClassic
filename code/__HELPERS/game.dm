@@ -426,22 +426,6 @@
 
 	return new /datum/projectile_data(src_x, src_y, time, distance, power_x, power_y, dest_x, dest_y)
 
-/proc/GetRedPart(const/hexa)
-	return hex2num(copytext(hexa,2,4))
-
-/proc/GetGreenPart(const/hexa)
-	return hex2num(copytext(hexa,4,6))
-
-/proc/GetBluePart(const/hexa)
-	return hex2num(copytext(hexa,6,8))
-
-/proc/GetHexColors(const/hexa)
-	return list(
-			GetRedPart(hexa),
-			GetGreenPart(hexa),
-			GetBluePart(hexa)
-		)
-
 /proc/MixColors(const/list/colors)
 	var/list/reds = list()
 	var/list/blues = list()
@@ -449,9 +433,9 @@
 	var/list/weights = list()
 
 	for (var/i = 0, ++i <= colors.len)
-		reds.Add(GetRedPart(colors[i]))
-		blues.Add(GetBluePart(colors[i]))
-		greens.Add(GetGreenPart(colors[i]))
+		reds.Add(GETREDPART(colors[i]))
+		blues.Add(GETBLUEPART(colors[i]))
+		greens.Add(GETGREENPART(colors[i]))
 		weights.Add(1)
 
 	var/r = mixOneColor(weights, reds)
@@ -473,7 +457,7 @@
 		|New player notify
 		|Player '[M.ckey]' joined to the game as [M.mind.name][player_assigned_role] [ADMIN_FLW(M)] [ADMIN_PP(M)] [ADMIN_VV(M)]
 		|Byond profile: <a href='[player_byond_profile]'>open</a>
-		|Guard report: <a href='?_src_=holder;guard=\ref[M]'>show</a>"})
+		|Guard report: <a href='byond://?_src_=holder;guard=\ref[M]'>show</a>"})
 
 		message_admins(adminmsg, emphasize = TRUE)
 
@@ -559,7 +543,7 @@
 /proc/flick_overlay(image/I, list/show_to, duration)
 	for(var/client/C in show_to)
 		C.images += I
-	addtimer(CALLBACK(GLOBAL_PROC, /proc/remove_images_from_clients, I, show_to), duration, TIMER_CLIENT_TIME)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_images_from_clients), I, show_to), duration, TIMER_CLIENT_TIME)
 
 /proc/flick_overlay_view(image/I, atom/target, duration) //wrapper for the above, flicks to everyone who can see the target atom
 	var/list/viewing = list()
@@ -640,7 +624,7 @@
 			continue
 		if(Ignore_Role && M.client.prefs.ignore_question.Find(Ignore_Role))
 			continue
-		INVOKE_ASYNC(GLOBAL_PROC, .proc/requestCandidate, M, time_passed, candidates, Question, Ignore_Role, poll_time)
+		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(requestCandidate), M, time_passed, candidates, Question, Ignore_Role, poll_time)
 	sleep(poll_time)
 
 	//Check all our candidates, to make sure they didn't log off during the 30 second wait period.
@@ -698,7 +682,7 @@
 			to_chat(M, "<span class='warning'>You are banned from [be_special_type]!</span>")
 		return
 
-	INVOKE_ASYNC(src, .proc/request_n_transfer, M, Question, be_special_type, Ignore_Role, show_warnings)
+	INVOKE_ASYNC(src, PROC_REF(request_n_transfer), M, Question, be_special_type, Ignore_Role, show_warnings)
 
 /mob/proc/request_n_transfer(mob/M, Question = "Would you like to be a special role?", be_special_type, Ignore_Role, show_warnings = FALSE)
 	var/ans
@@ -730,7 +714,7 @@
 	return TRUE
 
 /atom/proc/check_sprite()
-	if(icon_state in icon_states(icon))
+	if(icon_exists(icon, icon_state))
 		return TRUE
 	return FALSE
 

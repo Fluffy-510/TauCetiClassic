@@ -96,6 +96,7 @@ var/global/datum/paiController/paiController			// Global handler for pAI candida
 
 	var/dat = ""
 	dat += {"
+		<head>
 			<style type="text/css">
 				body {
 					margin-top:5px;
@@ -151,7 +152,9 @@ var/global/datum/paiController/paiController			// Global handler for pAI candida
 					text-decoration: none;
 				}
 			</style>
-			"}
+			[get_browse_zoom_style(M.client)]
+		</head>
+		"}
 
 	dat += {"
 	<body>
@@ -208,12 +211,12 @@ var/global/datum/paiController/paiController			// Global handler for pAI candida
 	<body>
 	"}
 
-	M << browse(dat, "window=paiRecruit;size=580x580;")
+	M << browse(dat, "window=paiRecruit;[get_browse_size_parameter(M.client, 580, 580)];")
 
 /datum/paiController/proc/findPAI(obj/item/device/paicard/p, mob/user)
 	if(!p.searching)
 		p.searching = TRUE
-		addtimer(CALLBACK(p, /obj/item/device/paicard.proc/reset_searching), 3 MINUTES)
+		addtimer(CALLBACK(p, TYPE_PROC_REF(/obj/item/device/paicard, reset_searching)), 3 MINUTES)
 		requestRecruits()
 	var/list/available = list()
 	for(var/datum/paiCandidate/c in paiController.pai_candidates)

@@ -75,19 +75,27 @@ var/global/list/datum/autolathe_recipe/autolathe_recipes = list(
 	R(/obj/item/weapon/reagent_containers/glass/beaker/vial,  CATEGORY_MEDICAL),
 	R(/obj/item/weapon/reagent_containers/syringe,            CATEGORY_MEDICAL),
 	R(/obj/item/clothing/accessory/stethoscope,               CATEGORY_MEDICAL),
+	R(/obj/item/weapon/storage/pill_bottle,                   CATEGORY_MEDICAL),
 	R(/obj/item/stack/cable_coil/random,             CATEGORY_ENGINEERING),
-	R(/obj/item/weapon/stock_parts/console_screen,   CATEGORY_ENGINEERING),
 	R(/obj/item/weapon/module/power_control,         CATEGORY_ENGINEERING),
 	R(/obj/item/weapon/airlock_electronics,          CATEGORY_ENGINEERING),
 	R(/obj/item/weapon/airalarm_electronics,         CATEGORY_ENGINEERING),
 	R(/obj/item/weapon/firealarm_electronics,        CATEGORY_ENGINEERING),
 	R(/obj/item/weapon/rcd_ammo,                     CATEGORY_ENGINEERING),
 	R(/obj/item/weapon/camera_assembly,              CATEGORY_ENGINEERING),
+	R(/obj/item/conveyor_construct,                  CATEGORY_ENGINEERING),
+	R(/obj/item/conveyor_switch_construct,           CATEGORY_ENGINEERING),
 	R(/obj/item/weapon/table_parts/stall,            CATEGORY_ENGINEERING),
-	R(/obj/item/ammo_box/eight_shells/beanbag,   CATEGORY_AMMO),
-	R(/obj/item/ammo_box/magazine/colt/rubber,          CATEGORY_AMMO),
-	R(/obj/item/ammo_box/magazine/glock/rubber, CATEGORY_AMMO),
-	R(/obj/item/ammo_box/speedloader/c38,                    CATEGORY_AMMO),
+	R(/obj/item/weapon/stock_parts/console_screen,  CATEGORY_ENGINEERING),
+	R(/obj/item/weapon/stock_parts/matter_bin,      CATEGORY_ENGINEERING),
+	R(/obj/item/weapon/stock_parts/micro_laser,     CATEGORY_ENGINEERING),
+	R(/obj/item/weapon/stock_parts/manipulator,     CATEGORY_ENGINEERING),
+	R(/obj/item/weapon/stock_parts/capacitor,       CATEGORY_ENGINEERING),
+	R(/obj/item/weapon/stock_parts/scanning_module, CATEGORY_ENGINEERING),
+	R(/obj/item/ammo_box/eight_shells/beanbag,     CATEGORY_AMMO),
+	R(/obj/item/ammo_box/magazine/colt/rubber,     CATEGORY_AMMO),
+	R(/obj/item/ammo_box/magazine/glock/rubber,    CATEGORY_AMMO),
+	R(/obj/item/ammo_box/speedloader/c38,          CATEGORY_AMMO),
 	R(/obj/item/device/taperecorder,         CATEGORY_DEVICES),
 	R(/obj/item/device/assembly/igniter,     CATEGORY_DEVICES),
 	R(/obj/item/device/assembly/signaler,    CATEGORY_DEVICES),
@@ -99,6 +107,7 @@ var/global/list/datum/autolathe_recipe/autolathe_recipes = list(
 	R(/obj/item/device/assembly/prox_sensor, CATEGORY_DEVICES),
 	R(/obj/item/device/flashlight,           CATEGORY_DEVICES),
 	R(/obj/item/device/tagger/shop,          CATEGORY_DEVICES),
+	R(/obj/item/device/cardpay,              CATEGORY_DEVICES),
 	R(/obj/item/device/analyzer,             CATEGORY_DEVICES),
 	R(/obj/item/device/plant_analyzer,       CATEGORY_DEVICES),
 	R(/obj/item/device/healthanalyzer,       CATEGORY_DEVICES),
@@ -107,7 +116,10 @@ var/global/list/datum/autolathe_recipe/autolathe_recipes = list(
 	R(/obj/item/stack/sheet/rglass,      CATEGORY_MATERIALS),
 	R(/obj/item/stack/rods,              CATEGORY_MATERIALS),
 	R(/obj/item/weapon/reagent_containers/glass/bucket,       CATEGORY_GENERAL),
+	R(/obj/item/weapon/kitchen/utensil/spoon,                 CATEGORY_GENERAL),
+	R(/obj/item/weapon/kitchen/utensil/fork,                  CATEGORY_GENERAL),
 	R(/obj/item/weapon/reagent_containers/spray/extinguisher, CATEGORY_GENERAL),
+	R(/obj/item/weapon/storage/visuals/tray,                  CATEGORY_GENERAL),
 	R(/obj/item/clothing/head/welding,                        CATEGORY_GENERAL),
 	R(/obj/item/weapon/kitchenknife,                          CATEGORY_GENERAL),
 	R(/obj/item/weapon/light/tube,                            CATEGORY_GENERAL),
@@ -136,7 +148,12 @@ var/global/list/datum/autolathe_recipe/autolathe_recipes_hidden = list(
 	R(/obj/item/ammo_box/magazine/glock, CATEGORY_AMMO),
 	R(/obj/item/ammo_box/speedloader/c38m, CATEGORY_AMMO),
 	R(/obj/item/ammo_box/eight_shells, CATEGORY_AMMO),
-	R(/obj/item/ammo_box/eight_shells/buckshot, CATEGORY_AMMO)
+	R(/obj/item/ammo_box/eight_shells/buckshot, CATEGORY_AMMO),
+	R(/obj/item/weapon/stock_parts/matter_bin/adv,      CATEGORY_ENGINEERING),
+	R(/obj/item/weapon/stock_parts/micro_laser/high,    CATEGORY_ENGINEERING),
+	R(/obj/item/weapon/stock_parts/manipulator/nano,    CATEGORY_ENGINEERING),
+	R(/obj/item/weapon/stock_parts/capacitor/adv,       CATEGORY_ENGINEERING),
+	R(/obj/item/weapon/stock_parts/scanning_module/adv, CATEGORY_ENGINEERING),
 
 )
 #undef R
@@ -183,6 +200,7 @@ var/global/list/datum/autolathe_recipe/autolathe_recipes_all = autolathe_recipes
 
 /obj/machinery/autolathe/RefreshParts()
 	..()
+
 	var/mb_rating = 0
 	man_rating = 0
 	for(var/obj/item/weapon/stock_parts/matter_bin/MB in component_parts)
@@ -336,6 +354,7 @@ var/global/list/datum/autolathe_recipe/autolathe_recipes_all = autolathe_recipes
 	stored_material[MAT_METAL] += m_amt
 	stored_material[MAT_GLASS] += g_amt
 	to_chat(user, "You insert [amount] sheet[amount>1 ? "s" : ""] to the autolathe.")
+	playsound(src, 'sound/machines/material_insert.ogg', VOL_EFFECTS_MASTER, vary = FALSE)
 	if(I && I.loc == src)
 		qdel(I)
 	busy = FALSE
@@ -417,7 +436,7 @@ var/global/list/datum/autolathe_recipe/autolathe_recipes_all = autolathe_recipes
 		if((multiplier > max_multiplier) || (multiplier <= 0)) // somebody is trying to exploit, alert admins-walter0o
 
 			var/turf/LOC = get_turf(usr)
-			message_admins("[key_name_admin(usr)] tried to exploit an autolathe with multiplier set to <u>[multiplier]</u> on <u>[recipe]</u>  ! ([LOC ? "<a href='?_src_=holder;adminplayerobservecoodjump=1;X=[LOC.x];Y=[LOC.y];Z=[LOC.z]'>JMP</a>" : "null"])" , 0)
+			message_admins("[key_name_admin(usr)] tried to exploit an autolathe with multiplier set to <u>[multiplier]</u> on <u>[recipe]</u>  ! ([LOC ? "<a href='byond://?_src_=holder;adminplayerobservecoodjump=1;X=[LOC.x];Y=[LOC.y];Z=[LOC.z]'>JMP</a>" : "null"])" , 0)
 			log_admin("EXPLOIT : [key_name(usr)] tried to exploit an autolathe with multiplier set to [multiplier] on [recipe]  !")
 			return FALSE
 
@@ -427,6 +446,7 @@ var/global/list/datum/autolathe_recipe/autolathe_recipes_all = autolathe_recipes
 			use_power(power)
 			icon_state = "autolathe"
 			flick("autolathe_n",src)
+			playsound(src, 'sound/machines/autolathe.ogg', VOL_EFFECTS_MASTER, vary = FALSE)
 			spawn(32/coeff)
 				if(istype(recipe, /datum/autolathe_recipe/stack))
 					stored_material[MAT_METAL] -= recipe.resources[MAT_METAL] * multiplier

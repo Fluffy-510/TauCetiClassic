@@ -32,7 +32,7 @@
 		var/datum/religion/cult/C = user.my_religion
 		if(!GetComponent(/datum/component/self_effect) && C.get_tech(RTECH_MIRROR_SHIELD))
 			var/shield_type = /obj/item/weapon/shield/riot/mirror
-			AddComponent(/datum/component/self_effect, shield_type, "#51106bff", CALLBACK(src, .proc/only_cultists), 2 MINUTE, 30 SECONDS, 2 MINUTE)
+			AddComponent(/datum/component/self_effect, shield_type, "#51106bff", CALLBACK(src, PROC_REF(only_cultists)), 2 MINUTE, 30 SECONDS, 2 MINUTE)
 	else
 		to_chat(user, "<span class='warning'>Ошеломляющее чувство страха охватывает тебя при поднятии красного меча, было бы разумно поскорее избавиться от него.</span>")
 		user.make_dizzy(120)
@@ -70,6 +70,7 @@
 	desc = "Covers the eyes, preventing sight. Altough, something wrong with this one..."
 	icon_state = "blindfold"
 	item_state = "blindfold"
+	item_state_world = "blindfold"
 	vision_flags = SEE_TURFS
 	darkness_view = 7
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
@@ -100,7 +101,8 @@
 	desc = "A hood worn by the followers of Nar-Sie."
 	flags_inv = HIDEFACE
 	flags = HEADCOVERSEYES
-	body_parts_covered = HEAD|EYES|BLOCKHAIR
+	body_parts_covered = HEAD|EYES
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	armor = list(melee = 30, bullet = 20, laser = 30,energy = 25, bomb = 0, bio = 0, rad = 0)
 	cold_protection = HEAD
 	min_cold_protection_temperature = SPACE_HELMET_MIN_COLD_PROTECTION_TEMPERATURE
@@ -124,7 +126,8 @@
 	item_state = "magus"
 	desc = "A helm worn by the followers of Nar-Sie."
 	flags_inv = HIDEFACE
-	flags = HEADCOVERSEYES|HEADCOVERSMOUTH|BLOCKHAIR
+	flags = HEADCOVERSEYES|HEADCOVERSMOUTH
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	armor = list(melee = 30, bullet = 15, laser = 15,energy = 20, bomb = 0, bio = 0, rad = 0)
 	body_parts_covered = HEAD|FACE|EYES
 	siemens_coefficient = 0
@@ -257,7 +260,7 @@
 	current_user.reset_view(camera)
 	toggle = !toggle
 
-	RegisterSignal(camera, list(COMSIG_PARENT_QDELETING), .proc/feel_pain)
+	RegisterSignal(camera, list(COMSIG_PARENT_QDELETING), PROC_REF(feel_pain))
 
 /obj/item/device/cult_camera/dropped(mob/living/carbon/human/user)
 	. = ..()

@@ -25,7 +25,7 @@
 	backpack_contents = list(
 		/obj/item/ammo_box/magazine/colt/rubber = 3,
 		/obj/item/ammo_box/c45 = 2,
-		/obj/item/weapon/gun/projectile/automatic/colt1911 = 1,
+		/obj/item/weapon/gun/projectile/automatic/pistol/colt1911 = 1,
 	)
 
 	implants = list(
@@ -41,7 +41,7 @@
 		/obj/item/weapon/storage/box/teargas = 1,
 		/obj/item/weapon/storage/box/shotgun/buckshot = 1,
 		/obj/item/ammo_box/magazine/colt/rubber = 3,
-		/obj/item/weapon/gun/projectile/automatic/colt1911 = 1,
+		/obj/item/weapon/gun/projectile/automatic/pistol/colt1911 = 1,
 	)
 
 /datum/outfit/families_police/beatcop/swat
@@ -55,7 +55,7 @@
 		/obj/item/weapon/storage/box/handcuffs = 1,
 		/obj/item/weapon/storage/box/teargas = 1,
 		/obj/item/weapon/storage/box/shotgun/buckshot = 1,
-		/obj/item/weapon/gun/projectile/automatic/colt1911 = 1,
+		/obj/item/weapon/gun/projectile/automatic/pistol/colt1911 = 1,
 		/obj/item/ammo_box/magazine/colt/rubber = 3,
 	)
 
@@ -65,7 +65,7 @@
 	head = /obj/item/clothing/head/helmet/laserproof/police
 	shoes = /obj/item/clothing/shoes/boots/combat
 	gloves = /obj/item/clothing/gloves/combat/police
-	suit_store = /obj/item/weapon/gun/projectile/automatic
+	suit_store = /obj/item/weapon/gun/projectile/automatic/saber
 	backpack_contents = list(
 		/obj/item/weapon/storage/box/handcuffs = 1,
 		/obj/item/ammo_box/magazine/smg = 3,
@@ -80,13 +80,13 @@
 	belt = /obj/item/weapon/storage/belt/security/tactical/cops
 	gloves = /obj/item/clothing/gloves/combat/police
 	back = /obj/item/weapon/storage/backpack/satchel/sec/cops
+	suit_store = /obj/item/weapon/gun/projectile/automatic/a28
 	backpack_contents = list(
 		/obj/item/weapon/storage/box/handcuffs = 1,
 		/obj/item/weapon/storage/box/teargas = 1,
 		/obj/item/weapon/storage/box/flashbangs = 1,
 		/obj/item/ammo_box/speedloader/a357 = 2,
 		/obj/item/weapon/gun/projectile/revolver/mateba = 1,
-		/obj/item/weapon/gun/projectile/automatic/a28 = 1,
 	)
 
 /datum/outfit/families_traitor

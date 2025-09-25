@@ -32,6 +32,7 @@ using /obj/effect/datacore/proc/manifest_inject( )
 		return
 
 	var/heads[0]
+	var/centcom[0]
 	var/sec[0]
 	var/eng[0]
 	var/med[0]
@@ -51,6 +52,10 @@ using /obj/effect/datacore/proc/manifest_inject( )
 
 		if(real_rank in command_positions)
 			heads[++heads.len] = list("name" = name, "rank" = rank, "active" = isactive, "account" = account_number, "priority" = command_positions.Find(real_rank))
+			in_department = TRUE
+
+		if(real_rank in centcom_positions)
+			centcom[++centcom.len] = list("name" = name, "rank" = rank, "active" = isactive, "account" = account_number, "priority" = centcom_positions.Find(real_rank))
 			in_department = TRUE
 
 		if(real_rank in security_positions)
@@ -80,15 +85,17 @@ using /obj/effect/datacore/proc/manifest_inject( )
 		if(!in_department)
 			misc[++misc.len] = list("name" = name, "rank" = rank, "active" = isactive, "account" = account_number)
 
-	sortTim(heads, /proc/cmp_job_titles, FALSE)
-	sortTim(sec,   /proc/cmp_job_titles, FALSE)
-	sortTim(eng,   /proc/cmp_job_titles, FALSE)
-	sortTim(med,   /proc/cmp_job_titles, FALSE)
-	sortTim(sci,   /proc/cmp_job_titles, FALSE)
-	sortTim(civ,   /proc/cmp_job_titles, FALSE)
-	sortTim(bot,   /proc/cmp_job_titles, FALSE)
+	sortTim(heads, GLOBAL_PROC_REF(cmp_job_titles), FALSE)
+	sortTim(centcom, GLOBAL_PROC_REF(cmp_job_titles), FALSE)
+	sortTim(sec,   GLOBAL_PROC_REF(cmp_job_titles), FALSE)
+	sortTim(eng,   GLOBAL_PROC_REF(cmp_job_titles), FALSE)
+	sortTim(med,   GLOBAL_PROC_REF(cmp_job_titles), FALSE)
+	sortTim(sci,   GLOBAL_PROC_REF(cmp_job_titles), FALSE)
+	sortTim(civ,   GLOBAL_PROC_REF(cmp_job_titles), FALSE)
+	sortTim(bot,   GLOBAL_PROC_REF(cmp_job_titles), FALSE)
 
 	remove_priority_field(heads)
+	remove_priority_field(centcom)
 	remove_priority_field(sec)
 	remove_priority_field(eng)
 	remove_priority_field(med)
@@ -98,6 +105,7 @@ using /obj/effect/datacore/proc/manifest_inject( )
 
 	PDA_Manifest = list(\
 		"heads" = heads,\
+		"centcom" = centcom,\
 		"sec" = sec,\
 		"eng" = eng,\
 		"med" = med,\
@@ -136,7 +144,7 @@ using /obj/effect/datacore/proc/manifest_inject( )
 			prio = 1
 		Silicon_Manifest[++Silicon_Manifest.len] = list("name" = name, "rank" = rank, "active" = is_active, "net" = net, "priority" = prio)
 
-	sortTim(Silicon_Manifest, /proc/cmp_job_titles, FALSE)
+	sortTim(Silicon_Manifest, GLOBAL_PROC_REF(cmp_job_titles), FALSE)
 	remove_priority_field(Silicon_Manifest)
 
 /obj/effect/datacore/proc/get_manifest()
@@ -167,6 +175,7 @@ using /obj/effect/datacore/proc/manifest_inject( )
 	// Formating keyword -> Description
 	var/list/departments_list = list(\
 		"heads" = "Heads",\
+		"centcom" = "NanoTrasen representatives",\
 		"sec" = "Security",\
 		"eng" = "Engineering",\
 		"med" = "Medical",\
@@ -293,6 +302,8 @@ using /obj/effect/datacore/proc/manifest_inject( )
 		G.fields["rank"]		= assignment
 		G.fields["age"]			= H.age
 		G.fields["fingerprint"]	= md5(H.dna.uni_identity)
+		G.fields["insurance_account_number"] = H.mind.get_key_memory(MEM_ACCOUNT_NUMBER)
+		G.fields["insurance_type"] = H.roundstart_insurance
 		G.fields["p_stat"]		= "Active"
 		G.fields["m_stat"]		= "Stable"
 		G.fields["sex"]			= H.gender
@@ -319,8 +330,8 @@ using /obj/effect/datacore/proc/manifest_inject( )
 		var/datum/data/record/M = new()
 		M.fields["id"]			= id
 		M.fields["name"]		= H.real_name
-		M.fields["b_type"]		= H.b_type
-		M.fields["b_dna"]		= H.dna.unique_enzymes
+		M.fields["b_type"]		= H.dna.b_type
+		M.fields["b_dna"]		= H.dna.unique_enzymes ? H.dna.unique_enzymes : "None"
 		M.fields["mi_dis"]		= "None"
 		M.fields["mi_dis_d"]	= "No minor disabilities have been declared."
 		M.fields["ma_dis"]		= "None"
@@ -358,8 +369,8 @@ using /obj/effect/datacore/proc/manifest_inject( )
 		L.fields["rank"] 		= H.mind.assigned_role
 		L.fields["age"]			= H.age
 		L.fields["sex"]			= H.gender
-		L.fields["b_type"]		= H.b_type
-		L.fields["b_dna"]		= H.dna.unique_enzymes
+		L.fields["b_type"]		= H.dna.b_type
+		L.fields["b_dna"]		= H.dna.unique_enzymes ? H.dna.unique_enzymes : "None"
 		L.fields["enzymes"]		= H.dna.SE // Used in respawning
 		L.fields["home_system"]	= H.home_system
 		L.fields["citizenship"]	= H.citizenship

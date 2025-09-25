@@ -60,12 +60,13 @@
 		broke_hud()
 		if(glasses_user)
 			enable_hud(glasses_user)
-		addtimer(CALLBACK(src, .proc/fix_hud), (90 SECONDS) / severity)
+		addtimer(CALLBACK(src, PROC_REF(fix_hud)), (90 SECONDS) / severity)
 
 /obj/item/clothing/glasses/hud/health
 	name = "health scanner HUD"
 	desc = "A heads-up display that scans the humans in view and provides accurate data about their health status."
 	icon_state = "healthhud"
+	item_state_world = "healthhud_w"
 	body_parts_covered = 0
 	hud_types = list(DATA_HUD_MEDICAL)
 
@@ -73,7 +74,8 @@
 /obj/item/clothing/glasses/hud/health/vox
 	name = "health scanner HUD"
 	desc = "A heads-up display that scans the humans in view and provides accurate data about their health status."
-	icon_state = "material"
+	icon_state = "healthhud"
+	item_state_world = "healthhud_w"
 	body_parts_covered = 0
 
 
@@ -81,6 +83,7 @@
 	name = "security HUD"
 	desc = "A heads-up display that scans the humans in view and provides accurate data about their ID status and security records."
 	icon_state = "securityhud"
+	item_state_world = "securityhud_w"
 	body_parts_covered = 0
 	hud_types = list(DATA_HUD_SECURITY)
 
@@ -89,17 +92,27 @@
 	desc = "You can see information about mechs and metal friends!"
 	icon_state = "diagnostichud"
 	item_state = "diagnostichud"
+	item_state_world = "diagnostichud_w"
 	origin_tech = "engineering=2;programming=2"
-	action_button_name = "Toggle Goggles"
 	toggleable = 1
-	sightglassesmod = "sepia"
+	sightglassesmod = "yellow"
 	hud_types = list(DATA_HUD_DIAGNOSTIC)
+	item_action_types = list(/datum/action/item_action/hands_free/toggle_goggles)
+
+/obj/item/clothing/glasses/hud/diagnostic/equipped(mob/living/user, slot)
+	. = ..()
+	if(slot == SLOT_GLASSES)
+		to_chat(user, "<span class='info'>Вы можете получать очки исследований, проводя диагностику изобретений, связанных с роботами. Осматривайте объекты в этих очках.</span>")
+
+/datum/action/item_action/hands_free/toggle_goggles
+	name = "Toggle Goggles"
 
 /obj/item/clothing/glasses/hud/security/jensenshades
 	name = "augmented shades"
 	desc = "Polarized bioneural eyewear, designed to augment your vision."
 	icon_state = "hos_shades"
 	item_state = "hos_shades"
+	item_state_world = "hos_shades_w"
 	vision_flags = SEE_MOBS
 	invisa_view = 3
 
@@ -115,7 +128,7 @@
 		broke_hud()
 		if(glasses_user)
 			enable_hud(glasses_user)
-		addtimer(CALLBACK(src, .proc/fix_hud), (90 SECONDS) / severity)
+		addtimer(CALLBACK(src, PROC_REF(fix_hud)), (90 SECONDS) / severity)
 
 /obj/item/clothing/glasses/sunglasses/hud/equipped(mob/living/carbon/human/user, slot)
 	..()
@@ -135,6 +148,7 @@
 	name = "mixed HUD"
 	desc = "A heads-up display that scans the humans in view and provides accurate data about their ID status and health status."
 	icon_state = "secmedhud"
+	item_state_world = "secmedhud_w"
 	body_parts_covered = 0
 	hud_types = list(DATA_HUD_MEDICAL, DATA_HUD_SECURITY)
 
@@ -142,6 +156,7 @@
 	name = "MEDHUD sunglasses"
 	desc = "A heads-up display that scans the humans in view and provides accurate data about their health status."
 	icon_state = "sunmedhud"
+	item_state_world = "sunmedhud_w"
 	body_parts_covered = 0
 	hud_types = list(DATA_HUD_MEDICAL)
 

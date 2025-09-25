@@ -16,26 +16,25 @@
 */
 
 /datum/personal_crafting/proc/check_contents(datum/crafting_recipe/R, list/contents)
-	main_loop:
-		for(var/A in R.reqs)
-			var/needed_amount = R.reqs[A]
-			for(var/B in contents)
-				if(ispath(B, A))
-					if(contents[B] >= R.reqs[A])
-						continue main_loop
-					else
-						needed_amount -= contents[B]
-						if(needed_amount <= 0)
-							continue main_loop
-						else
-							continue
-			return 0
+	for(var/A in R.reqs)
+		var/needed_amount = R.reqs[A]
+		for(var/B in contents)
+			if(!ispath(B, A) || R.blacklist.Find(B))
+				continue
+
+			needed_amount -= contents[B]
+			if(needed_amount <= 0)
+				break
+
+		if(needed_amount > 0)
+			return FALSE
+
 	for(var/A in R.chem_catalysts)
 		if(contents[A] < R.chem_catalysts[A])
 			return 0
 	return 1
 
-/datum/personal_crafting/proc/get_environment(mob/user)
+/datum/personal_crafting/proc/get_environment(mob/user, list/blacklist=null)
 	. = list()
 	for(var/obj/item/I in list(user.l_hand, user.r_hand))
 		. += I
@@ -47,13 +46,13 @@
 		if(T.Adjacent(user))
 			for(var/B in T)
 				var/atom/movable/AM = B
-				if(AM.flags_2 & HOLOGRAM_2)
+				if(AM.flags_2 & HOLOGRAM_2 || (blacklist && (AM.type in blacklist)))
 					continue
 				. += AM
 
-/datum/personal_crafting/proc/get_surroundings(mob/user)
+/datum/personal_crafting/proc/get_surroundings(mob/user, list/blacklist=null)
 	. = list()
-	for(var/obj/I in get_environment(user))
+	for(var/obj/I in get_environment(user, blacklist))
 		if(I.flags_2 & HOLOGRAM_2)
 			continue
 		if(istype(I, /obj/item/stack))
@@ -85,7 +84,7 @@
 	return 1
 
 /datum/personal_crafting/proc/construct_item(mob/user, datum/crafting_recipe/R, overrided_time = null)
-	var/list/contents = get_surroundings(user)
+	var/list/contents = get_surroundings(user, R.blacklist)
 	if(check_contents(R, contents))
 		if(check_tools(user, R, contents))
 			var/required_time = overrided_time
@@ -94,7 +93,7 @@
 			if(R.required_proficiency)
 				required_time = apply_skill_bonus(user, R.time, R.required_proficiency, multiplier = -0.4)
 			if(do_after(user, required_time, target = user))
-				contents = get_surroundings(user)
+				contents = get_surroundings(user, R.blacklist)
 				if(!check_contents(R, contents))
 					return ", missing component."
 				if(!check_tools(user, R, contents))
@@ -248,8 +247,8 @@
 		dat += "Crafting..."
 	else
 		if(config.craft_recipes_visibility) // no point in this button, if this disabled on server.
-			dat += "<A href='?src=\ref[src];action=toggle_recipes'>[!display_craftable_only ? "Showing All Recipes" : "Showing Craftable Recipes"]</A>"
-		dat += "<A href='?src=\ref[src];action=toggle_compact'>[display_compact ? "Compact" : "Detailed"]</A>"
+			dat += "<A href='byond://?src=\ref[src];action=toggle_recipes'>[!display_craftable_only ? "Showing All Recipes" : "Showing Craftable Recipes"]</A>"
+		dat += "<A href='byond://?src=\ref[src];action=toggle_compact'>[display_compact ? "Compact" : "Detailed"]</A>"
 		dat += "<BR>"
 		dat += "<div class='Section'>"
 
@@ -270,7 +269,7 @@
 				dat += "<div class='connect_description'>"
 				if(can_craft)
 					dat += "<img src='data:image/jpeg;base64,[GetIconForResult(R)]'/>"
-					dat += "[recipe_data["name"]]:&nbsp&nbsp<A href='?src=\ref[src];action=make;recipe=[recipe_data["ref"]]'>Craft"
+					dat += "[recipe_data["name"]]:&nbsp&nbsp<A href='byond://?src=\ref[src];action=make;recipe=[recipe_data["ref"]]'>Craft"
 				else
 					dat += "<img src='data:image/jpeg;base64,[GetIconForResult(R)]'/>"
 					dat += "[recipe_data["name"]]:&nbsp&nbsp<span class='disabled'>Craft"
@@ -290,7 +289,7 @@
 			else
 				if(can_craft)
 					dat += "<img src='data:image/jpeg;base64,[GetIconForResult(R)]'/>"
-					dat += "[recipe_data["name"]]:&nbsp&nbsp<A href='?src=\ref[src];action=make;recipe=[recipe_data["ref"]]'>Craft</A>"
+					dat += "[recipe_data["name"]]:&nbsp&nbsp<A href='byond://?src=\ref[src];action=make;recipe=[recipe_data["ref"]]'>Craft</A>"
 				else
 					dat += "<img src='data:image/jpeg;base64,[GetIconForResult(R)]'/>"
 					dat += "[recipe_data["name"]]:&nbsp&nbsp<span class='disabled'>Craft</span>"

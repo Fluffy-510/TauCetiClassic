@@ -13,9 +13,11 @@
 	var/slice_path
 	var/slices_num
 	var/deepfried = 0
-
+	var/cookingProgress = 0
+	var/cookingThreshold = 50
+	var/fire_act_result = /obj/item/weapon/reagent_containers/food/snacks/badrecipe
 	//Placeholder for effect that trigger on eating that aren't tied to reagents.
-/obj/item/weapon/reagent_containers/food/snacks/proc/On_Consume(mob/M)
+/obj/item/weapon/reagent_containers/food/snacks/proc/On_Consume(mob/M, silent = FALSE)
 	if(!usr)	return
 	if(isliving(M))
 		var/mob/living/L = M
@@ -27,9 +29,8 @@
 			if(prob(50) && SEND_SIGNAL(H, COMSIG_ADD_MOOD_EVENT, "nasty_throat_feel", /datum/mood_event/nasty_throat_feel))
 				to_chat(H, "<span class='warning'>You feel like something enveloping in your throat...</span>")
 	if(!reagents.total_volume)
-		if(M == usr)
-			to_chat(usr, "<span class='notice'>You finish eating \the [src].</span>")
-		M.visible_message("<span class='notice'>[M] finishes eating \the [src].</span>")
+		if(!silent)
+			M.visible_message("<span class='notice'>[M] finishes eating \the [src].</span>", "<span class='notice'>You finish eating \the [src].</span>")
 		if(food_type)
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "food_type", food_moodlet)
 		SSStatistics.score.foodeaten++
@@ -47,7 +48,7 @@
 /obj/item/weapon/reagent_containers/food/snacks/attack_self(mob/user)
 	return
 
-/obj/item/weapon/reagent_containers/food/snacks/attack(mob/living/M, mob/user, def_zone)
+/obj/item/weapon/reagent_containers/food/snacks/attack(mob/living/M, mob/user, def_zone, silent = FALSE)
 	if(!reagents || !reagents.total_volume)				//Shouldn't be needed but it checks to see if it has anything left in it.
 		to_chat(user, "<span class='rose'>None of [src] left, oh no!</span>")
 		M.drop_from_inventory(src)	//so icons update :[
@@ -64,14 +65,14 @@
 			if(HAS_TRAIT(C, TRAIT_PICKY_EATER) && src.food_type != VERY_TASTY_FOOD)
 				to_chat(C, "<span class='rose'>You can't eat this horrible, nasty and cheap food!</span>")
 				return FALSE
-			else if(fullness > (550 * (1 + M.overeatduration / 2000))) // The more you eat - the more you can eat
+			else if(fullness > (NUTRITION_LEVEL_FAT * (1 + M.overeatduration / 2000) + 100)) // The more you eat - the more you can eat
 				to_chat(C, "<span class='rose'>You cannot force any more of [src] to go down your throat.</span>")
 				return FALSE
-			else if(fullness > 350)
+			else if(fullness > NUTRITION_LEVEL_NORMAL)
 				to_chat(C, "<span class='notice'>You unwillingly chew a bit of [src].</span>")
-			else if(fullness > 150)
+			else if(fullness > NUTRITION_LEVEL_FED)
 				to_chat(C, "<span class='notice'>You take a bite of [src].</span>")
-			else if(fullness > 50)
+			else if(fullness > NUTRITION_LEVEL_HUNGRY)
 				to_chat(C, "<span class='notice'>You hungrily begin to eat [src].</span>")
 			else
 				to_chat(C, "<span class='rose'>You hungrily chew out a piece of [src] and gobble it!</span>")
@@ -112,7 +113,8 @@
 				else
 					reagents.trans_to_ingest(M, reagents.total_volume)
 				bitecount++
-				On_Consume(M)
+				SEND_SIGNAL(M, COMSIG_HUMAN_ON_CONSUME, src)
+				On_Consume(M, silent)
 			return TRUE
 
 	return FALSE
@@ -205,7 +207,16 @@
 		else
 			to_chat(N, text("<span class='notice'>You are unable to nibble away at \the [src] while being hidden.</span>"))
 
+/obj/item/weapon/reagent_containers/food/snacks/fire_act(datum/gas_mixture/air, exposed_temperature, exposed_volume)
+	if(exposed_temperature >= 400)
+		cookingProgress++
 
+	if(cookingProgress >= cookingThreshold)
+		var/turf/T = get_turf(src)
+		var/obj/item/cooking = new fire_act_result(T)
+		cooking.pixel_x = pixel_x
+		cooking.pixel_y = pixel_y
+		qdel(src)
 
 ////////////////////////////////////////////////////////////////////////////////
 /// FOOD END
@@ -398,19 +409,23 @@
 
 /obj/item/weapon/reagent_containers/food/snacks/donut/chaos/atom_init()
 	. = ..()
-	var/datum/reagent/random_reagent = pick(global.reagents_list)
-	var/datum/reagent/R = new random_reagent(src)
-	reagents.add_reagent(R.id, 3)
+	reagents.add_reagent(pick(global.chemical_reagents_list), 5)
 
 /obj/item/weapon/reagent_containers/food/snacks/egg
 	name = "egg"
 	desc = "An egg!"
 	icon_state = "egg"
+	item_state_world = "egg_world"
+	w_class = SIZE_MINUSCULE
 	filling_color = "#fdffd1"
 	list_reagents = list("nutriment" = 1, "egg" = 5)
+	cookingThreshold = 10
+	fire_act_result = /obj/item/weapon/reagent_containers/food/snacks/friedegg
+	var/egg_color = "" // default egg color is white, can be changed with crayons
 
 /obj/item/weapon/reagent_containers/food/snacks/egg/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	..()
+	if(..())
+		return
 	new /obj/effect/decal/cleanable/egg_smudge(loc)
 	if(prob(13))
 		if(global.chicken_count < MAX_CHICKENS)
@@ -427,36 +442,60 @@
 
 		if(!(clr in list("blue","green","mime","orange","purple","rainbow","red","yellow")))
 			to_chat(usr, "<span class='info'>The egg refuses to take on this color!</span>")
-			return
 
 		to_chat(usr, "<span class='notice'>You color \the [src] [clr].</span>")
-		icon_state = "egg-[clr]"
+		egg_color = clr
+		update_icon()
 	else
 		return ..()
 
+/obj/item/weapon/reagent_containers/food/snacks/egg/update_icon()
+	item_state_inventory = "egg-[egg_color]"
+	item_state_world = "egg-[egg_color]_world"
+	icon_state = "egg-[egg_color]"
+	update_world_icon()
+	update_inv_mob()
+
 /obj/item/weapon/reagent_containers/food/snacks/egg/blue
 	icon_state = "egg-blue"
+	item_state_world = "egg-blue_world"
+	egg_color = "blue"
 
 /obj/item/weapon/reagent_containers/food/snacks/egg/green
 	icon_state = "egg-green"
+	item_state_world = "egg-green_world"
+	egg_color = "green"
 
 /obj/item/weapon/reagent_containers/food/snacks/egg/mime
 	icon_state = "egg-mime"
+	item_state = "egg"
+	item_state_world = "egg-mime_world"
+	egg_color = "mime"
 
 /obj/item/weapon/reagent_containers/food/snacks/egg/orange
 	icon_state = "egg-orange"
+	item_state_world = "egg-orange_world"
+	egg_color = "orange"
 
 /obj/item/weapon/reagent_containers/food/snacks/egg/purple
 	icon_state = "egg-purple"
+	item_state_world = "egg-purple_world"
+	egg_color = "purple"
 
 /obj/item/weapon/reagent_containers/food/snacks/egg/rainbow
 	icon_state = "egg-rainbow"
+	item_state_world = "egg-rainbow_world"
+	egg_color = "rainbow"
 
 /obj/item/weapon/reagent_containers/food/snacks/egg/red
 	icon_state = "egg-red"
+	item_state_world = "egg-red_world"
+	egg_color = "red"
 
 /obj/item/weapon/reagent_containers/food/snacks/egg/yellow
 	icon_state = "egg-yellow"
+	item_state_world = "egg-yellow_world"
+	egg_color = "yellow"
 
 /obj/item/weapon/reagent_containers/food/snacks/friedegg
 	name = "Fried egg"
@@ -470,8 +509,75 @@
 	name = "Boiled egg"
 	desc = "A hard boiled egg."
 	icon_state = "egg"
+	item_state_world = "egg_world"
 	filling_color = "#ffffff"
 	list_reagents = list("nutriment" = 2, "vitamin" = 1, "egg" = 5)
+	var/egg_color = "" // default egg color is white, can be changed with crayons
+
+/obj/item/weapon/reagent_containers/food/snacks/boiledegg/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/toy/crayon))
+		var/obj/item/toy/crayon/C = I
+		var/clr = C.colourName
+
+		var/static/list/valid_colors = list("blue","green","mime","orange","purple","rainbow","red","yellow")
+		if(!(clr in valid_colors))
+			to_chat(usr, "<span class='info'>The egg refuses to take on this color!</span>")
+			return
+
+		to_chat(usr, "<span class='notice'>You color \the [src] [clr].</span>")
+		egg_color = clr
+		update_icon()
+	else
+		return ..()
+
+/obj/item/weapon/reagent_containers/food/snacks/boiledegg/update_icon()
+	..()
+	item_state_inventory = "egg-[egg_color]"
+	item_state_world = "egg-[egg_color]_world"
+	icon_state = "egg-[egg_color]"
+	update_world_icon()
+	update_inv_mob()
+
+/obj/item/weapon/reagent_containers/food/snacks/boiledegg/blue
+	icon_state = "egg-blue"
+	item_state_world = "egg-blue_world"
+	egg_color = "blue"
+
+/obj/item/weapon/reagent_containers/food/snacks/boiledegg/green
+	icon_state = "egg-green"
+	item_state_world = "egg-green_world"
+	egg_color = "green"
+
+/obj/item/weapon/reagent_containers/food/snacks/boiledegg/mime
+	icon_state = "egg-mime"
+	item_state = "egg"
+	item_state_world = "egg-mime_world"
+	egg_color = "mime"
+
+/obj/item/weapon/reagent_containers/food/snacks/boiledegg/orange
+	icon_state = "egg-orange"
+	item_state_world = "egg-orange_world"
+	egg_color = "orange"
+
+/obj/item/weapon/reagent_containers/food/snacks/boiledegg/purple
+	icon_state = "egg-purple"
+	item_state_world = "egg-purple_world"
+	egg_color = "purple"
+
+/obj/item/weapon/reagent_containers/food/snacks/boiledegg/rainbow
+	icon_state = "egg-rainbow"
+	item_state_world = "egg-rainbow_world"
+	egg_color = "rainbow"
+
+/obj/item/weapon/reagent_containers/food/snacks/boiledegg/red
+	icon_state = "egg-red"
+	item_state_world = "egg-red_world"
+	egg_color = "red"
+
+/obj/item/weapon/reagent_containers/food/snacks/boiledegg/yellow
+	icon_state = "egg-yellow"
+	item_state_world = "egg-yellow_world"
+	egg_color = "yellow"
 
 /obj/item/weapon/reagent_containers/food/snacks/appendix
 //yes, this is the same as meat. I might do something different in future
@@ -527,6 +633,8 @@
 	list_reagents = list("protein" = 3, "carpotoxin" = 3)
 	food_type = NATURAL_FOOD
 	food_moodlet = /datum/mood_event/natural_food
+	cookingThreshold = 10
+	fire_act_result = /obj/item/weapon/reagent_containers/food/snacks/salmonsteak
 
 /obj/item/weapon/reagent_containers/food/snacks/fishfingers
 	name = "Fish Fingers"
@@ -574,7 +682,7 @@
 	icon_state = "xenomeat"
 	filling_color = "#43de18"
 	bitesize = 6
-	list_reagents = list("protein" = 3, "vitamin" = 1)
+	list_reagents = list("protein" = 3, "vitamin" = 1, "xenojelly_un" = 5)
 	food_type = NATURAL_FOOD
 	food_moodlet = /datum/mood_event/natural_food
 
@@ -626,6 +734,8 @@
 	name = "brainburger"
 	desc = "A strange looking burger. It looks almost sentient."
 	icon_state = "brainburger"
+	item_state = "brainburger"
+	item_state_world = "brainburger_world"
 	filling_color = "#f2b6ea"
 	bitesize = 2
 	list_reagents = list("nutriment" = 2, "protein" = 4, "alkysine" = 6)
@@ -636,6 +746,8 @@
 	name = "Ghost Burger"
 	desc = "Spooky! It doesn't look very filling."
 	icon_state = "ghostburger"
+	item_state = "ghostburger"
+	item_state_world = "ghostburger_world"
 	filling_color = "#fff2ff"
 	bitesize = 2
 	list_reagents = list("nutriment" = 6, "ectoplasm" = 1)
@@ -651,6 +763,8 @@
 	name = "-burger"
 	desc = "A bloody burger."
 	icon_state = "hburger"
+	item_state = "hburger"
+	item_state_world = "hburger_world"
 	bitesize = 2
 	list_reagents = list("nutriment" = 2, "protein" = 4, "vitamin" = 2)
 
@@ -658,20 +772,26 @@
 	name = "cheeseburger"
 	desc = "The cheese adds a good flavor."
 	icon_state = "cheeseburger"
-	list_reagents = list("nutriment" = 4, "cheese" = 4, "vitamin" = 1)
+	item_state = "cheeseburger"
+	item_state_world = "cheeseburger_world"
+	list_reagents = list("nutriment" = 8, "cheese" = 8, "vitamin" = 1)
 
 /obj/item/weapon/reagent_containers/food/snacks/monkeyburger
 	name = "burger"
 	desc = "The cornerstone of every nutritious breakfast."
 	icon_state = "hburger"
+	item_state_world = "hburger_world"
+	item_state = "hburger"
 	filling_color = "#d63c3c"
 	bitesize = 2
-	list_reagents = list("nutriment" = 2, "protein" = 4, "vitamin" = 1)
+	list_reagents = list("nutriment" = 4, "protein" = 8, "vitamin" = 1)
 
 /obj/item/weapon/reagent_containers/food/snacks/fishburger
 	name = "Fillet -o- Carp Sandwich"
 	desc = "Almost like a carp is yelling somewhere... Give me back that fillet -o- carp, give me that carp."
 	icon_state = "fishburger"
+	item_state_world = "fishburger_world"
+	item_state = "fishburger"
 	filling_color = "#ffdefe"
 	bitesize = 3
 	list_reagents = list("protein" = 6, "carpotoxin" = 3)
@@ -680,6 +800,8 @@
 	name = "Tofu Burger"
 	desc = "What.. is that meat?"
 	icon_state = "tofuburger"
+	item_state = "tofuburger"
+	item_state_world = "tofuburger_world"
 	filling_color = "#fffee0"
 	bitesize = 2
 	list_reagents = list("plantmatter" = 6, "vitamin" = 1)
@@ -688,6 +810,8 @@
 	name = "roburger"
 	desc = "The lettuce is the only organic component. Beep."
 	icon_state = "roburger"
+	item_state = "roburger"
+	item_state_world = "roburger_world"
 	filling_color = "#cccccc"
 	bitesize = 2
 	list_reagents = list("nutriment" = 6, "vitamin" = 1)
@@ -696,9 +820,11 @@
 	name = "xenoburger"
 	desc = "Smells caustic. Tastes like heresy."
 	icon_state = "xburger"
+	item_state = "xburger"
+	item_state_world = "xburger_world"
 	filling_color = "#43de18"
 	bitesize = 2
-	list_reagents = list("protein" = 6, "vitamin" = 1)
+	list_reagents = list("protein" = 6, "vitamin" = 1, "xenojelly_un" = 5)
 	food_type = VERY_TASTY_FOOD
 	food_moodlet = /datum/mood_event/very_tasty_food
 
@@ -706,6 +832,8 @@
 	name = "Clown Burger"
 	desc = "This tastes funny... And HONKS!"
 	icon_state = "clownburger"
+	item_state = "clownburger"
+	item_state_world = "clownburger_world"
 	filling_color = "#ff00ff"
 	bitesize = 2
 	var/cooldown = FALSE
@@ -724,6 +852,8 @@
 	name = "Mime Burger"
 	desc = "Its taste defies language."
 	icon_state = "mimeburger"
+	item_state = "mimeburger"
+	item_state_world = "mimeburger_world"
 	filling_color = "#ffffff"
 	bitesize = 2
 	list_reagents = list("nutriment" = 6)
@@ -757,7 +887,8 @@
 	list_reagents = list("plantmatter" = 6, "banana" = 5, "vitamin" = 2)
 
 /obj/item/weapon/reagent_containers/food/snacks/pie/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	..()
+	if(..())
+		return
 	new/obj/effect/decal/cleanable/pie_smudge(src.loc)
 	visible_message("<span class='rose'>[src.name] splats.</span>","<span class='rose'>You hear a splat.</span>")
 	qdel(src)
@@ -847,7 +978,7 @@
 	trash = /obj/item/trash/plate
 	filling_color = "#43de18"
 	bitesize = 2
-	list_reagents = list("protein" = 10, "vitamin" = 2)
+	list_reagents = list("protein" = 10, "vitamin" = 2, "xenojelly_un" = 5)
 	food_type = VERY_TASTY_FOOD
 	food_moodlet = /datum/mood_event/very_tasty_food
 
@@ -858,7 +989,7 @@
 	trash = /obj/item/trash/snack_bowl
 	filling_color = "#43de18"
 	bitesize = 2
-	list_reagents = list("protein" = 6, "vitamin" = 2)
+	list_reagents = list("protein" = 6, "vitamin" = 2, "xenojelly_un" = 5)
 	food_type = VERY_TASTY_FOOD
 	food_moodlet = /datum/mood_event/very_tasty_food
 
@@ -910,6 +1041,16 @@
 	bitesize = 0.1 //this snack is supposed to be eating during looooong time. And this it not dinner food! --rastaf0
 	list_reagents = list("nutriment" = 2)
 
+/obj/item/weapon/reagent_containers/food/snacks/cornflakesbox
+	name = "cornflakes box"
+	desc = "Хрустящие кукурузные хлопья"
+	icon_state = "cereal_box"
+	filling_color = "#fcb954"
+	bitesize = 2
+	list_reagents = list("nutriment" = 2, "vitamin" = 2, "honey" = 2)
+	food_type = VERY_TASTY_FOOD
+	food_moodlet = /datum/mood_event/very_tasty_food
+
 /obj/item/weapon/reagent_containers/food/snacks/popcorn/atom_init()
 	. = ..()
 	unpopped = rand(1,10)
@@ -939,11 +1080,11 @@
 /obj/item/weapon/reagent_containers/food/snacks/no_raisin
 	name = "4no Raisins"
 	icon_state = "4no_raisins"
-	desc = "Best raisins in the universe. Not sure why."
+	desc = "Most nutritious raisins in the universe. Not sure why."
 	filling_color = "#343834"
 	w_class = SIZE_MIDGET
-	bitesize = 2
-	list_reagents = list("plantmatter" = 1, "sugar" = 1)
+	bitesize = 6
+	list_reagents = list("plantmatter" = 3, "sugar" = 3)
 	food_type = JUNK_FOOD
 	food_moodlet = /datum/mood_event/junk_food
 
@@ -1014,6 +1155,16 @@
 	trash = /obj/item/trash/chinese4
 	list_reagents = list("nutriment" = 1, "sugar" = 2, "rice" = 3)
 
+/obj/item/weapon/reagent_containers/food/snacks/chinese/lunarice
+	name = "luna-rice"
+	desc = "Это просто рис с синим пищевым красителем. ВЫ ПЕРЕПЛАЧИВАЕТЕ ЗА БРЕНД. ОСТАНОВИТЕСЬ."
+	cases = list("Луна-рис", "Луна-риса", "Луна-рису", "Луна-рис", "Луна-рисом", "Луна-рисе")
+	icon_state = "lunarice"
+	item_state_world = "lunarice_world"
+	trash = /obj/item/trash/lunarice
+	list_reagents = list("nutriment" = 3, "sugar" = 3, "rice" = 3)
+
+
 /obj/item/weapon/reagent_containers/food/snacks/syndicake
 	name = "Syndi-Cake"
 	icon_state = "syndi_cakes"
@@ -1025,6 +1176,15 @@
 /obj/item/weapon/reagent_containers/food/snacks/syndicake/atom_init()
 	. = ..()
 	icon_state = "syndi_cakes-[pick("1", "2")]"
+
+/obj/item/weapon/reagent_containers/food/snacks/simplewaffle
+	name = "Simple Waffle"
+	icon_state = "simplewaffle"
+	item_state_world = "simplewaffle_world"
+	desc = "A single waffle. Smells like childhood!"
+	filling_color = "#9c5e25"
+	bitesize = 2
+	list_reagents = list("nutriment" = 4, "strangejam" = 5)
 
 /obj/item/weapon/reagent_containers/food/snacks/loadedbakedpotato
 	name = "Loaded Baked Potato"
@@ -1041,7 +1201,7 @@
 	trash = /obj/item/trash/plate
 	filling_color = "#eddd00"
 	bitesize = 2
-	list_reagents = list("nutriment" = 4)
+	list_reagents = list("nutriment" = 8)
 
 /obj/item/weapon/reagent_containers/food/snacks/soydope
 	name = "Soy Dope"
@@ -1067,7 +1227,7 @@
 	trash = /obj/item/trash/plate
 	filling_color = "#eddd00"
 	bitesize = 2
-	list_reagents = list("nutriment" = 6)
+	list_reagents = list("nutriment" = 12)
 
 /obj/item/weapon/reagent_containers/food/snacks/fortunecookie
 	name = "Fortune cookie"
@@ -1459,6 +1619,8 @@
 	name = "Spell Burger"
 	desc = "This is absolutely Ei Nath."
 	icon_state = "spellburger"
+	item_state = "spellburger"
+	item_state_world = "spellburger_world"
 	filling_color = "#d505ff"
 	bitesize = 2
 	list_reagents = list("nutriment" = 6, "vitamin" = 1)
@@ -1469,6 +1631,8 @@
 	name = "Big Bite Burger"
 	desc = "Forget the Big Mac. THIS is the future!"
 	icon_state = "bigbiteburger"
+	item_state = "bigbiteburger"
+	item_state_world = "bigbiteburger_world"
 	filling_color = "#e3d681"
 	bitesize = 3
 	list_reagents = list("nutriment" = 4, "protein" = 10, "vitamin" = 2)
@@ -1574,6 +1738,8 @@
 	name = "Jelly Burger"
 	desc = "Culinary delight..?"
 	icon_state = "jellyburger"
+	item_state = "jellyburger"
+	item_state_world = "jellyburger_world"
 	filling_color = "#b572ab"
 	bitesize = 2
 	list_reagents = list("nutriment" = 5)
@@ -1676,6 +1842,8 @@
 	name = "Super Bite Burger"
 	desc = "This is a mountain of a burger. FOOD!"
 	icon_state = "superbiteburger"
+	item_state = "superbiteburger"
+	item_state_world = "superbiteburger_world"
 	filling_color = "#cca26a"
 	bitesize = 10
 	list_reagents = list("nutriment" = 32, "cheese" = 4, "protein" = 16, "vitamin" = 5)
@@ -1945,7 +2113,7 @@
 	icon_state = "xenomeatbread"
 	slice_path = /obj/item/weapon/reagent_containers/food/snacks/breadslice/xeno
 	filling_color = "#8aff75"
-	list_reagents = list("protein" = 20, "nutriment" = 10, "vitamin" = 5)
+	list_reagents = list("protein" = 20, "nutriment" = 10, "vitamin" = 5, "xenojelly_un" = 5)
 	food_type = VERY_TASTY_FOOD
 	food_moodlet = /datum/mood_event/very_tasty_food
 
@@ -2001,6 +2169,24 @@
 	desc = "A slice of delicious tofubread."
 	icon_state = "tofubreadslice"
 	filling_color = "#f7ffe0"
+
+/obj/item/weapon/reagent_containers/food/snacks/sliceable/bread/kulich
+	name = "Kulich"
+	desc = "A big cylinder-shaped festive cupcake."
+	icon_state = "kulich"
+	item_state_world = "kulich_world"
+	slice_path = /obj/item/weapon/reagent_containers/food/snacks/breadslice/kulich
+	filling_color = "#ede5ad"
+	list_reagents = list("sugar" = 10, "nutriment" = 25)
+
+/obj/item/weapon/reagent_containers/food/snacks/breadslice/kulich
+	name = "Kulich slice"
+	desc = "A slice of delicious kulich."
+	icon_state = "kulichslice"
+	item_state_world = "kulichslice_world"
+	item_state = "kulich"
+	filling_color = "#ede5ad"
+	trash = null
 
 // === CAKE ===
 
@@ -2443,6 +2629,17 @@
 	food_type = NATURAL_FOOD
 	food_moodlet = /datum/mood_event/natural_food
 
+/obj/item/weapon/reagent_containers/food/snacks/mandarinslice
+	name = "Mandarin Slice"
+	desc = "Кусочек нового года."
+	icon_state = "mandarinslice"
+	item_state_world = "mandarinslice_world"
+	filling_color = "#faad28"
+	list_reagents = list("vitamin" = 1, "sugar" = 4)
+	bitesize = 15
+	food_type = NATURAL_FOOD
+	food_moodlet = /datum/mood_event/natural_food
+
 /obj/item/weapon/reagent_containers/food/snacks/cracker
 	name = "Cracker"
 	desc = "It's a salted cracker."
@@ -2495,6 +2692,8 @@
 	list_reagents = list("nutriment" = 6)
 	food_type = JUNK_FOOD
 	food_moodlet = /datum/mood_event/junk_food
+	cookingThreshold = 10
+	fire_act_result = /obj/item/weapon/reagent_containers/food/snacks/bun
 
 // Dough + rolling pin = flat dough
 /obj/item/weapon/reagent_containers/food/snacks/dough/attackby(obj/item/I, mob/user, params)
@@ -2522,6 +2721,8 @@
 	list_reagents = list("nutriment" = 6)
 	food_type = JUNK_FOOD
 	food_moodlet = /datum/mood_event/junk_food
+	cookingThreshold = 10
+	fire_act_result = /obj/item/weapon/reagent_containers/food/snacks/flatbread
 
 /obj/item/weapon/reagent_containers/food/snacks/doughslice
 	name = "dough slice"
@@ -2532,6 +2733,16 @@
 	list_reagents = list("nutriment" = 1)
 	food_type = JUNK_FOOD
 	food_moodlet = /datum/mood_event/junk_food
+
+/obj/item/weapon/reagent_containers/food/snacks/blin
+	name = "blin"
+	desc = "Первый - комом!"
+	icon = 'icons/obj/food.dmi'
+	icon_state = "blin"
+	item_state_world = "blin_world"
+	filling_color = "#fabc60"
+	bitesize = 2
+	list_reagents = list("nutriment" = 5)
 
 /obj/item/weapon/reagent_containers/food/snacks/bun
 	name = "bun"
@@ -2598,6 +2809,8 @@
 	list_reagents = list("nutriment" = 1)
 	food_type = JUNK_FOOD
 	food_moodlet = /datum/mood_event/junk_food
+	cookingThreshold = 10
+	fire_act_result = /obj/item/weapon/reagent_containers/food/snacks/cutlet
 
 /obj/item/weapon/reagent_containers/food/snacks/cutlet
 	name = "cutlet"
@@ -2632,13 +2845,15 @@
 	list_reagents = list("protein" = 2)
 	food_type = JUNK_FOOD
 	food_moodlet = /datum/mood_event/junk_food
+	cookingThreshold = 10
+	fire_act_result = /obj/item/weapon/reagent_containers/food/snacks/meatball
 
 /obj/item/weapon/reagent_containers/food/snacks/hotdog
 	name = "hotdog"
 	desc = "Unrelated to dogs, maybe."
 	icon_state = "hotdog"
 	bitesize = 2
-	list_reagents = list("protein" = 6)
+	list_reagents = list("protein" = 12)
 
 /obj/item/weapon/reagent_containers/food/snacks/flatbread
 	name = "flatbread"
@@ -2764,6 +2979,8 @@
 	icon_state = "raw_bacon"
 	bitesize = 3
 	list_reagents = list("protein" = 1)
+	cookingThreshold = 10
+	fire_act_result = /obj/item/weapon/reagent_containers/food/snacks/bacon
 
 /obj/item/weapon/reagent_containers/food/snacks/bacon
 	name = "bacon"
@@ -2840,6 +3057,7 @@
 	name = "candy cane"
 	desc = "A festive mint candy cane."
 	icon_state = "candycane"
+	item_state_world = "candycane_world"
 	filling_color = "#f2f2f2"
 	bitesize = 2
 	list_reagents = list("sugar" = 5)
@@ -3126,6 +3344,14 @@
 	bitesize = 3
 	list_reagents = list("grapejuice" = 2)
 
+/obj/item/weapon/reagent_containers/food/snacks/candy/gummyworm/pink
+	name = "gummy worm"
+	desc = "An edible worm, made from gelatin. It's pink!"
+	icon_state = "gworm_pink"
+	filling_color = "#fc73a7"
+	bitesize = 3
+	list_reagents = list("watermelonjuice" = 2)
+
 /obj/item/weapon/reagent_containers/food/snacks/candy/gummyworm/wtf
 	name = "gummy worm"
 	desc = "An edible worm. Did it just move?"
@@ -3133,6 +3359,14 @@
 	filling_color = "#60a584"
 	bitesize = 3
 	list_reagents = list("space_drugs" = 2)
+
+/obj/item/weapon/reagent_containers/food/snacks/candy/gummyworm/rainbow
+	name = "gummy worm"
+	desc = "An edible worm, made from gelatin. It's rainbow!"
+	icon_state = "gworm_rainbow"
+	filling_color = "#c8a5dc"
+	bitesize = 4
+	list_reagents = list("nutriment" = 20, "psilocybin" = 1)
 
 ///////////////////////////////////////////
 // JELLY BEANS :3
@@ -3329,6 +3563,17 @@
 	bitesize = 3
 	list_reagents = list("grapejuice" = 2)
 
+/obj/item/weapon/reagent_containers/food/snacks/candy/sucker/mystery
+	name = "sucker?"
+	desc = "???"
+	icon_state = "sucker_mystery"
+	filling_color = "#ffffff"
+	bitesize = 3
+
+/obj/item/weapon/reagent_containers/food/snacks/candy/sucker/mystery/atom_init()
+	. = ..()
+	reagents.add_reagent(pick(global.chemical_reagents_list), 5)
+
 ///////////////////////////////////////////
 // WORM GYMS :3
 ///////////////////////////////////////////
@@ -3399,6 +3644,7 @@
 	icon = 'icons/obj/wizard.dmi'
 	icon_state = "ectoplasm"
 	list_reagents = list("ectoplasm" = 5)
+	origin_tech = "biotech=5"
 	food_type = JUNK_FOOD
 	food_moodlet = /datum/mood_event/junk_food
 
@@ -3425,3 +3671,81 @@
 	reagents.add_reagent("nutriment", 2)
 	reagents.add_reagent("sugar", 3)
 	icon_state = pick("candyheart_pink", "candyheart_green", "candyheart_blue", "candyheart_yellow")
+
+//Xeno species food
+
+/obj/item/weapon/reagent_containers/food/snacks/el_ehum
+	name = "El E'hum"
+	desc = "A thin pieces of bark from the elyu'a ail tree, smoked with seynyu'dra leaves. The finished dish tastes like ham. This meat is usually eaten with a portion of seinyu'dra bark, which can be carried around, making it indispensable for the Tajaran's treks."
+	icon_state = "el_ehum"
+	bitesize = 3
+	list_reagents = list("nutriment" = 3, "blackpepper" = 3, "bicaridine" = 3)
+
+/obj/item/weapon/reagent_containers/food/snacks/rraasi
+	name = "Rraasi"
+	desc = "A popular food is tajaran, named after the one-eyed fish used in cooking. Slightly spicy flavor with crushed sei'draa. The dish is served cold on a heated plate. Popularized by the Innad clan, this extraordinarily spicy dish has become a favorite of many tajarans around the world. Rraasi, as a rule, does not harm a person in acceptable norms, but with its sharp taste it can shock."
+	icon_state = "rraasi"
+	bitesize = 3
+	trash = /obj/item/trash/plate
+	list_reagents = list("protein" = 3, "carpotoxin" = 3, "blackpepper" = 3)
+
+/obj/item/weapon/reagent_containers/food/snacks/sliceable/kaholket_alkeha
+	name = "Kahol'Ket Al'Keha"
+	desc = "A simple pie made with Cha'ich nuts and berries and baked in Elyu'a Eil."
+	icon_state = "kaholket_alkeha"
+	slice_path = /obj/item/weapon/reagent_containers/food/snacks/cakeslice/kaholket_alkeha
+	slices_num = 5
+	trash = /obj/item/trash/plate
+	list_reagents = list("nutriment" = 12, "berryjuice" = 3, "vitamin" = 2)
+
+/obj/item/weapon/reagent_containers/food/snacks/cakeslice/kaholket_alkeha
+	name = "Kahol'Ket Al'Keha"
+	desc = "A simple pie made with Cha'ich nuts and berries and baked in Elyu'a Eil."
+	icon_state = "kaholket_alkeha_slice"
+
+/obj/item/weapon/reagent_containers/food/snacks/jundarek
+	name = "Jun'Darek"
+	desc = "A fish dipped in salted wine."
+	icon_state = "jundarek"
+	bitesize = 5
+	trash = /obj/item/trash/snack_bowl
+	list_reagents = list("protein" = 3, "carpotoxin" = 3, "sodiumchloride" = 1, "wine" = 13)
+
+/obj/item/weapon/reagent_containers/food/snacks/soup/fushstvessina
+	name = "Fushst'vessina"
+	desc = "Cooked syrup, which is given a decorative shape and sprinkled with chaich nut flakes."
+	icon_state = "fushstvessina"
+	bitesize = 5
+	trash = /obj/item/trash/snack_bowl
+	list_reagents = list("protein" = 8, "vitamin" = 4, "rice" = 3)
+
+/obj/item/weapon/reagent_containers/food/snacks/adjurahma
+	name = "Adjurah'Ma"
+	desc = "Cooked syrup, which is given a decorative shape and sprinkled with chaich nut flakes."
+	icon_state = "adjurahma"
+	bitesize = 3
+	list_reagents = list("nutriment" = 2, "water" = 7, "sugar" = 6)
+
+/obj/item/weapon/reagent_containers/food/snacks/julma_tulkrash
+	name = "Jul'Ma Tul'Krush"
+	desc = "A very sweet broth made from fresh fat, meat and Jul'Ma"
+	icon_state = "julma_tulkrash"
+	bitesize = 5
+	trash = /obj/item/trash/snack_bowl
+	list_reagents = list("nutriment" = 2, "water" = 8, "protein" = 3, "vitamin" = 2)
+
+/obj/item/weapon/reagent_containers/food/snacks/fasqhtongue
+	name = "Fasqh'tongue"
+	desc = "A dried and cured sissalika tongue cured in vinegar. Usually seasoned with something spicy. It is usually served straight in its entirety, occupying a good half a meter on the table."
+	icon_state = "fasqhtongue"
+	bitesize = 5
+	list_reagents = list("protein" = 4, "plantmatter" = 6, "blackpepper" = 3, "vitamin" = 2)
+
+/obj/item/weapon/reagent_containers/food/snacks/kefeogeo
+	name = "Kefeogeo"
+	desc = "A small meat tenderloins dried in the sun in hot spices. It turns out a kind of jerky chips, which are very fond of children as a treat. Traditionally served on a plate of edible fern leaf by one of the younger members of the family."
+	icon_state = "kefeogeo"
+	bitesize = 4
+	food_type = NATURAL_FOOD
+	list_reagents = list("protein" = 7, "plantmatter" = 3, "sodiumchloride" = 1, "blackpepper" = 1)
+

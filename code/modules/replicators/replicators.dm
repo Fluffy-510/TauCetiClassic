@@ -60,9 +60,6 @@ ADD_TO_GLOBAL_LIST(/mob/living/simple_animal/hostile/replicator, alive_replicato
 
 	pass_flags = PASSTABLE
 	ventcrawler = TRUE
-	can_enter_vent_with = list(
-		/obj/effect/proc_holder/spell,
-	)
 
 	maxHealth = 60
 	health = 60
@@ -116,20 +113,6 @@ ADD_TO_GLOBAL_LIST(/mob/living/simple_animal/hostile/replicator, alive_replicato
 
 	var/disintegrating = FALSE
 
-	var/list/replicator_spells = list(
-		/obj/effect/proc_holder/spell/no_target/replicator_construct/replicate,
-		/obj/effect/proc_holder/spell/no_target/replicator_construct/barricade,
-		/obj/effect/proc_holder/spell/no_target/replicator_construct/trap,
-		/obj/effect/proc_holder/spell/no_target/replicator_construct/transponder,
-		/obj/effect/proc_holder/spell/no_target/replicator_construct/generator,
-		/obj/effect/proc_holder/spell/no_target/toggle_corridor_construction,
-		/obj/effect/proc_holder/spell/no_target/transfer_to_idle,
-		/obj/effect/proc_holder/spell/no_target/transfer_to_area,
-		/obj/effect/proc_holder/spell/no_target/toggle_light,
-		/obj/effect/proc_holder/spell/no_target/set_mail_tag,
-		/obj/effect/proc_holder/spell/no_target/replicator_construct/catapult,
-	)
-
 	var/datum/skills/skills
 
 	var/image/indicator
@@ -159,9 +142,6 @@ ADD_TO_GLOBAL_LIST(/mob/living/simple_animal/hostile/replicator, alive_replicato
 	chat_color_name = name
 	scatter_offset()
 
-	for(var/spell in replicator_spells)
-		AddSpell(new spell(src))
-
 	skills = new
 	skills.add_available_skillset(/datum/skillset/replicator)
 	skills.maximize_active_skills()
@@ -183,10 +163,16 @@ ADD_TO_GLOBAL_LIST(/mob/living/simple_animal/hostile/replicator, alive_replicato
 
 	AddComponent(/datum/component/replicator_regeneration)
 
-	RegisterSignal(src, list(COMSIG_CLIENTMOB_MOVE), .proc/on_clientmob_move)
+	RegisterSignal(src, COMSIG_LIVING_CAN_TRACK, PROC_REF(can_be_tracked))
+
+	RegisterSignal(src, list(COMSIG_CLIENTMOB_MOVE), PROC_REF(on_clientmob_move))
+
+/mob/living/simple_animal/hostile/replicator/proc/can_be_tracked(datum/source)
+	SIGNAL_HANDLER
+	return COMPONENT_CANT_TRACK
 
 /mob/living/simple_animal/hostile/replicator/Destroy()
-	UnregisterSignal(src, list(COMSIG_CLIENTMOB_MOVE))
+	UnregisterSignal(src, list(COMSIG_CLIENTMOB_MOVE, COMSIG_LIVING_CAN_TRACK))
 
 	global.idle_replicators -= src
 
@@ -224,6 +210,9 @@ ADD_TO_GLOBAL_LIST(/mob/living/simple_animal/hostile/replicator, alive_replicato
 		S.dirt = 0
 
 	for(var/A in T)
+		if(istype(A, /obj/effect/overlay/replicator))
+			continue
+
 		if(istype(A, /obj/effect/rune) || istype(A, /obj/effect/decal/cleanable) || istype(A, /obj/effect/overlay))
 			qdel(A)
 
@@ -288,13 +277,13 @@ ADD_TO_GLOBAL_LIST(/mob/living/simple_animal/hostile/replicator, alive_replicato
 
 				var/obj/structure/bluespace_corridor/BC_anim = locate() in anim_turf
 				if(BC_anim)
-					INVOKE_ASYNC(BC, /obj/structure/bluespace_corridor.proc/animate_obstacle)
+					INVOKE_ASYNC(BC, TYPE_PROC_REF(/obj/structure/bluespace_corridor, animate_obstacle))
 
 			return FALSE
 
 		if(BC.neighbor_count > 1)
 			to_chat(src, "<span class='notice'>Can not place Bluespace Corridor, a neighbor has more than one other neighboring Bluespace Corridor.</span>")
-			INVOKE_ASYNC(BC, /obj/structure/bluespace_corridor.proc/animate_obstacle)
+			INVOKE_ASYNC(BC, TYPE_PROC_REF(/obj/structure/bluespace_corridor, animate_obstacle))
 			return FALSE
 
 	return TRUE
@@ -308,7 +297,7 @@ ADD_TO_GLOBAL_LIST(/mob/living/simple_animal/hostile/replicator, alive_replicato
 	indicator.color = state2color[state]
 	overlays += indicator
 
-/mob/living/simple_animal/hostile/replicator/Login()
+/mob/living/simple_animal/hostile/replicator/LateLogin()
 	..()
 
 	if(leader)
@@ -502,7 +491,7 @@ ADD_TO_GLOBAL_LIST(/mob/living/simple_animal/hostile/replicator, alive_replicato
 		to_chat(R, "<span class='notice'>Issued a self-destruct order to [name].</span>")
 		set_state(REPLICATOR_STATE_HARVESTING)
 		set_last_controller(R.ckey)
-		INVOKE_ASYNC(src, .proc/disintegrate, src)
+		INVOKE_ASYNC(src, PROC_REF(disintegrate), src)
 		return
 
 	if(href_list["replicator_objection"])
@@ -562,7 +551,7 @@ ADD_TO_GLOBAL_LIST(/mob/living/simple_animal/hostile/replicator, alive_replicato
 	animation.master = src
 
 //	flick("gibbed-r", animation)
-	robogibs(loc)
+	new /obj/effect/gibspawner/robot(get_turf(loc))
 
 	dead_mob_list -= src
 	QDEL_IN(src, 15)
@@ -663,7 +652,7 @@ ADD_TO_GLOBAL_LIST(/mob/living/simple_animal/hostile/replicator, alive_replicato
 
 	if(is_controlled())
 		if(user == src && FR.upgrades_amount > length(RAI.acquired_upgrades))
-			to_chat(user, "<span class='bold notice'><a href='?src=\ref[src];replicator_upgrade=1'>Upgrade Prospectives Analyzed. Click here to upgrade.</a></span>")
+			to_chat(user, "<span class='bold notice'><a href='byond://?src=\ref[src];replicator_upgrade=1'>Upgrade Prospectives Analyzed. Click here to upgrade.</a></span>")
 		return
 
 	switch(state)

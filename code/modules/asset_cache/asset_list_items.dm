@@ -10,6 +10,16 @@
 	assets = list(
 		"tgui-panel.bundle.js" = 'tgui/public/tgui-panel.bundle.js',
 		"tgui-panel.bundle.css" = 'tgui/public/tgui-panel.bundle.css',
+		"Gys14Segment.ttf" = 'html/custom-fonts/Gys14Segment.ttf',
+		"Gys14Segment.eot" = 'html/custom-fonts/Gys14Segment.eot',
+		"Gys14Segment.woff" = 'html/custom-fonts/Gys14Segment.woff',
+		"TINIESTONE.ttf" = 'html/custom-fonts/TINIESTONE.ttf',
+		"TINIESTONE.eot" = 'html/custom-fonts/TINIESTONE.eot',
+		"TINIESTONE.woff" = 'html/custom-fonts/TINIESTONE.woff',
+		"StatusDisplays.ttf" = 'html/custom-fonts/StatusDisplays.ttf',
+		"StatusDisplays.eot" = 'html/custom-fonts/StatusDisplays.eot',
+		"StatusDisplays.woff" = 'html/custom-fonts/StatusDisplays.woff',
+		"custom-fonts.css" = 'html/custom-fonts/custom-fonts.css'
 	)
 
 
@@ -20,12 +30,11 @@
 
 /datum/asset/simple/fontawesome
 	assets = list(
-		"fa-regular-400.eot"  = 'html/font-awesome/webfonts/fa-regular-400.eot',
-		"fa-regular-400.woff" = 'html/font-awesome/webfonts/fa-regular-400.woff',
-		"fa-solid-900.eot"    = 'html/font-awesome/webfonts/fa-solid-900.eot',
-		"fa-solid-900.woff"   = 'html/font-awesome/webfonts/fa-solid-900.woff',
-		"v4shim.css"          = 'html/font-awesome/css/v4-shims.min.css',
-		"font-awesome.css"    = 'html/font-awesome/css/all.min.css'
+		"fa-regular-400.ttf"     = 'html/font-awesome/webfonts/fa-regular-400.ttf',
+		"fa-solid-900.ttf"       = 'html/font-awesome/webfonts/fa-solid-900.ttf',
+		"fa-v4compatibility.ttf" = 'html/font-awesome/webfonts/fa-v4compatibility.ttf',
+		"v4shim.css"             = 'html/font-awesome/css/v4-shims.min.css',
+		"font-awesome.css"       = 'html/font-awesome/css/all.min.css'
 	)
 
 /datum/asset/simple/spider_os
@@ -80,7 +89,9 @@
 		"WK.png" = 'icons/obj/chess/board_WK.png',
 		"WP.png" = 'icons/obj/chess/board_WP.png',
 		"CB.png" = 'icons/obj/chess/board_CB.png',
-		"CR.png" = 'icons/obj/chess/board_CR.png',
+		"CW.png" = 'icons/obj/chess/board_CW.png',
+		"KB.png" = 'icons/obj/chess/board_CB_king.png',
+		"KW.png" = 'icons/obj/chess/board_CW_king.png',
 		"none.png" = 'icons/obj/chess/board_none.png'
 	)
 
@@ -148,6 +159,7 @@
 		if (!ispath(item, /atom))
 			continue
 		var/obj/product = new item
+		items_to_clear += product
 		var/icon/I = getFlatIcon(product)
 		var/imgid = replacetext(replacetext("[item]", "[/obj/item]/", ""), "/", "-")
 		insert_icon_in_list(imgid, I)
@@ -158,9 +170,10 @@
 
 /datum/asset/spritesheet/sheetmaterials/register()
 	for (var/type in subtypesof(/obj/item/stack/sheet))
-		var/obj/item = type
-		var/icon/I = icon(initial(item.icon), initial(item.icon_state)) //for some reason, the getFlatIcon(item) function does not create images of objects such as /obj/item/ammo_casing
-		var/imgid = replacetext(replacetext("[item]", "[/obj/item]/", ""), "/", "-")
+		var/obj/item = new type
+		items_to_clear += item
+		var/icon/I = getFlatIcon(item)
+		var/imgid = replacetext(replacetext("[type]", "[/obj/item]/", ""), "/", "-")
 		insert_icon_in_list(imgid, I)
 	return ..()
 /datum/asset/spritesheet/equipment_locker
@@ -195,6 +208,7 @@
 		if (!ispath(item, /atom))
 			continue
 		var/obj/product = new item
+		items_to_clear += product
 		var/icon/I = getFlatIcon(product)
 		var/imgid = replacetext(replacetext("[item]", "[/obj/item]/", ""), "/", "-")
 		insert_icon_in_list(imgid, I)
@@ -206,8 +220,24 @@
 /datum/asset/spritesheet/autolathe/register()
 	var/list/recipes = global.autolathe_recipes_all
 	for (var/datum/autolathe_recipe/r in recipes)
-		var/obj/item = r.result_type
-		var/icon/I = icon(initial(item.icon), initial(item.icon_state)) //for some reason, the getFlatIcon(item) function does not create images of objects such as /obj/item/ammo_casing
+		var/obj/item = new r.result_type
+		items_to_clear += item
+		var/icon/I = getFlatIcon(item)
+		var/imgid = replacetext(replacetext("[r.result_type]", "[/obj/item]/", ""), "/", "-")
+		insert_icon_in_list(imgid, I)
+	return ..()
+
+/datum/asset/spritesheet/orebox
+	name = "orebox"
+
+/datum/asset/spritesheet/orebox/register()
+	for(var/k in subtypesof(/obj/item/weapon/ore))
+		var/atom/item = k
+		if (!ispath(item, /atom))
+			continue
+		var/obj/product = new item
+		items_to_clear += product
+		var/icon/I = getFlatIcon(product)
 		var/imgid = replacetext(replacetext("[item]", "[/obj/item]/", ""), "/", "-")
 		insert_icon_in_list(imgid, I)
 	return ..()
@@ -243,6 +273,7 @@
 			imgid = replacetext(replacetext("[content]", "[/mob]/", ""), "/", "-")
 		else
 			var/obj/supply = new content
+			items_to_clear += supply
 			sprite = getFlatIcon(supply)
 			imgid = replacetext(replacetext("[content]", "[/obj]/", ""), "/", "-")
 		insert_icon_in_list(imgid, sprite)

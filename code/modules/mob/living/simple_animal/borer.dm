@@ -2,6 +2,8 @@
 	name = "host brain"
 	real_name = "host brain"
 
+	show_examine_log = FALSE
+
 /mob/living/captive_brain/say_understands(mob/other, datum/language/speaking)
 	var/mob/living/simple_animal/borer/my_borer = loc
 	if(!istype(loc))
@@ -11,10 +13,10 @@
 /mob/living/captive_brain/say(message)
 
 	if (client)
-		if(client.prefs.muted & MUTE_IC)
+		if(client.prefs.muted & MUTE_IC || IS_ON_ADMIN_CD(client, ADMIN_CD_IC))
 			to_chat(src, "<span class='warning'>You cannot speak in IC (muted).</span>")
 			return
-		if (client.handle_spam_prevention(message,MUTE_IC))
+		if (client.handle_spam_prevention(message,ADMIN_CD_IC))
 			return
 
 	message = sanitize(message)
@@ -35,9 +37,9 @@
 /mob/living/simple_animal/borer
 	name = "cortical borer"
 	real_name = "cortical borer"
-	desc = "A small, quivering sluglike creature."
-	speak_emote = list("chirrups")
-	emote_hear = list("chirrups")
+	desc = "Маленькое существо, похожее на слизняка."
+	speak_emote = list("шипит")
+	emote_hear = list("шипит")
 	response_help  = "pokes the"
 	response_disarm = "prods the"
 	response_harm   = "stomps on the"
@@ -62,7 +64,7 @@
 		"Septenary", "Octonary", "Novenary", "Decenary", "Undenary", "Duodenary",
 		)
 
-	var/static/list/banned_species = list(IPC, GOLEM, SLIME, DIONA)
+	var/static/list/banned_species = list(IPC, GOLEM, DIONA)
 
 	var/dominate_cd = 0                        // Cooldown for dominate victim
 	var/assuming = FALSE
@@ -74,6 +76,8 @@
 	var/docile = FALSE                         // Sugar can stop borers from acting.
 	var/leaving = FALSE
 	var/has_reproduced = FALSE                 // Whether or not the borer has reproduced, for objective purposes.
+
+	show_examine_log = FALSE
 
 /mob/living/simple_animal/borer/atom_init(mapload, request_ghosts = FALSE, gen = 1)
 	. = ..()
@@ -137,10 +141,10 @@
 		return
 
 	if (client)
-		if(client.prefs.muted & MUTE_IC)
+		if(client.prefs.muted & MUTE_IC || IS_ON_ADMIN_CD(client, ADMIN_CD_IC))
 			to_chat(src, "<span class='warning'>You cannot speak in IC (muted).</span>")
 			return
-		if (client.handle_spam_prevention(message,MUTE_IC))
+		if (client.handle_spam_prevention(message,ADMIN_CD_IC))
 			return
 
 	if (message[1] == "*")
@@ -196,7 +200,7 @@
 
 	var/list/choices = list()
 	for(var/mob/living/carbon/C in view(3,src))
-		if(C.stat != DEAD && !(C.get_species() in banned_species))
+		if(C.stat != DEAD && !(C.get_species() in banned_species) && !HAS_TRAIT(C, ELEMENT_TRAIT_SLIME))
 			choices += C
 
 	if(world.time - dominate_cd < 300)
@@ -248,7 +252,7 @@
 	to_chat(src, "You begin delicately adjusting your connection to the host brain...")
 	assuming = TRUE
 
-	addtimer(CALLBACK(src, .proc/take_control), 300 + (host.brainloss * 5))
+	addtimer(CALLBACK(src, PROC_REF(take_control)), 300 + (host.getBrainLoss() * 5))
 
 /mob/living/simple_animal/borer/proc/take_control()
 	assuming = FALSE
@@ -329,7 +333,7 @@
 	if(host.stat == CONSCIOUS)
 		to_chat(host, "An odd, uncomfortable pressure begins to build inside your skull, behind your ear...")
 
-	addtimer(CALLBACK(src, .proc/let_go), 200)
+	addtimer(CALLBACK(src, PROC_REF(let_go)), 200)
 
 /mob/living/simple_animal/borer/proc/let_go()
 	if(!host || !src || QDELETED(host) || QDELETED(src))
@@ -358,7 +362,7 @@
 		var/mob/living/carbon/human/H = host
 		var/obj/item/organ/external/BP = H.bodyparts_by_name[BP_HEAD]
 
-		BP.implants -= src
+		BP.embedded_objects -= src
 		if(H.glasses?.hud_list)
 			for(var/hud in H.glasses.hud_list)
 				var/datum/atom_hud/AH = global.huds[hud]
@@ -456,7 +460,7 @@
 	if(ishuman(host))
 		var/mob/living/carbon/human/H = host
 		var/obj/item/organ/external/BP = H.bodyparts_by_name[BP_HEAD]
-		BP.implants += src
+		BP.embedded_objects += src
 		H.sec_hud_set_implants()
 
 	host_brain.name = C.name

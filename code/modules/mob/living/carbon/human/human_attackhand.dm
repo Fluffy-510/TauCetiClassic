@@ -2,6 +2,11 @@
 	var/obj/item/organ/external/BPHand = get_bodypart(hand ? BP_L_ARM : BP_R_ARM)
 	var/datum/unarmed_attack/attack = BPHand.species.unarmed
 
+	if(HAS_TRAIT(src, ELEMENT_TRAIT_SLIME))
+		// slime people is not a species anymore and i need to store datum somewhere
+		var/static/datum/unarmed_attack/slime_glomp = new /datum/unarmed_attack/slime_glomp
+		attack = slime_glomp
+
 	var/retDam = 2 + attack.damage
 	var/retDamType = attack.damType
 	var/retFlags = attack.damage_flags()
@@ -40,11 +45,11 @@
 /mob/living/carbon/human/helpReaction(mob/living/carbon/human/attacker, show_message = TRUE)
 	var/target_zone = attacker.get_targetzone()
 	var/obj/item/organ/internal/heart/Heart = organs_by_name[O_HEART]
-	if(health < (config.health_threshold_crit - 30) && target_zone == O_MOUTH)
-		INVOKE_ASYNC(src, .proc/perform_av, attacker)
+	if(health < (config.health_threshold_crit) && target_zone == O_MOUTH)
+		INVOKE_ASYNC(src, PROC_REF(perform_av), attacker)
 		return TRUE
 	if(Heart && Heart.parent_bodypart == target_zone && Heart.heart_status != HEART_NORMAL)
-		INVOKE_ASYNC(src, .proc/perform_cpr, attacker)
+		INVOKE_ASYNC(src, PROC_REF(perform_cpr), attacker)
 		return TRUE
 	if(attacker != src || !apply_pressure(attacker, target_zone))
 		if(target_zone == O_MOUTH && attacker == src)
@@ -84,7 +89,7 @@
 	else
 		user.visible_message("\The [user] starts applying pressure to [src]'s [BP.name]!", "You start applying pressure to [src]'s [BP.name]!")
 
-	INVOKE_ASYNC(src, .proc/do_apply_pressure, user, target_zone, BP)
+	INVOKE_ASYNC(src, PROC_REF(do_apply_pressure), user, target_zone, BP)
 
 	return TRUE
 

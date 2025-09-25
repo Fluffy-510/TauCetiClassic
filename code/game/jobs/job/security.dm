@@ -9,10 +9,11 @@
 	selection_color = "#ffdddd"
 	idtype = /obj/item/weapon/card/id/secGold
 	req_admin_notify = 1
+	is_head = TRUE
 	access = list(
 		access_security, access_sec_doors, access_brig, access_armory,
 		access_forensics_lockers, access_morgue, access_maint_tunnels, access_all_personal_lockers,
-		access_research, access_mining, access_medical, access_construction, access_mailsorting,
+		access_research, access_mining, access_medical, access_construction,
 		access_heads, access_hos, access_RC_announce, access_keycard_auth, access_gateway, access_detective
 	)
 	salary = 250
@@ -26,8 +27,8 @@
 		AND BUMPING UP THE SAVEFILE_VERSION_MAX, AND SAVEFILE_VERSION_SPECIES_JOBS
 		~Luduk
 	*/
-	restricted_species = list(SKRELL, UNATHI, TAJARAN, DIONA, VOX, IPC)
-
+	restricted_species = list(SKRELL, UNATHI, TAJARAN, DIONA, VOX, IPC , PLUVIAN)
+	flags = JOB_FLAG_SECURITY|JOB_FLAG_COMMAND|JOB_FLAG_HEAD_OF_STAFF|JOB_FLAG_BLUESHIELD_PROTEC
 
 /datum/job/warden
 	title = "Warden"
@@ -51,8 +52,12 @@
 		AND BUMPING UP THE SAVEFILE_VERSION_MAX, AND SAVEFILE_VERSION_SPECIES_JOBS
 		~Luduk
 	*/
-	restricted_species = list(TAJARAN, DIONA, VOX, IPC)
+	restricted_species = list(TAJARAN, DIONA, VOX, IPC, PLUVIAN)
+	flags = JOB_FLAG_SECURITY
 
+/datum/job/warden/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
+	if(HAS_ROUND_ASPECT(ROUND_ASPECT_ELITE_SECURITY))
+		to_chat(H, "<span class='notice'>Вместо обычной охраны на эту станцию решили прислать профессиональных оперативников. Вы являетесь одним из них. В отличии от стандартного офицера охраны, вы обладаете продвинутым снаряжением, отличной подготовкой, имплантом лояльности и встроенным устройством для уничтожения тела после смерти.</span>")
 
 /datum/job/detective
 	title = "Detective"
@@ -76,8 +81,8 @@
 		AND BUMPING UP THE SAVEFILE_VERSION_MAX, AND SAVEFILE_VERSION_SPECIES_JOBS
 		~Luduk
 	*/
-	restricted_species = list(DIONA)
-
+	restricted_species = list(DIONA, IPC, PLUVIAN)
+	flags = JOB_FLAG_SECURITY
 
 /datum/job/officer
 	title = "Security Officer"
@@ -101,8 +106,13 @@
 		AND BUMPING UP THE SAVEFILE_VERSION_MAX, AND SAVEFILE_VERSION_SPECIES_JOBS
 		~Luduk
 	*/
-	restricted_species = list(DIONA, TAJARAN, VOX, IPC)
+	restricted_species = list(DIONA, TAJARAN, VOX, IPC, PLUVIAN)
+	flags = JOB_FLAG_SECURITY
 
+/datum/job/officer/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
+	if(HAS_ROUND_ASPECT(ROUND_ASPECT_ELITE_SECURITY))
+		to_chat(H, "<span class='notice'>Вместо обычной охраны на эту станцию решили прислать профессиональных оперативников. Вы являетесь одним из них. В отличии от стандартного офицера охраны, вы обладаете продвинутым снаряжением, отличной подготовкой, имплантом лояльности и встроенным устройством для уничтожения тела после смерти.</span>")
+		LAZYADD(skillsets, /datum/skillset/warden)
 
 /datum/job/forensic
 	title = "Forensic Technician"
@@ -126,8 +136,8 @@
 		AND BUMPING UP THE SAVEFILE_VERSION_MAX, AND SAVEFILE_VERSION_SPECIES_JOBS
 		~Luduk
 	*/
-	restricted_species = list(UNATHI, TAJARAN, DIONA)
-
+	restricted_species = list(UNATHI, DIONA, PLUVIAN)
+	flags = JOB_FLAG_SECURITY
 
 /datum/job/cadet
 	title = "Security Cadet"
@@ -151,5 +161,5 @@
 		AND BUMPING UP THE SAVEFILE_VERSION_MAX, AND SAVEFILE_VERSION_SPECIES_JOBS
 		~Luduk
 	*/
-	restricted_species = list(DIONA, TAJARAN, VOX, IPC)
-
+	restricted_species = list(DIONA, TAJARAN, VOX, IPC, PLUVIAN)
+	flags = JOB_FLAG_SECURITY

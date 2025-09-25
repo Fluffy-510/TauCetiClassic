@@ -15,6 +15,8 @@
 
 #define STATUS_EFFECT_SWARMS_GIFT /datum/status_effect/swarm_gift
 
+#define STATUS_EFFECT_ALERTNESS /datum/status_effect/alertness
+
 /////////////
 // DEBUFFS //
 /////////////
@@ -26,6 +28,8 @@
 #define STATUS_EFFECT_REMOVE_WET /datum/status_effect/remove_trait/wet_hands
 
 #define STATUS_EFFECT_REMOVE_GREASY /datum/status_effect/remove_trait/greasy_hands
+
+#define STATUS_EFFECT_CLUMSY /datum/status_effect/clumsy
 
 /////////////
 // NEUTRAL //

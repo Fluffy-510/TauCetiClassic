@@ -1,6 +1,6 @@
 /mob/living/simple_animal/hostile/tomato
 	name = "tomato"
-	desc = "It's a horrifyingly enormous beef tomato, and it's packing extra beef!"
+	desc = "Ужасающе огромный помидор, ты точно найдёшь в нём бычье сердце!"
 	icon_state = "tomato"
 	icon_living = "tomato"
 	icon_dead = "tomato_dead"
@@ -18,6 +18,9 @@
 	melee_damage = 3
 
 	has_head = TRUE
+
+/mob/living/simple_animal/hostile/tomato/tomato_agrosphere
+	faction = "tomato"
 
 /mob/living/simple_animal/hostile/tomato/atom_init(mapload, potency)
 	. = ..()
@@ -37,3 +40,4 @@
 	melee_damage = 15
 	maxHealth = 40
 	health = maxHealth
+

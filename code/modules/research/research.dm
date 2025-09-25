@@ -273,27 +273,6 @@ The tech datums are the actual "tech trees" that you improve through researching
 				T.shown = TRUE
 				return
 
-/***************************************************************
-**						Technology Datums					  **
-**	Includes all the various technoliges and what they make.  **
-***************************************************************/
-
-/obj/item/weapon/disk/tech_disk
-	name = "Empty Disk"
-	desc = "Wow. Is that a save icon?"
-	icon = 'icons/obj/cloning.dmi'
-	icon_state = "datadisk2"
-	item_state = "card-id"
-	w_class = SIZE_TINY
-	m_amt = 30
-	g_amt = 10
-	var/datum/tech/stored
-
-/obj/item/weapon/disk/tech_disk/atom_init()
-	. = ..()
-	pixel_x = rand(-5.0, 5)
-	pixel_y = rand(-5.0, 5)
-
 /datum/tech	//Datum of individual technologies.
 	var/name = "name"          //Name of the technology.
 	var/shortname = "name"
@@ -368,6 +347,15 @@ The tech datums are the actual "tech trees" that you improve through researching
 	rare = 3
 	shown = FALSE
 	item_tech_req = "syndicate" // research any traiter item and this tech will show up
+
+/datum/tech/special
+	name = "Special Technologies Research"
+	shortname = "Special Tech"
+	desc = "Technologies of another corporations that can be used for Nanotrasen benefit"
+	id = RESEARCH_SPECIAL
+	rare = 3
+	shown = FALSE
+	item_tech_req = "special" // research any special item and this tech will show up
 
 
 /datum/technology
@@ -485,7 +473,7 @@ The tech datums are the actual "tech trees" that you improve through researching
 	required_tech_levels = list()
 	cost = 500
 
-	unlocks_designs = list("ordercomp", "supplycomp", "advmop", "holosign", "spraycan", "space_suit", "space_suit_helmet", "glowsticks_adv", "stimpack")
+	unlocks_designs = list("ordercomp", "supplycomp", "advmop", "holosign", "spraycan", "space_suit", "space_suit_helmet", "glowsticks_adv", "stimpack", "expshovel")
 
 /datum/technology/basic_mining
 	name = "Basic Mining"
@@ -889,7 +877,7 @@ The tech datums are the actual "tech trees" that you improve through researching
 	required_tech_levels = list()
 	cost = 500
 
-	unlocks_designs = list("sflash")
+	unlocks_designs = list("sflash","laserpractice")
 
 /datum/technology/advanced_nonlethal
 	name = "Advanced Non-Lethal"
@@ -1293,7 +1281,7 @@ The tech datums are the actual "tech trees" that you improve through researching
 	required_tech_levels = list()
 	cost = 2000
 
-	unlocks_designs = list("bluespacebeaker", "splitbeaker", "bag_holding", "minerbag_holding", "blutrash", "survivalcapsule", "portalgun")
+	unlocks_designs = list("bluespacebeaker", "splitbeaker", "bag_holding", "blutrash", "survivalcapsule", "portalgun", "bluespace_storage", "bluespacesatchel_holding")
 
 /datum/technology/bluespace_rped
 	name = "Bluespace RPED"
@@ -1346,8 +1334,8 @@ The tech datums are the actual "tech trees" that you improve through researching
 	unlocks_designs = list("ripley_main", "ripley_peri")
 
 /datum/technology/mech_odysseus
-	name = "Odyssey"
-	desc = "Odyssey"
+	name = "Odysseus"
+	desc = "Odysseus"
 	id = "mech_odysseus"
 	tech_type = RESEARCH_ROBOTICS
 
@@ -1391,7 +1379,7 @@ The tech datums are the actual "tech trees" that you improve through researching
 	required_tech_levels = list()
 	cost = 2000
 
-	unlocks_designs = list("aifixer", "safeguard_module", "onehuman_module", "protectstation_module", "notele_module", "quarantine_module", "oxygen_module", "freeform_module", "reset_module", "purge_module", "freeformcore_module", "asimov_module", "paladin_module", "holopad", "aicore", "aiupload", "borgupload")
+	unlocks_designs = list("aifixer", "safeguard_module", "onentemploye_module", "protectstation_module", "notele_module", "quarantine_module", "oxygen_module", "freeform_module", "reset_module", "purge_module", "freeformcore_module", "asimov_module", "paladin_module", "holopad", "aicore", "aiupload", "borgupload")
 
 /datum/technology/mech_gyrax
 	name = "Gygax"
@@ -1593,13 +1581,13 @@ The tech datums are the actual "tech trees" that you improve through researching
 	id = "binary_encryption_key"
 	tech_type = RESEARCH_ILLEGAL
 
-	x = 0.1
-	y = 0.5
+	x = 0.25
+	y = 0.2
 	icon = "headset"
 
 	required_technologies = list()
 	required_tech_levels = list(RESEARCH_BLUESPACE = 5)
-	cost = 2000
+	cost = 1000
 
 	unlocks_designs = list("binaryencrypt")
 
@@ -1609,13 +1597,13 @@ The tech datums are the actual "tech trees" that you improve through researching
 	id = "chameleon_kit"
 	tech_type = RESEARCH_ILLEGAL
 
-	x = 0.3
-	y = 0.5
+	x = 0.50
+	y = 0.2
 	icon = "chamelion"
 
 	required_technologies = list("binary_encryption_key")
 	required_tech_levels = list(RESEARCH_ENGINEERING = 10)
-	cost = 3000
+	cost = 2000
 
 	unlocks_designs = list("chameleon")
 
@@ -1625,8 +1613,8 @@ The tech datums are the actual "tech trees" that you improve through researching
 	id = "freedom_implant"
 	tech_type = RESEARCH_ILLEGAL
 
-	x = 0.5
-	y = 0.5
+	x = 0.75
+	y = 0.2
 	icon = "freedom"
 
 	required_technologies = list("chameleon_kit")
@@ -1641,7 +1629,7 @@ The tech datums are the actual "tech trees" that you improve through researching
 	id = "tyrant_aimodule"
 	tech_type = RESEARCH_ILLEGAL
 
-	x = 0.7
+	x = 0.75
 	y = 0.5
 	icon = "module"
 
@@ -1657,12 +1645,220 @@ The tech datums are the actual "tech trees" that you improve through researching
 	id = "borg_syndicate_module"
 	tech_type = RESEARCH_ILLEGAL
 
-	x = 0.9
+	x = 0.50
 	y = 0.5
 	icon = "borgmodule"
 
 	required_technologies = list("tyrant_aimodule")
 	required_tech_levels = list(RESEARCH_ROBOTICS = 10)
-	cost = 5000
+	cost = 4000
 
 	unlocks_designs = list("borg_syndicate_module")
+
+/datum/technology/ai_detector
+	name = "Artificial Intelligence Detector"
+	desc = "Artificial Intelligence Detector"
+	id = "ai_detector"
+	tech_type = RESEARCH_ILLEGAL
+
+	x = 0.25
+	y = 0.5
+	icon = "aidetector"
+
+	required_technologies = list("borg_syndicate_module")
+	required_tech_levels = list(RESEARCH_ROBOTICS = 10)
+	cost = 4000
+
+	unlocks_designs = list("ai_detector")
+
+/datum/technology/smuggler_satch
+	name = "Smuggler's Satchel"
+	desc = "Smuggler's Satchel"
+	id = "smuggler_satch"
+	tech_type = RESEARCH_ILLEGAL
+
+	x = 0.25
+	y = 0.8
+	icon = "smuggler"
+
+	required_technologies = list("ai_detector")
+	required_tech_levels = list(RESEARCH_BLUESPACE = 6)
+	cost = 4000
+
+	unlocks_designs = list("smuggler_satch")
+
+/datum/technology/voice_changer
+	name = "Voice Changer"
+	desc = "Voice Changer"
+	id = "voice_changer"
+	tech_type = RESEARCH_ILLEGAL
+
+	x = 0.50
+	y = 0.8
+	icon = "voicechanger"
+
+	required_technologies = list("smuggler_satch")
+	required_tech_levels = list(RESEARCH_BIOTECH = 7)
+	cost = 5000
+
+	unlocks_designs = list("voice_changer")
+
+/datum/technology/camera_bug
+	name = "Camera Bug"
+	desc = "Camera Bug"
+	id = "camera_bug"
+	tech_type = RESEARCH_ILLEGAL
+
+	x = 0.75
+	y = 0.8
+	icon = "camerabug"
+
+	required_technologies = list("voice_changer")
+	required_tech_levels = list(RESEARCH_ENGINEERING = 12)
+	cost = 5000
+
+	unlocks_designs = list("camera_bug")
+
+
+/datum/technology/tier1_hud_upgrade
+	name = "Damage Scan HUD upgrade"
+	desc = "Damage Scan HUD upgrade"
+	id = "tier1_hud_upgrade"
+	tech_type = RESEARCH_SPECIAL
+
+	x = 0.1
+	y = 0.8
+	icon = "mixhudadv"
+
+	required_technologies = list("tier1_hud_upgrade")
+	required_tech_levels = list(RESEARCH_SPECIAL = 1)
+
+	unlocks_designs = list("tier1_hud_upgrade", "advanced_hud")
+
+/datum/technology/tier2_hud_upgrade
+	name = "Basic Nightvision HUD upgrade"
+	desc = "Basic Nightvision HUD upgrade"
+	id = "tier2_hud_upgrade"
+	tech_type = RESEARCH_SPECIAL
+
+	x = 0.2
+	y = 0.8
+	icon = "nvghud"
+
+	required_technologies = list("tier1_hud_upgrade")
+	required_tech_levels = list(RESEARCH_SPECIAL = 2)
+	cost = 10000
+
+	unlocks_designs = list("tier2_hud_upgrade")
+
+/datum/technology/tier3_hud_upgrade
+	name = "Thermal HUD upgrade"
+	desc = "Ultra HUD upgrade"
+	id = "tier3_hud_upgrade"
+	tech_type = RESEARCH_SPECIAL
+
+	x = 0.3
+	y = 0.8
+	icon = "thermalhud"
+
+	required_technologies = list("tier2_hud_upgrade")
+	required_tech_levels = list(RESEARCH_SPECIAL = 3)
+	cost = 20000
+
+	unlocks_designs = list("tier3_hud_upgrade")
+
+/datum/technology/tier4_hud_upgrade
+	name = "Advanced Thermal HUD upgrade"
+	desc = "Advanced Thermal HUD upgrade"
+	id = "tier4_hud_upgrade"
+	tech_type = RESEARCH_SPECIAL
+
+	x = 0.4
+	y = 0.8
+	icon = "4thtier"
+
+	required_technologies = list("tier3_hud_upgrade")
+	required_tech_levels = list(RESEARCH_SPECIAL = 4)
+	cost = 30000
+
+	unlocks_designs = list("tier4_hud_upgrade")
+
+/datum/technology/healer_gun
+	name = "Medigun"
+	desc = "Medigun"
+	id = "medigun"
+	tech_type = RESEARCH_SPECIAL
+
+	x = 0.1
+	y = 0.6
+	icon = "medigun"
+
+	required_technologies = list("medigun")
+	required_tech_levels = list(RESEARCH_SPECIAL = 1)
+	cost = 0
+
+	unlocks_designs = list("medigun")
+
+/datum/technology/rigstealth
+	name = "RIG Stealth Module"
+	desc = "RIG Stealth Module"
+	id = "rigstealth"
+	tech_type = RESEARCH_SPECIAL
+
+	x = 0.2
+	y = 0.6
+	icon = "rigstealth"
+
+	required_technologies = list("medigun")
+	required_tech_levels = list(RESEARCH_SPECIAL = 2)
+	cost = 15000
+
+	unlocks_designs = list("rigstealth")
+
+/datum/technology/sniperrifle
+	name = "Sniper Rifle"
+	desc = "Sniper Rifle"
+	id = "sniperrifle"
+	tech_type = RESEARCH_SPECIAL
+
+	x = 0.3
+	y = 0.6
+	icon = "sniperrifle"
+
+	required_technologies = list("rigstealth")
+	required_tech_levels = list(RESEARCH_SPECIAL = 3)
+	cost = 15000
+
+	unlocks_designs = list("sniperrifle")
+
+/datum/technology/pulse_rifle
+	name = "Pulse Rifle"
+	desc = "Pulse Rifle"
+	id = "pulse_rifle"
+	tech_type = RESEARCH_SPECIAL
+
+	x = 0.4
+	y = 0.6
+	icon = "pulserifle"
+
+	required_technologies = list("rigstealth")
+	required_tech_levels = list(RESEARCH_SPECIAL = 4)
+	cost = 25000
+
+	unlocks_designs = list("pulse_rifle")
+
+/datum/technology/ds_armor
+	name = "DeathSquad Armor"
+	desc = "DeathSquad Armor"
+	id = "ds_armor"
+	tech_type = RESEARCH_SPECIAL
+
+	x = 0.5
+	y = 0.6
+	icon = "dsarmor"
+
+	required_technologies = list("pulse_rifle")
+	required_tech_levels = list(RESEARCH_SPECIAL = 5)
+	cost = 45000
+
+	unlocks_designs = list("ds_helmet", "ds_armor", "ds_boots")

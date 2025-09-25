@@ -41,7 +41,7 @@
 		if(reagents.total_volume)
 			reagents.trans_to_ingest(M, gulp_size)
 			reagents.reaction(M, INGEST)
-			addtimer(CALLBACK(reagents, /datum/reagents.proc/trans_to, M, gulp_size), 5)
+			addtimer(CALLBACK(reagents, TYPE_PROC_REF(/datum/reagents, trans_to), M, gulp_size), 5)
 
 		playsound(M, 'sound/items/drink.ogg', VOL_EFFECTS_MASTER, rand(10, 50))
 		return 1
@@ -65,7 +65,7 @@
 			var/mob/living/silicon/robot/bro = user
 			bro.cell.use(30)
 			var/refill = R.get_master_reagent_id()
-			addtimer(CALLBACK(R, /datum/reagents.proc/add_reagent, refill, fillevel), 600)
+			addtimer(CALLBACK(R, TYPE_PROC_REF(/datum/reagents, add_reagent), refill, fillevel), 600)
 
 		playsound(M, 'sound/items/drink.ogg', VOL_EFFECTS_MASTER, rand(10, 50))
 		return 1
@@ -113,7 +113,7 @@
 			var/chargeAmount = max(30,4*trans)
 			bro.cell.use(chargeAmount)
 			to_chat(user, "Now synthesizing [trans] units of [refillName]...")
-			addtimer(CALLBACK(src, .proc/refill_by_borg, user, refill, trans), 300)
+			addtimer(CALLBACK(src, PROC_REF(refill_by_borg), user, refill, trans), 300)
 
 	else if((user.a_intent == INTENT_HARM) && reagents.total_volume && istype(target, /turf/simulated))
 		to_chat(user, "<span class = 'notice'>You splash the solution onto [target].</span>")
@@ -125,6 +125,12 @@
 	name = "Space Cola"
 	desc = "Cola. in space."
 	icon_state = "cola"
+	list_reagents = list("cola" = 30)
+
+/obj/item/weapon/reagent_containers/food/drinks/cans/brepsi
+	name = "Brepsi"
+	desc = "Three or four sips of an absolutely refreshing drink."
+	icon_state = "brepsi"
 	list_reagents = list("cola" = 30)
 
 /obj/item/weapon/reagent_containers/food/drinks/cans/waterbottle

@@ -111,7 +111,7 @@
 	return ..()
 
 /obj/item/clothing/shoes/jolly_gravedigger/proc/start_waddling(mob/user)
-	RegisterSignal(user, list(COMSIG_LIVING_STOP_PULL), .proc/stop_waddling)
+	RegisterSignal(user, list(COMSIG_LIVING_STOP_PULL), PROC_REF(stop_waddling))
 	UnregisterSignal(user, list(COMSIG_LIVING_START_PULL))
 
 	user.AddComponent(/datum/component/waddle, 4, list(-14, 0, 14), list(COMSIG_MOVABLE_MOVED, COMSIG_MOVABLE_PIXELMOVE))
@@ -120,7 +120,7 @@
 /obj/item/clothing/shoes/jolly_gravedigger/proc/stop_waddling(mob/user)
 	UnregisterSignal(user, list(COMSIG_LIVING_STOP_PULL))
 	if(slot_equipped == SLOT_SHOES)
-		RegisterSignal(user, list(COMSIG_LIVING_START_PULL), .proc/check_coffin)
+		RegisterSignal(user, list(COMSIG_LIVING_START_PULL), PROC_REF(check_coffin))
 	qdel(user.GetComponent(/datum/component/waddle))
 	waddling = FALSE
 
@@ -130,7 +130,7 @@
 		if(user.pulling)
 			check_coffin(user, user.pulling)
 		else
-			RegisterSignal(user, list(COMSIG_LIVING_START_PULL), .proc/check_coffin)
+			RegisterSignal(user, list(COMSIG_LIVING_START_PULL), PROC_REF(check_coffin))
 	else if(waddling)
 		stop_waddling(user)
 
@@ -201,6 +201,8 @@
 	icon_state = "syndiemag0"
 	magboot_state = "syndiemag"
 	slowdown_off = 1
+	item_state_world =  "syndiemag0_w"
+	item_state = "syndiemag"
 
 /obj/item/clothing/shoes/magboots/ert
 	name = "advanced magboots"
@@ -208,6 +210,8 @@
 	slowdown_off = 1
 	icon_state = "advmag0"
 	magboot_state = "advmag"
+	item_state_world =  "advmag0_w"
+	item_state = "advmag"
 
 /obj/item/clothing/shoes/roman
 	name = "roman sandals"

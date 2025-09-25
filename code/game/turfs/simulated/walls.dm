@@ -11,6 +11,8 @@
 	var/damage = 0
 	var/damage_cap = 100 //Wall will break down to girders if damage reaches this point
 
+	explosive_resistance = 3
+
 	var/damage_overlay
 	var/static/damage_overlays[8]
 
@@ -32,6 +34,45 @@
 	canSmoothWith = CAN_SMOOTH_WITH_WALLS
 	smooth_adapters = SMOOTH_ADAPTERS_WALLS_FOR_WALLS
 	smooth = SMOOTH_TRUE
+
+// todo:
+// probably we should make /obj/structure/falsewall
+// and /turf/simulated/wall as meta-types not used in the game, and move
+// real walls and falsewalls to subtypes
+/turf/simulated/wall/yellow
+	icon = 'icons/turf/walls/has_false_walls/wall_yellow.dmi'
+
+/turf/simulated/wall/red
+	icon = 'icons/turf/walls/has_false_walls/wall_red.dmi'
+
+/turf/simulated/wall/purple
+	icon = 'icons/turf/walls/has_false_walls/wall_purple.dmi'
+
+/turf/simulated/wall/green
+	icon = 'icons/turf/walls/has_false_walls/wall_green.dmi'
+
+/turf/simulated/wall/beige
+	icon = 'icons/turf/walls/has_false_walls/wall_beige.dmi'
+
+/turf/simulated/wall/proc/change_color(color)
+	var/new_type
+	switch(color)
+		if("blue")
+			new_type = /turf/simulated/wall
+		if("yellow")
+			new_type = /turf/simulated/wall/yellow
+		if("red")
+			new_type = /turf/simulated/wall/red
+		if("purple")
+			new_type = /turf/simulated/wall/purple
+		if("green")
+			new_type = /turf/simulated/wall/green
+		if("beige")
+			new_type = /turf/simulated/wall/beige
+		else
+			stack_trace("Color [color] does not exist")
+	if(new_type && new_type != type)
+		ChangeTurf(new_type)
 
 /turf/simulated/wall/Destroy()
 	for(var/obj/effect/E in src)
@@ -155,6 +196,18 @@
 	new /obj/item/stack/sheet/metal(src)
 
 /turf/simulated/wall/ex_act(severity)
+	for(var/thing in contents)
+		var/atom/movable/movable_thing = thing
+		if(QDELETED(movable_thing))
+			continue
+		switch(severity)
+			if(EXPLODE_DEVASTATE)
+				SSexplosions.high_mov_atom += movable_thing
+			if(EXPLODE_HEAVY)
+				SSexplosions.med_mov_atom += movable_thing
+			if(EXPLODE_LIGHT)
+				SSexplosions.low_mov_atom += movable_thing
+
 	switch(severity)
 		if(EXPLODE_DEVASTATE)
 			ChangeTurf(basetype)
@@ -194,8 +247,9 @@
 	ChangeTurf(/turf/simulated/floor/plating)
 
 	var/turf/simulated/floor/F = src
-	F.burn_tile()
-	F.icon_state = "wall_thermite"
+	F.burnt = TRUE
+	F.add_scorched_overlay("thermite")
+
 	to_chat(user, "<span class='warning'>Термит начинает плавить стену.</span>")
 
 	spawn(seconds_to_melt * 10)
@@ -338,6 +392,18 @@
 				to_chat(user, "<span class='notice'>Вы сняли обшивку.</span>")
 				dismantle_wall()
 
+	if(istype(W, /obj/item/weapon/airlock_painter))
+		var/obj/item/weapon/airlock_painter/A = W
+		if(!A.can_use(user, 1))
+			return
+		var/new_color = tgui_input_list(user, "Выберите цвет", "Цвет", WALLS_COLORS)
+		if(!new_color)
+			return
+		if(!A.use_tool(src, user, 10, 1))
+			return
+		change_color(new_color)
+		return
+
 	//DRILLING
 	else if (istype(W, /obj/item/weapon/pickaxe/drill/diamond_drill))
 		if(user.is_busy(src))
@@ -381,7 +447,7 @@
 		//slowdown, user. No need destruct all walls without debuff
 		if(iscarbon(user))
 			var/mob/living/carbon/C = user
-			C.shock_stage += 5
+			C.adjustHalLoss(15)
 		user.visible_message("<span class='danger'><B>[user]</B> бьет стену!</span>")
 		user.do_attack_animation(src)
 		playsound(user, pick(hammer.hitsound), VOL_EFFECTS_MASTER)
@@ -442,7 +508,16 @@
 		user.drop_from_inventory(W)
 		W.pixel_x = X_OFFSET(24, get_dir(user, src))
 		W.pixel_y = Y_OFFSET(24, get_dir(user, src))
+		RegisterSignal(W, COMSIG_MOVABLE_MOVED, CALLBACK(src, PROC_REF(tied_object_reset_pixel_offset), W))
+		RegisterSignal(W, COMSIG_PARENT_QDELETING, CALLBACK(src, PROC_REF(tied_object_reset_pixel_offset), W))
 		return
+	else if((istype(W, /obj/item/wallclock) || istype(W, /obj/item/portrait)) && (get_dir(user,src) in global.cardinal))
+		user.drop_from_inventory(W)
+		W.pixel_x = X_OFFSET(32, get_dir(user, src))
+		W.pixel_y = Y_OFFSET(32, get_dir(user, src))
+		W.anchored = TRUE
+		RegisterSignal(W, COMSIG_MOVABLE_MOVED, CALLBACK(src, PROC_REF(tied_object_reset_pixel_offset), W, TRUE))
+		RegisterSignal(W, COMSIG_PARENT_QDELETING, CALLBACK(src, PROC_REF(tied_object_reset_pixel_offset), W, TRUE))
 	else
 		return attack_hand(user)
 
@@ -474,7 +549,7 @@
 
 	switch(denttype)
 		if(WALL_DENT_SHOT)
-			decal.icon_state = "bullet_hole"
+			decal.icon_state = "bullet_hole[rand(1,2)]"
 			decal.pixel_x = clamp(x, -15, 15) // because sprite size
 			decal.pixel_y = clamp(y, -15, 15)
 		if(WALL_DENT_HIT)
@@ -484,3 +559,12 @@
 
 	LAZYADD(dent_decals, decal)
 	add_overlay(decal)
+
+/turf/simulated/wall/proc/tied_object_reset_pixel_offset(obj/O, unanchor = FALSE)
+	O.pixel_y = rand(-8, 8)
+	O.pixel_x = rand(-9, 9)
+	UnregisterSignal(O, COMSIG_MOVABLE_MOVED)
+	UnregisterSignal(O, COMSIG_PARENT_QDELETING)
+
+	if(unanchor)
+		O.anchored = FALSE

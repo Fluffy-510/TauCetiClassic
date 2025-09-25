@@ -38,6 +38,11 @@
 			return
 	return ..()
 
+/obj/item/weapon/spacecash/get_current_temperature()
+	if(is_burning)
+		return 1000
+	return ..()
+
 /obj/item/weapon/spacecash/process()
 	var/turf/location = get_turf(src)
 	if(location)
@@ -140,6 +145,10 @@
 	name = "charge card ([rand(0, 999)])"
 	var/datum/money_account/M = create_account(name, 0, null, 0)
 	account_number = M.account_number
+
+/obj/item/weapon/ewallet/Destroy()
+	qdel(get_account(account_number))
+	return ..()
 
 /obj/item/weapon/ewallet/examine(mob/user)
 	..()

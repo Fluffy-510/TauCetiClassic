@@ -6,7 +6,7 @@
 		return 0.0
 
 	var/price_fraction = price / target_price
-	if(price_fraction ** 2 > 1.6)
+	if(price_fraction ** 2 > 1.5)
 		return 0.0
 
 	return 1.05 * sqrt(1 - 0.66 * (price_fraction ** 2))
@@ -53,5 +53,5 @@
 	// Paying taxes on the item.
 	var/tax = round(shop_lot["postpayment"] * shop_lot["tax"] * 0.01)
 
-	charge_to_account(global.centcomm_account.account_number, global.station_account.account_number, "Налог на экспорт [shop_lot["name"]] из [CARGOSHOPNAME]", "NTS Велосити", -tax)
-	charge_to_account(global.station_account.account_number, global.station_account.owner_name, "Налог на экспорт", "NTS Велосити", tax)
+	charge_to_account(global.centcomm_account.account_number, global.station_account.account_number, "Налог на экспорт [shop_lot["name"]] из [CARGOSHOPNAME]", "НТС Велосити", -tax)
+	charge_to_account(global.station_account.account_number, global.station_account.owner_name, "Налог на экспорт", "НТС Велосити", tax)

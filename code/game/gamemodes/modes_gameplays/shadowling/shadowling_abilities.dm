@@ -8,7 +8,7 @@
 
 /obj/effect/proc_holder/spell/targeted/glare/cast(list/targets)
 	for(var/mob/living/carbon/human/target in targets)
-		if(target.species.flags[NO_SCAN] || target.species.flags[IS_SYNTHETIC])
+		if(HAS_TRAIT(target, TRAIT_INCOMPATIBLE_DNA) || target.species.flags[IS_SYNTHETIC])
 			charge_counter = charge_max
 			to_chat(usr, "<span class='warning'>Your glare does not seem to affect [target].</span>")
 			return
@@ -46,36 +46,15 @@
 
 /proc/light_off_range(list/targets, atom/center)
 	for(var/turf/T in targets)
-		for(var/obj/item/F in T.contents)
-			F.set_light(0)
+		for(var/atom/A in T.contents)
+			A.turn_light_off()
 
-		for(var/obj/machinery/light/L in T.contents)
-			L.on = 0
-			L.visible_message("<span class='danger'>[L] flickers and falls dark.</span>")
-			L.update(0)
-
-		for(var/mob/living/carbon/human/H in T.contents)
-			for(var/obj/item/F in H)
-				F.set_light(0)
-			H.set_light(0) //This is required with the object-based lighting
-
-		for(var/obj/machinery/door/airlock/A in T.contents)
-			if(get_dist(center, A) <= 4)
-				if(A.lights && A.hasPower())
-					A.lights = 0
-					A.update_icon()
-
-		for(var/obj/structure/glowshroom/G in T.contents)
-			if(get_dist(center, G) <= 2) //Very small radius
-				G.visible_message("<span class='warning'>\The [G] withers away!</span>")
-				qdel(G)
-		
 		if(T.is_light_floor())
 			var/turf/simulated/floor/F = T
 			F.set_lightfloor_on(FALSE)
 			F.visible_message("<span class='danger'>\The [T] suddenly turns off!</span>")
 			F.update_icon()
-				
+
 /obj/effect/proc_holder/spell/aoe_turf/flashfreeze
 	name = "Flash Freeze"
 	desc = "Instantly freezes the blood of nearby people, stunning them and causing burn damage."
@@ -144,12 +123,11 @@
 			to_chat(usr, "<span class='warning'>You can not enthrall allies.</span>")
 			charge_counter = charge_max
 			return
-		var/datum/species/S = all_species[target.get_species()]
-		if(!ishuman(target) || (S && S.flags[NO_EMOTION]))
+		if(!ishuman(target) || target.get_species() == GOLEM)
 			to_chat(usr, "<span class='warning'>You can only enthrall humans.</span>")
 			charge_counter = charge_max
 			return
-		if(target.ismindprotect())
+		if(ismindprotect(target))
 			to_chat(usr, "<span class='notice'>Their mind seems to be protected!</span>")
 			charge_counter = charge_max
 			return
@@ -192,7 +170,7 @@
 		to_chat(target, "<span class='shadowling'><b>The shadowlings are your masters.</b> Serve them above all else and ensure they complete their goals.</span>")
 		to_chat(target, "<span class='shadowling'>You may not harm other thralls or the shadowlings. However, you do not need to obey other thralls.</span>")
 		to_chat(target, "<span class='shadowling'>You can communicate with the other enlightened ones by using the Hivemind Commune ability.</span>")
-		target.setOxyLoss(0) //In case the shadowling was choking them out
+		target.resetOxyLoss() //In case the shadowling was choking them out
 		add_faction_member(faction, target)
 
 
@@ -252,7 +230,6 @@
 		user.equip_to_slot_or_del(new /obj/item/clothing/glasses/night/shadowling, SLOT_GLASSES)
 		var/mob/living/carbon/human/H = usr
 		H.set_species(SHADOWLING)
-		H.regenerate_icons()
 
 /obj/effect/proc_holder/spell/targeted/collective_mind
 	name = "Collective Hivemind"
@@ -273,7 +250,7 @@
 		var/thralls = 0
 		var/datum/faction/shadowlings/faction = find_faction_by_type(/datum/faction/shadowlings)
 		var/crew = faction.check_crew()
-		var/victory_threshold = max(15, round(crew/2))	
+		var/victory_threshold = max(15, round(crew/2))
 		var/mob/M
 
 		to_chat(user, "<span class='shadowling'><b>You focus your telepathic energies abound, harnessing and drawing together the strength of your thralls.</b></span>")
@@ -360,7 +337,10 @@
 	custom_metabolism = 100
 
 /datum/reagent/shadowling_blindness_smoke/on_general_digest(mob/living/M)
-	..()
+	. = ..()
+	if(!.)
+		return
+
 	if(!isshadowling(M) || !isshadowthrall(M))
 		to_chat(M, "<span class='warning bold'>You breathe in the black smoke, and your eyes burn horribly!</span>")
 		M.eye_blind = 5
@@ -560,8 +540,7 @@
 			to_chat(usr, "<span class='warning'>The target must be conscious.</span>")
 			charge_counter = charge_max
 			return
-		var/datum/species/S = all_species[target.get_species()]
-		if(!ishuman(target) || (S && S.flags[NO_EMOTION]))
+		if(!ishuman(target) || target.get_species() == GOLEM)
 			to_chat(usr, "<span class='warning'>You can only enthrall humans.</span>")
 			charge_counter = charge_max
 			return

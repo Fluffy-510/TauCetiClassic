@@ -244,6 +244,23 @@
 
 	var/next_instruction = 0
 
+/obj/item/device/tagger/atom_init()
+	. = ..()
+
+	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(on_round_start))
+
+/obj/item/device/tagger/Destroy()
+	UnregisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING)
+	return ..()
+
+/obj/item/device/tagger/proc/on_round_start(datum/source)
+	SIGNAL_HANDLER
+	lot_account_number = global.cargo_account.account_number
+	UnregisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING)
+
+/obj/item/device/tagger/shop/on_round_start(datum/source)
+	UnregisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING)
+
 /obj/item/device/tagger/shop
 	name = "shop tagger"
 	desc = "Используется для наклейки ценников и бирок."
@@ -256,32 +273,34 @@
 
 	dat += "<table style='width:100%; padding:4px;'><tr>"
 
-	dat += "<center><HR>Режим: <A href='?src=\ref[src];change_mode=1'>[modes[mode]]</A></center><BR>\n"
+	dat += "<center><HR>Режим: <A href='byond://?src=\ref[src];change_mode=1'>[modes[mode]]</A></center><BR>\n"
 
 	switch(modes[mode])
 		if("Метка")
 			for(var/i = 1, i <= tagger_locations.len, i++)
-				dat += "<td><a href='?src=\ref[src];nextTag=[tagger_locations[i]]'>[tagger_locations[i]]</a></td>"
+				dat += "<td><a href='byond://?src=\ref[src];nextTag=[tagger_locations[i]]'>[tagger_locations[i]]</a></td>"
 
 				if (i%4==0)
 					dat += "</tr><tr>"
 
 			dat += "</tr></table><br>Выбрано: [currTag ? currTag : "None"]</tt>"
 		if("Ценник")
+			icon_state = "labeler0"
 			if(autodescription)
 				dat += "Описание: [lot_description]"
 			else
-				dat += "Описание: <A href='?src=\ref[src];description=1'>[lot_description]</A>"
-			dat += " <A href='?src=\ref[src];autodesc=1'>авто</A><BR>\n"
-			dat += "Номер аккаунта: <A href='?src=\ref[src];number=1'>[lot_account_number ? lot_account_number : 111111]</A> <A href='?src=\ref[src];takeid=1'>id</A><BR>\n"
-			dat += "Цена: <A href='?src=\ref[src];price=1'>[lot_price]$</A> Наценка: +[global.online_shop_delivery_cost * 100]% ([lot_price * global.online_shop_delivery_cost]$)<BR>\n"
+				dat += "Описание: <A href='byond://?src=\ref[src];description=1'>[lot_description]</A>"
+			dat += " <A href='byond://?src=\ref[src];autodesc=1'>авто</A><BR>\n"
+			dat += "Номер аккаунта: <A href='byond://?src=\ref[src];number=1'>[lot_account_number ? lot_account_number : 111111]</A> <A href='byond://?src=\ref[src];takeid=1'>id</A><BR>\n"
+			dat += "Цена: <A href='byond://?src=\ref[src];price=1'>[lot_price]$</A> Наценка: +[global.online_shop_delivery_cost * 100]% ([lot_price * global.online_shop_delivery_cost]$)<BR>\n"
 			if(autocategory)
 				dat += "Категория: [lot_category]"
 			else
-				dat += "Категория: <A href='?src=\ref[src];category=1'>[lot_category]</A>"
-			dat += " <A href='?src=\ref[src];autocateg=1'>авто</A><BR><BR>\n"
+				dat += "Категория: <A href='byond://?src=\ref[src];category=1'>[lot_category]</A>"
+			dat += " <A href='byond://?src=\ref[src];autocateg=1'>авто</A><BR><BR>\n"
 		if("Бирка")
-			dat += "Текст бирки: <A href='?src=\ref[src];label_text=1'>[label ? label : "Написать"]</A><BR>\n"
+			icon_state = "labeler1"
+			dat += "Текст бирки: <A href='byond://?src=\ref[src];label_text=1'>[label ? label : "Написать"]</A><BR>\n"
 
 	var/datum/browser/popup = new(user, "destTagScreen", "Маркировщик 2.3", 450, 400)
 	popup.set_content(dat)
@@ -334,25 +353,63 @@
 	openwindow(user)
 	return
 
+/obj/item/device/tagger/attackby(obj/item/weapon/W, mob/user, params)
+	if(istype(W, /obj/item/weapon/wrench) && isturf(src.loc))
+		var/obj/item/weapon/wrench/Tool = W
+		if(Tool.use_tool(src, user, SKILL_TASK_VERY_EASY, volume = 50))
+			playsound(src, 'sound/items/Ratchet.ogg', VOL_EFFECTS_MASTER)
+			user.SetNextMove(CLICK_CD_INTERACT)
+			var/obj/structure/table/Table = locate(/obj/structure/table, get_turf(src))
+			if(!anchored)
+				if(!Table)
+					to_chat(user, "<span class='warning'>Маркировщик можно прикрутить только к столу.</span>")
+					return
+				to_chat(user, "<span class='warning'>Маркировщик прикручен.</span>")
+				anchored = TRUE
+				RegisterSignal(Table, list(COMSIG_PARENT_QDELETING), PROC_REF(unwrench))
+				return
+			to_chat(user, "<span class='notice'>Маркировщик откручен.</span>")
+			anchored = FALSE
+			UnregisterSignal(Table, list(COMSIG_PARENT_QDELETING))
+	else if(istagger(W))
+		return ..()
+	else if(can_apply_action(W, user))
+		get_action(W, user)
+
+/obj/item/device/tagger/proc/unwrench()
+	anchored = FALSE
+
 /obj/item/device/tagger/afterattack(obj/target, mob/user, proximity, params)
 	if(!proximity)
 		return
-	if(!istype(target))	//this really shouldn't be necessary (but it is).	-Pete
-		return
-	if(target.anchored)
-		return
-	if(user in target)
-		return
-	if(target == loc)
-		return
 
+	if(can_apply_action(target, user))
+		get_action(target, user)
+
+/obj/item/device/tagger/proc/can_apply_action(obj/target, mob/user)
+	if(!istype(target))	//this really shouldn't be necessary (but it is).	-Pete
+		return FALSE
+	if(target.anchored)
+		return FALSE
+	if(user in target)
+		return FALSE
+	if(target == loc)
+		return FALSE
+	if(target.flags & ABSTRACT)
+		return FALSE
+
+	return TRUE
+
+/obj/item/device/tagger/proc/get_action(obj/target, mob/user)
 	switch(modes[mode])
 		if("Метка")
 			return
 		if("Ценник")
 			price(target, user)
+			playsound(src, 'sound/items/label_printing.ogg', VOL_EFFECTS_MASTER, 100, FALSE)
 		if("Бирка")
 			label(target, user)
+			playsound(src, 'sound/items/label_printing.ogg', VOL_EFFECTS_MASTER, 100, FALSE)
 
 /obj/item/device/tagger/proc/price(obj/target, mob/user)
 	if(target.price_tag)
@@ -362,9 +419,9 @@
 		to_chat(user, "<span class='notice'>Нельзя повесить ценник на [target].</span>")
 		return
 
-	if(user.get_inactive_hand() == target)
+	if((src in user) && (user.get_inactive_hand() == target || user.get_active_hand() == target))
 		var/new_price = input("Введите цену:", "Маркировщик", input_default(lot_price), null)  as num
-		if(user.get_active_hand() != src || user.get_inactive_hand() != target)
+		if(user.get_active_hand() != src && user.get_active_hand() != target && user.get_inactive_hand() != src && user.get_inactive_hand() != target)
 			return
 		if(user.incapacitated())
 			return

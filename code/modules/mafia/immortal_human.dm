@@ -1,9 +1,12 @@
 // admins gib the mafia players and break all CODE
 /mob/living/carbon/human/mafia
 	name = "Mafia-Immortal Human"
-	status_flags = GODMODE
 	health = 50000
 	universal_understand = TRUE
+
+/mob/living/carbon/human/mafia/atom_init()
+	. = ..()
+	ADD_TRAIT(src, ELEMENT_TRAIT_GODMODE, INNATE_TRAIT)
 
 /mob/living/carbon/human/mafia/gib()
 	return
@@ -20,7 +23,7 @@
 // This is copypaste of death proc of human, but only necessary ones are left
 /mob/living/carbon/human/mafia/death()
 	SEND_SIGNAL(src, COMSIG_MOB_DIED)
-	INVOKE_ASYNC(src, .proc/emote, "deathgasp")
+	INVOKE_ASYNC(src, PROC_REF(emote), "deathgasp")
 	stat = DEAD
 	dizziness = 0
 	jitteriness = 0

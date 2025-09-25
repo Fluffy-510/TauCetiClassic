@@ -85,17 +85,17 @@
 		Status: []<BR>
 		Behaviour controls are [locked ? "locked" : "unlocked"]<BR>
 		Maintenance panel is [open ? "opened" : "closed"]"},
-		text("<A href='?src=\ref[src];operation=start'>[on ? "On" : "Off"]</A>"))
+		text("<A href='byond://?src=\ref[src];operation=start'>[on ? "On" : "Off"]</A>"))
 	if(!src.locked || issilicon(user) || isobserver(user))
-		dat += text({"<BR>Cleans Blood: []<BR>"}, text("<A href='?src=\ref[src];operation=blood'>[blood ? "Yes" : "No"]</A>"))
-		dat += text({"<BR>Patrol station: []<BR>"}, text("<A href='?src=\ref[src];operation=patrol'>[should_patrol ? "Yes" : "No"]</A>"))
-	//	dat += text({"<BR>Beacon frequency: []<BR>"}, text("<A href='?src=\ref[src];operation=freq'>[beacon_freq]</A>"))
+		dat += text({"<BR>Cleans Blood: []<BR>"}, text("<A href='byond://?src=\ref[src];operation=blood'>[blood ? "Yes" : "No"]</A>"))
+		dat += text({"<BR>Patrol station: []<BR>"}, text("<A href='byond://?src=\ref[src];operation=patrol'>[should_patrol ? "Yes" : "No"]</A>"))
+	//	dat += text({"<BR>Beacon frequency: []<BR>"}, text("<A href='byond://?src=\ref[src];operation=freq'>[beacon_freq]</A>"))
 	if(src.open && !src.locked)
 		dat += text({"
 			Odd looking screw twiddled: []<BR>
 			Weird button pressed: []"},
-			text("<A href='?src=\ref[src];operation=screw'>[screwloose ? "Yes" : "No"]</A>"),
-			text("<A href='?src=\ref[src];operation=oddbutton'>[oddbutton ? "Yes" : "No"]</A>"))
+			text("<A href='byond://?src=\ref[src];operation=screw'>[screwloose ? "Yes" : "No"]</A>"),
+			text("<A href='byond://?src=\ref[src];operation=oddbutton'>[oddbutton ? "Yes" : "No"]</A>"))
 
 	var/datum/browser/popup = new(user, "window=autocleaner", src.name)
 	popup.set_content(dat)
@@ -199,7 +199,7 @@
 		return
 
 	if(target && path.len == 0)
-		INVOKE_ASYNC(src, .proc/find_target_path)
+		INVOKE_ASYNC(src, PROC_REF(find_target_path))
 		return
 	if(path.len > 0 && target)
 		step_to(src, path[1])
@@ -246,13 +246,13 @@
 	signal.transmission_method = 1
 	signal.data = list("findbeacon" = "patrol")
 	frequency.post_signal(src, signal, filter = RADIO_NAVBEACONS)
-	addtimer(CALLBACK(src, .proc/receive_patrol_path), 5)
+	addtimer(CALLBACK(src, PROC_REF(receive_patrol_path)), 5)
 
 /obj/machinery/bot/cleanbot/proc/receive_patrol_path()
 	if (!next_dest_loc)
 		next_dest_loc = closest_loc
 	if (next_dest_loc)
-		patrol_path = get_path_to(src, next_dest_loc, /turf/proc/Distance_cardinal, 0, 120, id=botcard, exclude=null)
+		patrol_path = get_path_to(src, next_dest_loc, TYPE_PROC_REF(/turf, Distance_cardinal), 0, 120, id=botcard, exclude=null)
 
 /obj/machinery/bot/cleanbot/proc/patrol_move()
 	if (patrol_path.len <= 0)

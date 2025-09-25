@@ -81,21 +81,21 @@
 /obj/machinery/bot/floorbot/ui_interact(mob/user)
 	var/dat
 	dat += "<TT><B>Automatic Station Floor Repairer v1.0</B></TT><BR><BR>"
-	dat += "Status: <A href='?src=\ref[src];operation=start'>[on ? "On" : "Off"]</A><BR>"
+	dat += "Status: <A href='byond://?src=\ref[src];operation=start'>[on ? "On" : "Off"]</A><BR>"
 	dat += "Maintenance panel panel is [open ? "opened" : "closed"]<BR>"
 	dat += "Tiles left: [amount]<BR>"
 	dat += "Behvaiour controls are [locked ? "locked" : "unlocked"]<BR>"
 	if(!src.locked || issilicon(user) || isobserver(user))
-		dat += "Repair damaged tiles and platings: <A href='?src=\ref[src];operation=fixtiles'>[fixtiles ? "Yes" : "No"]</A><BR>"
-		dat += "Place floor tiles: <A href='?src=\ref[src];operation=placetiles'>[placetiles ? "Yes" : "No"]</A><BR>"
-		dat += "Finds tiles: <A href='?src=\ref[src];operation=tiles'>[eattiles ? "Yes" : "No"]</A><BR>"
-		dat += "Make singles pieces of metal into tiles when empty: <A href='?src=\ref[src];operation=make'>[maketiles ? "Yes" : "No"]</A><BR>"
+		dat += "Repair damaged tiles and platings: <A href='byond://?src=\ref[src];operation=fixtiles'>[fixtiles ? "Yes" : "No"]</A><BR>"
+		dat += "Place floor tiles: <A href='byond://?src=\ref[src];operation=placetiles'>[placetiles ? "Yes" : "No"]</A><BR>"
+		dat += "Finds tiles: <A href='byond://?src=\ref[src];operation=tiles'>[eattiles ? "Yes" : "No"]</A><BR>"
+		dat += "Make singles pieces of metal into tiles when empty: <A href='byond://?src=\ref[src];operation=make'>[maketiles ? "Yes" : "No"]</A><BR>"
 		var/bmode
 		if (targetdirection)
 			bmode = dir2text(targetdirection)
 		else
 			bmode = "Disabled"
-		dat += "<BR><BR>Bridge Mode : <A href='?src=\ref[src];operation=bridgemode'>[bmode]</A><BR>"
+		dat += "<BR><BR>Bridge Mode : <A href='byond://?src=\ref[src];operation=bridgemode'>[bmode]</A><BR>"
 
 	var/datum/browser/popup = new(user, "autorepair", "Repairbot v1.0 controls", 300, 400)
 	popup.set_content(dat)
@@ -218,28 +218,28 @@
 		anchored = TRUE
 		icon_state = "floorbot-c"
 
-		addtimer(CALLBACK(src, .proc/finish_task), 50)
+		addtimer(CALLBACK(src, PROC_REF(finish_task)), 50)
 	else if(task == FLOORBOT_TASK_PLACETILE && placetiles && is_plating(t))
 		state = FLOORBOT_BUSY
 		visible_message("<span class='warning'>[src] begins to place the floor tiles.</span>")
 		anchored = TRUE
 		icon_state = "floorbot-c"
 
-		addtimer(CALLBACK(src, .proc/finish_task), 20)
+		addtimer(CALLBACK(src, PROC_REF(finish_task)), 20)
 	else if(task == FLOORBOT_TASK_FIXTILE && fixtiles && is_broken(t))
 		state = FLOORBOT_BUSY
 		visible_message("<span class='warning'>[src] begins repairing the floor.</span>")
 		anchored = TRUE
 		icon_state = "floorbot-c"
 
-		addtimer(CALLBACK(src, .proc/finish_task), 50)
+		addtimer(CALLBACK(src, PROC_REF(finish_task)), 50)
 	else if(task == FLOORBOT_TASK_BREAKTILE && isfloorturf(t))
 		state = FLOORBOT_BUSY
 		visible_message("<span class='warning'>[src] begins repairing the floor.</span>") // troll message
 		anchored = TRUE
 		icon_state = "floorbot-c"
 
-		addtimer(CALLBACK(src, .proc/finish_task), 50)
+		addtimer(CALLBACK(src, PROC_REF(finish_task)), 50)
 	else
 		state = FLOORBOT_IDLE
 
@@ -398,7 +398,7 @@
 				var/obj/item/stack/sheet/metal/M = target
 				visible_message("<span class='warning'>[src] begins to create tiles from a metal sheet.</span>")
 				state = FLOORBOT_BUSY
-				addtimer(CALLBACK(src, .proc/create_tiles, M), 20)
+				addtimer(CALLBACK(src, PROC_REF(create_tiles), M), 20)
 				return
 			else
 				state = FLOORBOT_IDLE

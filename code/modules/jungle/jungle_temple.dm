@@ -2,37 +2,37 @@
 
 /area/awaymission/jungle/temple_one
 	name = "temple"
-	dynamic_lighting = DYNAMIC_LIGHTING_ENABLED
+	dynamic_lighting = TRUE
 	icon = 'icons/misc/jungle.dmi'
 	icon_state = "temple1"
 
 /area/awaymission/jungle/temple_two
 	name = "temple"
-	dynamic_lighting = DYNAMIC_LIGHTING_ENABLED
+	dynamic_lighting = TRUE
 	icon = 'icons/misc/jungle.dmi'
 	icon_state = "temple2"
 
 /area/awaymission/jungle/temple_three
 	name = "temple"
-	dynamic_lighting = DYNAMIC_LIGHTING_ENABLED
+	dynamic_lighting = TRUE
 	icon = 'icons/misc/jungle.dmi'
 	icon_state = "temple3"
 
 /area/awaymission/jungle/temple_four
 	name = "temple"
-	dynamic_lighting = DYNAMIC_LIGHTING_ENABLED
+	dynamic_lighting = TRUE
 	icon = 'icons/misc/jungle.dmi'
 	icon_state = "temple4"
 
 /area/awaymission/jungle/temple_five
 	name = "temple"
-	dynamic_lighting = DYNAMIC_LIGHTING_ENABLED
+	dynamic_lighting = TRUE
 	icon = 'icons/misc/jungle.dmi'
 	icon_state = "temple5"
 
 /area/awaymission/jungle/temple_six
 	name = "temple"
-	dynamic_lighting = DYNAMIC_LIGHTING_ENABLED
+	dynamic_lighting = TRUE
 	icon = 'icons/misc/jungle.dmi'
 	icon_state = "temple6"
 
@@ -161,8 +161,8 @@
 			var/obj/structure/closet/crate/secure/weapon/C = new(src.loc)
 			var/new_type = pick(
 			200; /obj/item/weapon/hatchet, \
-			/obj/item/weapon/gun/projectile/automatic/pistol, \
-			/obj/item/weapon/gun/projectile/automatic/deagle, \
+			/obj/item/weapon/gun/projectile/automatic/pistol/stechkin, \
+			/obj/item/weapon/gun/projectile/automatic/pistol/deagle, \
 			)
 			new new_type(C)
 		if("spacesuit")

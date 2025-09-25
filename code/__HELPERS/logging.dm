@@ -9,6 +9,10 @@
 /proc/error(msg)
 	world.log << "## ERROR: [msg][log_end]"
 
+//gives us the stack trace from CRASH() without ending the current proc.
+/proc/stack_trace(msg)
+	CRASH(msg)
+
 //print a warning message to world.log
 #define WARNING(MSG) warning("[MSG] in [__FILE__] at line [__LINE__] src: [UNLINT(src)] usr: [usr].")
 /proc/warning(msg)
@@ -139,6 +143,9 @@
 /proc/log_sql(text)
 	world.log << "\[[time_stamp()]]SQL: [text][log_end]"
 	if(config.log_sql_error)
+		var/static/regex/sql_log_blacklist = regex("erro_password|erro_auth_token", "i")
+		if(sql_log_blacklist.Find(text))
+			text = "|Scrambled because blacklist worlds|"
 		global.sql_error_log << "\[[time_stamp()]]SQL: [text][log_end]"
 
 /proc/log_unit_test(text)

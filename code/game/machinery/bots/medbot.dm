@@ -5,7 +5,7 @@
 
 /obj/machinery/bot/medbot
 	name = "Medibot"
-	desc = "A little medical robot. He looks somewhat underwhelmed."
+	desc = "Маленький робо-доктор. Он выглядит озадаченно."
 	icon = 'icons/obj/aibots.dmi'
 	icon_state = "medibot0"
 	density = FALSE
@@ -39,7 +39,7 @@
 
 /obj/machinery/bot/medbot/mysterious
 	name = "Mysterious Medibot"
-	desc = "International Medibot of mystery."
+	desc = "Медибот-загадка международного уровня."
 	skin = "bezerk"
 	treatment_oxy = "dexalinp"
 	treatment_brute = "bicaridine"
@@ -91,35 +91,35 @@
 /obj/machinery/bot/medbot/ui_interact(mob/user)
 	var/dat
 	dat += "<TT><B>Automatic Medical Unit v1.0</B></TT><BR><BR>"
-	dat += "Status: <A href='?src=\ref[src];power=1'>[on ? "On" : "Off"]</A><BR>"
+	dat += "Status: <A href='byond://?src=\ref[src];power=1'>[on ? "On" : "Off"]</A><BR>"
 	dat += "Maintenance panel panel is [open ? "opened" : "closed"]<BR>"
 	dat += "Beaker: "
 	if(reagent_glass)
-		dat += "<A href='?src=\ref[src];eject=1'>Loaded [reagent_glass.reagents.total_volume]/[reagent_glass.reagents.maximum_volume]</a>"
+		dat += "<A href='byond://?src=\ref[src];eject=1'>Loaded [reagent_glass.reagents.total_volume]/[reagent_glass.reagents.maximum_volume]</a>"
 	else
 		dat += "None Loaded"
 	dat += "<br>Behaviour controls are [locked ? "locked" : "unlocked"]<hr>"
 	if(!locked || issilicon(user) || isobserver(user))
 		dat += "<TT>Healing Threshold: "
-		dat += "<a href='?src=\ref[src];adj_threshold=-10'>--</a> "
-		dat += "<a href='?src=\ref[src];adj_threshold=-5'>-</a> "
+		dat += "<a href='byond://?src=\ref[src];adj_threshold=-10'>--</a> "
+		dat += "<a href='byond://?src=\ref[src];adj_threshold=-5'>-</a> "
 		dat += "[heal_threshold] "
-		dat += "<a href='?src=\ref[src];adj_threshold=5'>+</a> "
-		dat += "<a href='?src=\ref[src];adj_threshold=10'>++</a>"
+		dat += "<a href='byond://?src=\ref[src];adj_threshold=5'>+</a> "
+		dat += "<a href='byond://?src=\ref[src];adj_threshold=10'>++</a>"
 		dat += "</TT><br>"
 
 		dat += "<TT>Injection Level: "
-		dat += "<a href='?src=\ref[src];adj_inject=-5'>-</a> "
+		dat += "<a href='byond://?src=\ref[src];adj_inject=-5'>-</a> "
 		dat += "[injection_amount] "
-		dat += "<a href='?src=\ref[src];adj_inject=5'>+</a> "
+		dat += "<a href='byond://?src=\ref[src];adj_inject=5'>+</a> "
 		dat += "</TT><br>"
 
 		dat += "Reagent Source: "
-		dat += "<a href='?src=\ref[src];use_beaker=1'>[use_beaker ? "Loaded Beaker (When available)" : "Internal Synthesizer"]</a><br>"
+		dat += "<a href='byond://?src=\ref[src];use_beaker=1'>[use_beaker ? "Loaded Beaker (When available)" : "Internal Synthesizer"]</a><br>"
 
-		dat += "Treatment report is [declare_treatment ? "on" : "off"]. <a href='?src=\ref[src];declaretreatment=[1]'>Toggle</a><br>"
+		dat += "Treatment report is [declare_treatment ? "on" : "off"]. <a href='byond://?src=\ref[src];declaretreatment=[1]'>Toggle</a><br>"
 
-		dat += "The speaker switch is [shut_up ? "off" : "on"]. <a href='?src=\ref[src];togglevoice=[1]'>Toggle</a><br>"
+		dat += "The speaker switch is [shut_up ? "off" : "on"]. <a href='byond://?src=\ref[src];togglevoice=[1]'>Toggle</a><br>"
 
 	var/datum/browser/popup = new(user, "window=automed", src.name)
 	popup.set_content(dat)
@@ -260,7 +260,7 @@
 
 	if(!patient)
 		if(!shut_up && prob(1))
-			var/list/messagevoice = list("Radar, put a mask on!" = 'sound/voice/medbot/radar.ogg',"There's always a catch, and I'm the best there is." = 'sound/voice/medbot/catch.ogg',"I knew it, I should've been a plastic surgeon." = 'sound/voice/medbot/surgeon.ogg',"What kind of medbay is this? Everyone's dropping like flies." = 'sound/voice/medbot/flies.ogg',"Delicious!" = 'sound/voice/medbot/delicious.ogg')
+			var/list/messagevoice = list("Радар, надень маску!" = 'sound/voice/medbot/radar.ogg',"Сомнения порождают страх, но со мной тебе нечего бояться!" = 'sound/voice/medbot/catch.ogg',"Я так и знал! Нужно было учиться на пластического хирурга!" = 'sound/voice/medbot/surgeon.ogg',"Что это за медотсек такой? Все мрут как мухи!" = 'sound/voice/medbot/flies.ogg',"Великолепно!" = 'sound/voice/medbot/delicious.ogg')
 			var/message = pick(messagevoice)
 			speak(message)
 			playsound(src, messagevoice[message], VOL_EFFECTS_MASTER, null, FALSE)
@@ -269,7 +269,7 @@
 			if(C.stat == DEAD)
 				continue
 
-			if(C.species.flags[NO_BLOOD])
+			if(HAS_TRAIT(C, TRAIT_NO_BLOOD))
 				continue
 
 			if((C == oldpatient) && (world.time < last_found + 100))
@@ -281,7 +281,7 @@
 				last_found = world.time
 				spawn(0)
 					if((last_newpatient_speak + 100) < world.time) //Don't spam these messages!
-						var/list/messagevoice = list("Hey, [C.name]! Hold on, I'm coming." = 'sound/voice/medbot/coming.ogg',"Wait [C.name]! I want to help!" = 'sound/voice/medbot/help.ogg',"[C.name], you appear to be injured!" = 'sound/voice/medbot/injured.ogg')
+						var/list/messagevoice = list("[C.name]! Держись, я иду!" = 'sound/voice/medbot/coming.ogg',"Стой, [C.name]! Я хочу помочь!" = 'sound/voice/medbot/help.ogg',"[C.name], должно быть, тебе нужна помощь!" = 'sound/voice/medbot/injured.ogg')
 						var/message = pick(messagevoice)
 						speak(message)
 						last_newpatient_speak = world.time
@@ -374,7 +374,7 @@
 		return
 
 	if(C.stat == DEAD)
-		var/list/messagevoice = list("No! Stay with me!" = 'sound/voice/medbot/no.ogg',"Live, damnit! LIVE!" = 'sound/voice/medbot/live.ogg',"I...I've never lost a patient before. Not today, I mean." = 'sound/voice/medbot/lost.ogg')
+		var/list/messagevoice = list("Нет! Не бросай нас!" = 'sound/voice/medbot/no.ogg',"Проклятье! Не закрывай глаза!" = 'sound/voice/medbot/live.ogg',"Я... Я ещё никогда не терял пациента... Сегодня, то есть." = 'sound/voice/medbot/lost.ogg')
 		var/message = pick(messagevoice)
 		speak(message)
 		playsound(src, messagevoice[message], VOL_EFFECTS_MASTER, null, FALSE)
@@ -417,7 +417,7 @@
 		patient = null
 		currently_healing = 0
 		last_found = world.time
-		var/list/messagevoice = list("All patched up!" = 'sound/voice/medbot/patchedup.ogg',"An apple a day keeps me away." = 'sound/voice/medbot/apple.ogg',"Feel better soon!" = 'sound/voice/medbot/feelbetter.ogg')
+		var/list/messagevoice = list("Как новенький!" = 'sound/voice/medbot/patchedup.ogg',"Яблочко на ужин, и врач не нужен!" = 'sound/voice/medbot/apple.ogg',"Поправляйся!" = 'sound/voice/medbot/feelbetter.ogg')
 		var/message = pick(messagevoice)
 		speak(message)
 		playsound(src, messagevoice[message], VOL_EFFECTS_MASTER, null, FALSE)

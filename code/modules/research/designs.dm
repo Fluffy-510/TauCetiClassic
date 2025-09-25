@@ -37,6 +37,9 @@ other types of metals and chemistry for reagents).
 	var/list/category = null        //Primarily used for Mech Fabricators, but can be used for anything
 	var/starts_unlocked = FALSE     //If true does not require any technologies and unlocked from the start
 
+/datum/design/New()
+	all_designs += src
+
 ///////////////////Computer Boards///////////////////////////////////
 
 /datum/design/seccamera
@@ -393,13 +396,13 @@ other types of metals and chemistry for reagents).
 	build_path = /obj/item/weapon/aiModule/safeguard
 	category = list("AI")
 
-/datum/design/onehuman_module
-	name = "AI Module (OneHuman)"
-	desc = "Allows for the construction of a OneHuman AI Module."
-	id = "onehuman_module"
+/datum/design/onentemploye_module
+	name = "AI Module (One NT Employe)"
+	desc = "Allows for the construction of a 'One NT Employe' AI Module."
+	id = "onentemploye_module"
 	build_type = IMPRINTER
 	materials = list(MAT_GLASS = 2000, MAT_DIAMOND = 100, "sacid" = 20)
-	build_path = /obj/item/weapon/aiModule/oneHuman
+	build_path = /obj/item/weapon/aiModule/onentemploye
 	category = list("AI")
 
 /datum/design/protectstation_module
@@ -811,7 +814,7 @@ other types of metals and chemistry for reagents).
 	build_path = /obj/item/weapon/storage/part_replacer/bluespace
 	category = list("Stock Parts")
 
-	//Tier1
+//Tier1
 /datum/design/basic_capacitor
 	name = "Basic Capacitor"
 	desc = "A stock part used in the construction of various devices."
@@ -857,13 +860,13 @@ other types of metals and chemistry for reagents).
 	build_path = /obj/item/weapon/stock_parts/matter_bin
 	category = list("Stock Parts")
 
-	//Tier 2
+//Tier 2
 /datum/design/adv_capacitor
 	name = "Advanced Capacitor"
 	desc = "A stock part used in the construction of various devices."
 	id = "adv_capacitor"
-	build_type = PROTOLATHE | MECHFAB
-	materials = list(MAT_METAL = 400, MAT_GLASS = 400, MAT_SILVER = 250)
+	build_type = PROTOLATHE | MECHFAB | AUTOLATHE
+	materials = list(MAT_METAL = 650, MAT_GLASS = 400)
 	build_path = /obj/item/weapon/stock_parts/capacitor/adv
 	category = list("Stock Parts")
 
@@ -871,8 +874,8 @@ other types of metals and chemistry for reagents).
 	name = "Advanced Sensor Module"
 	desc = "A stock part used in the construction of various devices."
 	id = "adv_sensor"
-	build_type = PROTOLATHE | MECHFAB
-	materials = list(MAT_METAL = 400, MAT_GLASS = 160, MAT_SILVER = 250)
+	build_type = PROTOLATHE | MECHFAB | AUTOLATHE
+	materials = list(MAT_METAL = 400, MAT_GLASS = 310)
 	build_path = /obj/item/weapon/stock_parts/scanning_module/adv
 	category = list("Stock Parts")
 
@@ -880,8 +883,8 @@ other types of metals and chemistry for reagents).
 	name = "Nano Manipulator"
 	desc = "A stock part used in the construction of various devices."
 	id = "nano_mani"
-	build_type = PROTOLATHE
-	materials = list(MAT_METAL = 240, MAT_SILVER = 250)
+	build_type = PROTOLATHE | AUTOLATHE
+	materials = list(MAT_METAL = 240, MAT_GLASS = 250)
 	build_path = /obj/item/weapon/stock_parts/manipulator/nano
 	category = list("Stock Parts")
 
@@ -889,8 +892,8 @@ other types of metals and chemistry for reagents).
 	name = "High-Power Micro-Laser"
 	desc = "A stock part used in the construction of various devices."
 	id = "high_micro_laser"
-	build_type = PROTOLATHE
-	materials = list(MAT_METAL = 80, MAT_GLASS = 160, MAT_SILVER = 250)
+	build_type = PROTOLATHE | AUTOLATHE
+	materials = list(MAT_METAL = 330, MAT_GLASS = 160)
 	build_path = /obj/item/weapon/stock_parts/micro_laser/high
 	category = list("Stock Parts")
 
@@ -898,18 +901,18 @@ other types of metals and chemistry for reagents).
 	name = "Advanced Matter Bin"
 	desc = "A stock part used in the construction of various devices."
 	id = "adv_matter_bin"
-	build_type = PROTOLATHE
-	materials = list(MAT_METAL = 640, MAT_SILVER = 300)
+	build_type = PROTOLATHE | AUTOLATHE
+	materials = list(MAT_METAL = 640, MAT_GLASS = 300)
 	build_path = /obj/item/weapon/stock_parts/matter_bin/adv
 	category = list("Stock Parts")
 
-	//Tier 3
+//Tier 3
 /datum/design/super_capacitor
 	name = "Super Capacitor"
 	desc = "A stock part used in the construction of various devices."
 	id = "super_capacitor"
-	build_type = PROTOLATHE  |MECHFAB
-	materials = list(MAT_METAL = 400, MAT_GLASS = 400, MAT_GOLD = 250)
+	build_type = PROTOLATHE | MECHFAB
+	materials = list(MAT_METAL = 700, MAT_GLASS = 450)
 	build_path = /obj/item/weapon/stock_parts/capacitor/adv/super
 	category = list("Stock Parts")
 
@@ -918,7 +921,7 @@ other types of metals and chemistry for reagents).
 	desc = "A stock part used in the construction of various devices."
 	id = "phasic_sensor"
 	build_type = PROTOLATHE | MECHFAB
-	materials = list(MAT_METAL = 400, MAT_GLASS = 160, MAT_SILVER = 80, MAT_GOLD = 250)
+	materials = list(MAT_METAL = 600, MAT_GLASS = 390)
 	build_path = /obj/item/weapon/stock_parts/scanning_module/adv/phasic
 	category = list("Stock Parts")
 
@@ -927,7 +930,7 @@ other types of metals and chemistry for reagents).
 	desc = "A stock part used in the construction of various devices."
 	id = "pico_mani"
 	build_type = PROTOLATHE
-	materials = list(MAT_METAL = 240, MAT_GOLD = 250)
+	materials = list(MAT_METAL = 340, MAT_GLASS = 250)
 	build_path = /obj/item/weapon/stock_parts/manipulator/nano/pico
 	category = list("Stock Parts")
 
@@ -936,7 +939,7 @@ other types of metals and chemistry for reagents).
 	desc = "A stock part used in the construction of various devices."
 	id = "ultra_micro_laser"
 	build_type = PROTOLATHE
-	materials = list(MAT_METAL = 80, MAT_GLASS = 160, MAT_GOLD = 250, MAT_URANIUM = 80)
+	materials = list(MAT_METAL = 380, MAT_GLASS = 310)
 	build_path = /obj/item/weapon/stock_parts/micro_laser/high/ultra
 	category = list("Stock Parts")
 
@@ -945,11 +948,11 @@ other types of metals and chemistry for reagents).
 	desc = "A stock part used in the construction of various devices."
 	id = "super_matter_bin"
 	build_type = PROTOLATHE
-	materials = list(MAT_METAL = 640, MAT_GOLD = 300)
+	materials = list(MAT_METAL = 840, MAT_GLASS = 300)
 	build_path = /obj/item/weapon/stock_parts/matter_bin/adv/super
 	category = list("Stock Parts")
 
-	//Tier 4
+//Tier 4
 /datum/design/quadratic_capacitor
 	name = "Quadratic Capacitor"
 	desc = "A stock part used in the construction of various devices."
@@ -1088,7 +1091,7 @@ other types of metals and chemistry for reagents).
 	id = "high_cell"
 	build_type = PROTOLATHE | AUTOLATHE | MECHFAB
 	materials = list(MAT_METAL = 700, MAT_GLASS = 60)
-	build_path = /obj/item/weapon/stock_parts/cell/high
+	build_path = /obj/item/weapon/stock_parts/cell/high/empty
 	construction_time=100
 	category = list("Stock Parts")
 
@@ -1098,7 +1101,7 @@ other types of metals and chemistry for reagents).
 	id = "super_cell"
 	build_type = PROTOLATHE | MECHFAB
 	materials = list(MAT_METAL = 700, MAT_GLASS = 70)
-	build_path = /obj/item/weapon/stock_parts/cell/super
+	build_path = /obj/item/weapon/stock_parts/cell/super/empty
 	construction_time=100
 	category = list("Stock Parts")
 
@@ -1108,7 +1111,7 @@ other types of metals and chemistry for reagents).
 	id = "hyper_cell"
 	build_type = PROTOLATHE | MECHFAB
 	materials = list(MAT_METAL = 400, MAT_GLASS = 70, MAT_SILVER = 150, MAT_GOLD = 150)
-	build_path = /obj/item/weapon/stock_parts/cell/hyper
+	build_path = /obj/item/weapon/stock_parts/cell/hyper/empty
 	construction_time=100
 	category = list("Stock Parts")
 
@@ -1119,7 +1122,7 @@ other types of metals and chemistry for reagents).
 	build_type = PROTOLATHE | MECHFAB
 	materials = list(MAT_METAL = 800, MAT_GLASS = 160, MAT_SILVER = 300, MAT_GOLD = 300, MAT_DIAMOND = 160)
 //	construction_time=100
-	build_path = /obj/item/weapon/stock_parts/cell/bluespace
+	build_path = /obj/item/weapon/stock_parts/cell/bluespace/empty
 	category = list("Stock Parts")
 
 
@@ -1260,6 +1263,15 @@ other types of metals and chemistry for reagents).
 	build_type = IMPRINTER
 	materials = list(MAT_GLASS = 1000, "sacid" = 20)
 	build_path = /obj/item/weapon/circuitboard/smartfridge
+	category = list("Machine")
+
+/datum/design/bluespace_storage
+	name = "Machine Design (Bluespace Storage)"
+	desc = "The circuit board for a Bluespace Storage."
+	id = "bluespace_storage"
+	build_type = IMPRINTER
+	materials = list(MAT_GLASS = 1500, MAT_DIAMOND = 1000, "sacid" = 20)
+	build_path = /obj/item/weapon/circuitboard/smartfridge/secure/bluespace
 	category = list("Machine")
 
 /datum/design/monkey_recycler
@@ -1530,6 +1542,15 @@ other types of metals and chemistry for reagents).
 	build_path = /obj/item/weapon/circuitboard/miningdrill
 	category = list("Machine")
 
+/datum/design/expshovel
+	name = "Experimental shovel"
+	desc = "This is an experimental shovel that digs damn fast!"
+	id = "expshovel"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 2500, MAT_GLASS = 200)
+	build_path = /obj/item/weapon/shovel/experimental
+	category = list("Equipment")
+
 /datum/design/mining_drill_brace
 	name = "Machine Design (Mining Drill Brace)"
 	desc = "Brace for mining drill."
@@ -1747,13 +1768,48 @@ other types of metals and chemistry for reagents).
 
 /datum/design/chameleon
 	name = "Chameleon Kit"
-	desc = "It's a set of clothes with dials on them."
+	desc = "A set of clothes with dials on them."
 	id = "chameleon"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 5000)
 	build_path = /obj/item/weapon/storage/box/syndie_kit/chameleon
 	category = list("Illegal")
 
+/datum/design/ai_detector
+	name = "Artificial Intelligence Detector"
+	desc = "A device disguised as a multitool. Detects the activity of artificial intelligence."
+	id = "ai_detector"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 3000, MAT_GLASS = 500, MAT_GOLD = 500)
+	build_path = /obj/item/device/multitool/ai_detect
+	category = list("Illegal")
+
+/datum/design/smuggler_satch
+	name = "Smuggler's Satchel"
+	desc = "An unusual satchel that fits under the floor tiles."
+	id = "smuggler_satch"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 3000)
+	build_path = /obj/item/weapon/storage/backpack/satchel/flat
+	category = list("Illegal")
+
+/datum/design/voice_changer
+	name = "Voice Changer"
+	desc = "A gas mask with additional filters that affect the timbre of your voice."
+	id = "voice_changer"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 5000, MAT_SILVER = 500)
+	build_path = /obj/item/clothing/mask/gas/voice
+	category = list("Illegal")
+
+/datum/design/camera_bug
+	name = "Camera Bug"
+	desc = "An illegal device for illicit snooping through the camera network."
+	id = "camera_bug"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 4000, MAT_GLASS = 3000, MAT_DIAMOND = 2000, MAT_SILVER = 1000, MAT_GOLD = 500)
+	build_path = /obj/item/device/camera_bug
+	category = list("Illegal")
 
 /datum/design/bluespacebeaker
 	name = "bluespace beaker"
@@ -1904,6 +1960,15 @@ other types of metals and chemistry for reagents).
 	build_path = /obj/item/weapon/gun/energy/laser
 	category = list("Weapons")
 
+/datum/design/laserpractice
+	name = "Practice Laser Gun"
+	desc = "A modified version of the basic laser gun, this one fires less concentrated energy bolts designed for target practice."
+	id = "laserpractice"
+	build_type = PROTOLATHE
+	materials = list (MAT_METAL = 1250, MAT_GLASS = 250)
+	build_path = /obj/item/weapon/gun/energy/laser/practice
+	category = list("Weapons")
+
 /datum/design/lasercannon
 	name = "Laser Cannon"
 	desc = "A heavy duty laser cannon."
@@ -2027,7 +2092,7 @@ other types of metals and chemistry for reagents).
 	id = "smg"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 8000, MAT_SILVER = 2000, MAT_DIAMOND = 1000)
-	build_path = /obj/item/weapon/gun/projectile/automatic
+	build_path = /obj/item/weapon/gun/projectile/automatic/saber
 	category = list("Weapons")
 
 /datum/design/msmg9mm
@@ -2055,6 +2120,33 @@ other types of metals and chemistry for reagents).
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 5000, MAT_GLASS = 1000, MAT_PHORON = 3000)
 	build_path = /obj/item/weapon/gun/energy/toxgun
+	category = list("Weapons")
+
+/datum/design/medigun
+	name = "Medigun"
+	desc = "Прототип лечебной пушки, которая медленно возвращает органику в прежнее состояние, исцеляя их."
+	id = "medigun"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 10000, MAT_GLASS = 5000, MAT_PHORON = 5000, MAT_GOLD = 1500, MAT_SILVER = 1500, MAT_DIAMOND = 2000)
+	build_path = /obj/item/weapon/gun/medbeam
+	category = list("Weapons")
+
+/datum/design/sniperrifle
+	name = "Sniper rifle"
+	desc = "Снайперская винтовка W2500-E, разработанная компанией W&J, изготовлена из легких материалов и оснащена прицелом системы SMART."
+	id = "sniperrifle"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 20000, MAT_GLASS = 7000, MAT_URANIUM = 5000, MAT_GOLD = 2500, MAT_SILVER = 2500, MAT_DIAMOND = 2000)
+	build_path = /obj/item/weapon/gun/energy/sniperrifle
+	category = list("Weapons")
+
+/datum/design/pulse_rifle
+	name = "Pulse rifle"
+	desc = "Сверхмощное, импульсно-энергетическое оружие, используемое военными."
+	id = "pulse_rifle"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 30000, MAT_GLASS = 15000, MAT_URANIUM = 12500, MAT_GOLD = 5000, MAT_SILVER = 5000, MAT_DIAMOND = 5000, MAT_PHORON = 20000)
+	build_path = /obj/item/weapon/gun/energy/pulse_rifle
 	category = list("Weapons")
 
 /////////////////////////////////////////
@@ -2193,13 +2285,13 @@ other types of metals and chemistry for reagents).
 	build_path = /obj/item/bluespace_crystal/artificial
 	category = list("Misc")
 
-/datum/design/miningsatchel_holding
-	name = "Mining Satchel of Holding"
-	desc = "A mining satchel that can hold an infinite amount of ores."
-	id = "minerbag_holding"
+/datum/design/bluespacesatchel_holding
+	name = "Bluespace Satchel"
+	desc = "A bluespace satchel that can hold an infinite amount of plant, ore, etc."
+	id = "bluespacesatchel_holding"
 	build_type = PROTOLATHE | MINEFAB
 	materials = list(MAT_GOLD = 1500, MAT_URANIUM = 500) //quite cheap, for more convenience
-	build_path = /obj/item/weapon/storage/bag/ore/holding
+	build_path = /obj/item/weapon/storage/bag/holding
 	category = list("Tools")
 
 /////////////////////////////////////////
@@ -2260,6 +2352,15 @@ other types of metals and chemistry for reagents).
 	build_path = /obj/item/device/hud_calibrator
 	category = list("Support")
 
+/datum/design/hud_advanced
+	name = "Advanced HUD"
+	desc = "An advanced HUD that can be flexibly modified"
+	id = "advanced_hud"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 150, MAT_GLASS = 150)
+	build_path = /obj/item/clothing/glasses/sunglasses/hud/advanced
+	category = list("Support")
+
 /////////////////////////////////////////
 //////////////////Test///////////////////
 /////////////////////////////////////////
@@ -2271,27 +2372,6 @@ other types of metals and chemistry for reagents).
 			build_type = PROTOLATHE
 			materials = list(MAT_SILVER = 2500, MAT_GOLD = 3000, "iron" = 15, "copper" = 10)
 			build_path = /obj/item/weapon/banhammer */
-
-////////////////////////////////////////
-//Disks for transporting design datums//
-////////////////////////////////////////
-
-/obj/item/weapon/disk/design_disk
-	name = "Empty Disk"
-	desc = "Wow. Is that a save icon?"
-	icon = 'icons/obj/cloning.dmi'
-	icon_state = "datadisk2"
-	item_state = "card-id"
-	w_class = SIZE_TINY
-	m_amt = 30
-	g_amt = 10
-	var/datum/design/blueprint
-
-/obj/item/weapon/disk/design_disk/atom_init()
-	. = ..()
-	pixel_x = rand(-5.0, 5)
-	pixel_y = rand(-5.0, 5)
-
 
 /////////////////////////////////////////
 //////////////Borg Upgrades//////////////
@@ -2578,11 +2658,11 @@ other types of metals and chemistry for reagents).
 
 /datum/design/airbag
 	name = "Personal airbag"
-	desc = "One-use protection from high-speed collisions"
+	desc = "One-use protection from high-speed collisions and low pressure."
 	id = "airbag"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 500, MAT_SILVER = 500)
-	build_path = /obj/item/airbag
+	build_path = /obj/item/clothing/neck/airbag
 	category = list("Support")
 
 /datum/design/universal_pyrometer
@@ -2844,3 +2924,82 @@ other types of metals and chemistry for reagents).
 	materials = list(MAT_METAL = 2000, MAT_GLASS = 1000)
 	build_path = /obj/item/rig_module/emp_shield
 	category = list("Rig Modules")
+/datum/design/rigstealth
+	name = "Hardsuit stealth system"
+	desc = "System that makes hardsuit invisible."
+	id = "rigstealth"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 10000, MAT_GLASS = 10000, MAT_SILVER = 5000, MAT_GOLD = 5000, MAT_DIAMOND = 10000, MAT_PHORON = 5000)
+	build_path = /obj/item/rig_module/stealth
+	category = list("Rig Modules")
+
+/////////////////////////////////////////
+////////////////Upgrades/////////////////
+/////////////////////////////////////////
+
+/datum/design/tier1_hud_upgrade
+	name = "Damage Scan Upgrade"
+	desc = "Allows HUD to show damage on person."
+	id = "tier1_hud_upgrade"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 2000, MAT_GLASS = 1000)
+	build_path = /obj/item/hud_upgrade/medscan
+	category = list("Special upgrades")
+
+/datum/design/tier2_hud_upgrade
+	name = "Basic Nightvision HUD upgrade"
+	desc = "Allows HUD to turn a basic nightvision mode. Can be installed only after damage scan upgrade"
+	id = "tier2_hud_upgrade"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 4000, MAT_GLASS = 2000, MAT_URANIUM = 2000)
+	build_path = /obj/item/hud_upgrade/night
+	category = list("Special upgrades")
+
+/datum/design/tier3_hud_upgrade
+	name = "Thermal HUD upgrade"
+	desc = "Allows HUD to turn a basic thermal mode, makes nightvision mode more comfortable for use. Can be installed only after basic nightvision upgrade"
+	id = "tier3_hud_upgrade"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 4000, MAT_GLASS = 2000, MAT_PHORON = 2500)
+	build_path = /obj/item/hud_upgrade/thermal
+	category = list("Special upgrades")
+
+/datum/design/tier4_hud_upgrade
+	name = "Advanced Thermal HUD upgrade"
+	desc = "Makes thermal mode comfortable and combines it with nightvision mode. Can be installed only after thermal upgrade"
+	id = "tier4_hud_upgrade"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 4000, MAT_GLASS = 2000, MAT_GOLD = 1500, MAT_URANIUM = 3000, MAT_PHORON = 3500)
+	build_path = /obj/item/hud_upgrade/thermal_advanced
+	category = list("Special upgrades")
+
+/////////////////////////////////////////
+//////////////////Armor//////////////////
+/////////////////////////////////////////
+
+/datum/design/ds_helmet
+	name = "Deathsquad helmet"
+	desc = "That's not red paint. That's real blood."
+	id = "ds_helmet"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 15000, MAT_GLASS = 8000, MAT_GOLD = 2500, MAT_URANIUM = 4500, MAT_PHORON = 5000)
+	build_path = /obj/item/clothing/head/helmet/space/deathsquad
+	category = list("Armor")
+
+/datum/design/ds_armor
+	name = "SWAT Suit"
+	desc = "Тяжелый бронированный костюм, защищающий от умеренного количества повреждений. Используется в специальных операциях."
+	id = "ds_armor"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 50000, MAT_GLASS = 25000, MAT_GOLD = 8000, MAT_URANIUM = 12500, MAT_PHORON = 15000)
+	build_path = /obj/item/clothing/suit/armor/swat
+	category = list("Armor")
+
+/datum/design/ds_boots
+	name = "SWAT shoes"
+	desc = "When you want to turn up the heat."
+	id = "ds_boots"
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 10000, MAT_GOLD = 2000, MAT_PHORON = 4000)
+	build_path = /obj/item/clothing/shoes/boots/swat
+	category = list("Armor")

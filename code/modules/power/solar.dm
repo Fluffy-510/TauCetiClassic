@@ -1,5 +1,5 @@
 #define SOLAR_MAX_DIST 40
-#define SOLARGENRATE 1500
+#define SOLARGENRATE 1800
 
 // This will choose whether to get the solar list from the powernet or the powernet nodes,
 // depending on the size of the nodes.
@@ -136,11 +136,16 @@
 
 	if(obscured)	return
 
-	var/sgen = SOLARGENRATE * sunfrac
+	var/sgen = calculate_energy_incoming()
 	add_avail(sgen)
 	if(powernet && control)
 		if(powernet.nodes[control])
 			control.gen += sgen
+
+//override this if you want more/less power incoming from solars
+/obj/machinery/power/solar/proc/calculate_energy_incoming()
+	//Enough for supply NSS Exodus
+	return SOLARGENRATE * sunfrac
 
 /obj/machinery/power/solar/fake/atom_init(mapload, obj/item/solar_assembly/S)
 	. = ..(mapload, S, 0)
@@ -240,6 +245,8 @@
 	max_integrity = 200
 	integrity_failure = 0.5
 
+	required_skills = null
+
 	var/light_range_on = 1.5
 	var/light_power_on = 3
 	var/id = 0
@@ -251,12 +258,25 @@
 	var/trackdir = 1		// -1=CCW, 1=CW
 	var/nexttime = 0		// Next clock time that manual tracking will move the array
 
+
+
 /obj/machinery/power/solar_control/atom_init()
 	. = ..()
 	connect_to_network()
+	if(track == 2 && SSticker.current_state != GAME_STATE_PLAYING)
+		RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, .proc/on_sun_generated)
+
+/obj/machinery/power/solar_control/Destroy()
+		UnregisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING)
+		return ..()
+
+/obj/machinery/power/solar_control/proc/on_sun_generated(datum/source)
+	SIGNAL_HANDLER
 	if(!powernet)
 		return
+	setup_auto_tracking()
 	set_panels(cdir)
+	updateDialog()
 
 /obj/machinery/power/solar_control/disconnect_from_network()
 	..()
@@ -384,19 +404,19 @@
 	t += "Tracking: "
 	switch(track)
 		if(0)
-			t += "<B>Off</B> <A href='?src=\ref[src];track=1'>Manual</A> <A href='?src=\ref[src];track=2'>Automatic</A><BR>"
+			t += "<B>Off</B> <A href='byond://?src=\ref[src];track=1'>Manual</A> <A href='byond://?src=\ref[src];track=2'>Automatic</A><BR>"
 		if(1)
-			t += "<A href='?src=\ref[src];track=0'>Off</A> <B>Manual</B> <A href='?src=\ref[src];track=2'>Automatic</A><BR>"
+			t += "<A href='byond://?src=\ref[src];track=0'>Off</A> <B>Manual</B> <A href='byond://?src=\ref[src];track=2'>Automatic</A><BR>"
 		if(2)
-			t += "<A href='?src=\ref[src];track=0'>Off</A> <A href='?src=\ref[src];track=1'>Manual</A> <B>Automatic</B><BR>"
+			t += "<A href='byond://?src=\ref[src];track=0'>Off</A> <A href='byond://?src=\ref[src];track=1'>Manual</A> <B>Automatic</B><BR>"
 
 	t += "Manual Tracking Rate: [rate_control(src,"tdir","[trackrate/10]&deg/min ([trackdir<0 ? "CCW" : "CW"])",1,10)]<BR>"
 	t += "Manual Tracking Direction: "
 	switch(trackdir)
 		if(-1)
-			t += "<A href='?src=\ref[src];trackdir=1'>CW</A> <B>CCW</B><BR>"
+			t += "<A href='byond://?src=\ref[src];trackdir=1'>CW</A> <B>CCW</B><BR>"
 		if(1)
-			t += "<B>CW</B> <A href='?src=\ref[src];trackdir=-1'>CCW</A><BR>"
+			t += "<B>CW</B> <A href='byond://?src=\ref[src];trackdir=-1'>CCW</A><BR>"
 
 	var/datum/browser/popup = new(user, "solcon", "Solar Generator Control")
 	popup.set_content(t)
@@ -429,12 +449,7 @@
 			nexttime = world.time + 6000 / trackrate
 		track = text2num(href_list["track"])
 		if(powernet && (track == 2))
-			if(!SSsun.solars.Find(src,1,0))
-				SSsun.solars.Add(src)
-			for(var/obj/machinery/power/tracker/T in get_solars_powernet())
-				if(powernet.nodes[T])
-					cdir = T.sun_angle
-					break
+			setup_auto_tracking()
 
 	else if(href_list["trackdir"])
 		trackdir = text2num(href_list["trackdir"])
@@ -442,6 +457,14 @@
 	set_panels(cdir)
 	update_icon()
 	updateUsrDialog()
+
+/obj/machinery/power/solar_control/proc/setup_auto_tracking()
+	if(!SSsun.solars.Find(src,1,0))
+		SSsun.solars.Add(src)
+	for(var/obj/machinery/power/tracker/T in get_solars_powernet())
+		if(powernet.nodes[T])
+			cdir = T.sun_angle
+			break
 
 
 /obj/machinery/power/solar_control/proc/set_panels(cdir)

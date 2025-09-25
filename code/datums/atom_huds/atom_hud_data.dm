@@ -33,7 +33,7 @@
 	hud_icons = null
 
 /datum/atom_hud/data/medical
-	hud_icons = list(STATUS_HUD, HEALTH_HUD)
+	hud_icons = list(STATUS_HUD, HEALTH_HUD, INSURANCE_HUD)
 
 /datum/atom_hud/data/medical/proc/check_sensors(mob/living/carbon/human/H)
 	if(!istype(H))
@@ -112,6 +112,10 @@
 /mob/living/proc/med_hud_set_health()
 	var/image/holder = hud_list[HEALTH_HUD]
 	holder.icon_state = "hud[RoundHealth(src)]"
+	if(ishuman(src))
+		var/mob/living/carbon/human/H = src
+		holder.pixel_y = H.species.hud_offset_y
+		holder.pixel_x = H.species.hud_offset_x
 
 //for carbon suit sensors
 /mob/living/carbon/med_hud_set_health()
@@ -146,12 +150,23 @@
 			holder.icon_state = "hudhealthy"
 		else
 			holder.icon_state = "hudill[min(virus_threat, 7)]"
+	if(!ishuman(src))
+		return
+	var/mob/living/carbon/human/H = src
+	holder.pixel_y = H.species.hud_offset_y
+	holder.pixel_x = H.species.hud_offset_x
 
 /mob/living/carbon/human/med_hud_set_status()
 	..()
 	var/image/holder = hud_list[STATUS_HUD]
 	if(iszombie(src))
 		holder.icon_state = "hudill"
+
+	holder = hud_list[INSURANCE_HUD]
+	var/insurance_type = get_insurance_type(src)
+	holder.icon_state = "hud_insurance_[insurance_type]"
+	holder.pixel_y = species.hud_offset_y
+	holder.pixel_x = species.hud_offset_x
 
 /***********************************************
  Security HUDs! Basic mode shows only the job.
@@ -161,49 +176,39 @@
 	holder.icon_state = "hudunknown"
 	if(wear_id?.GetID())
 		holder.icon_state = "hud[ckey(wear_id.GetJobName())]"
-	holder.pixel_y = -8
+	holder.pixel_y = species.hud_offset_y - 8
+	holder.pixel_x = species.hud_offset_x
 	sec_hud_set_security_status()
 
 /mob/living/proc/sec_hud_set_implants()
 	var/image/holder
+	var/species_offset_hud_Y = 0
+	var/species_offset_hud_X = 0
+	if(ishuman(src))
+		var/mob/living/carbon/human/H = src
+		species_offset_hud_Y = H.species.hud_offset_y
+		species_offset_hud_X = H.species.hud_offset_x
 	var/y = 0
 	for(var/i in list(IMPTRACK_HUD, IMPLOYAL_HUD, IMPCHEM_HUD, IMPMINDS_HUD, IMPOBED_HUD))
 		holder = hud_list[i]
 		holder.icon_state = null
+		holder.pixel_x = species_offset_hud_X
 
-	if(isloyal())
-		holder = hud_list[IMPLOYAL_HUD]
-		holder.icon_state = "hud_imp_loyal"
+	for(var/obj/item/weapon/implant/I in implants)
+		if(!I.hud_id || !I.hud_icon_state)
+			continue
+		holder = hud_list[I.hud_id]
+		if(holder.icon_state)
+			continue
+		holder.icon_state = I.hud_icon_state
+		holder.pixel_y = y + species_offset_hud_Y
+		holder.pixel_x = species_offset_hud_X
 		y += -5
-
-	if(ismindshielded())
-		holder = hud_list[IMPMINDS_HUD]
-		holder.icon_state = "hud_imp_mindshield"
-		holder.pixel_y = y
-		y += -5
-
-	if(isimplantedobedience())
-		holder = hud_list[IMPOBED_HUD]
-		holder.icon_state = "hud_imp_obedience"
-		holder.pixel_y = y
-		y += -5
-
-	for(var/obj/item/weapon/implant/I in src)
-		if(istype(I, /obj/item/weapon/implant/chem))
-			if(I.implanted)
-				holder = hud_list[IMPCHEM_HUD]
-				holder.icon_state = "hud_imp_chem"
-				holder.pixel_y = y
-				y += -5
-
-		if(istype(I, /obj/item/weapon/implant/tracking))
-			holder = hud_list[IMPTRACK_HUD]
-			holder.icon_state = "hud_imp_tracking"
-			holder.pixel_y = y
-			y += -5
 
 /mob/living/carbon/human/proc/sec_hud_set_security_status()
 	var/image/holder = hud_list[WANTED_HUD]
+	holder.pixel_y = species.hud_offset_y
+	holder.pixel_x = species.hud_offset_x
 	var/perpname = get_visible_name(TRUE)
 	if(perpname)
 		var/datum/data/record/R = find_security_record("name", perpname)
@@ -213,7 +218,7 @@
 					holder.icon_state = "hudwanted"
 					return
 				if("Incarcerated")
-					holder.icon_state = "hudprisoner"
+					holder.icon_state = "hudincarcerated"
 					return
 				if("Paroled")
 					holder.icon_state = "hudparolled"

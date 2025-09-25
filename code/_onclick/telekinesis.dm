@@ -13,10 +13,6 @@
 	if(druggy)
 		. += TK_BONUS_DRUGGED
 
-	var/datum/component/mood/mood = GetComponent(/datum/component/mood)
-	if(mood && mood.mood_level <= 2)
-		. += TK_BONUS_UPSET
-
 /mob/proc/has_tk_power(amount)
 	return FALSE
 
@@ -237,7 +233,7 @@
 
 /obj/item/tk_grab/proc/focus_object(obj/target, mob/living/user)
 	focus = target
-	RegisterSignal(focus, COMSIG_PARENT_QDELETING, .proc/on_focus_deletion)
+	RegisterSignal(focus, COMSIG_PARENT_QDELETING, PROC_REF(on_focus_deletion))
 	update_icon()
 	apply_focus_overlay()
 

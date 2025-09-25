@@ -73,7 +73,7 @@
 		Behaviour controls are [locked ? "locked" : "unlocked"]<BR>
 		Maintenance panel panel is [open ? "opened" : "closed"]"},
 
-		"<A href='?src=\ref[src];power=1'>[on ? "On" : "Off"]</A>" )
+		"<A href='byond://?src=\ref[src];power=1'>[on ? "On" : "Off"]</A>" )
 
 	if(!locked || issilicon(user) || isobserver(user))
 		if(!lasertag_color)
@@ -83,15 +83,15 @@
 				Operating Mode: []<BR>
 				Report Arrests: []"},
 
-				"<A href='?src=\ref[src];operation=idcheck'>[idcheck ? "Yes" : "No"]</A>",
-				"<A href='?src=\ref[src];operation=ignorerec'>[check_records ? "Yes" : "No"]</A>",
-				"<A href='?src=\ref[src];operation=switchmode'>[arrest_type ? "Detain" : "Arrest"]</A>",
-				"<A href='?src=\ref[src];operation=declarearrests'>[declare_arrests ? "Yes" : "No"]</A>" )
+				"<A href='byond://?src=\ref[src];operation=idcheck'>[idcheck ? "Yes" : "No"]</A>",
+				"<A href='byond://?src=\ref[src];operation=ignorerec'>[check_records ? "Yes" : "No"]</A>",
+				"<A href='byond://?src=\ref[src];operation=switchmode'>[arrest_type ? "Detain" : "Arrest"]</A>",
+				"<A href='byond://?src=\ref[src];operation=declarearrests'>[declare_arrests ? "Yes" : "No"]</A>" )
 
 		dat += text({"<BR>
 			Auto Patrol: []"},
 
-			"<A href='?src=\ref[src];operation=patrol'>[auto_patrol ? "On" : "Off"]</A>" )
+			"<A href='byond://?src=\ref[src];operation=patrol'>[auto_patrol ? "On" : "Off"]</A>" )
 
 	var/datum/browser/popup = new(user, "window=autosec", src.name)
 	popup.set_content(dat)
@@ -165,7 +165,7 @@
 				blockcount++
 				if(blockcount > 5)	// attempt 5 times before recomputing
 					// find new path excluding blocked turf
-					addtimer(CALLBACK(src, .proc/patrol_substep, next), 2)
+					addtimer(CALLBACK(src, PROC_REF(patrol_substep), next), 2)
 
 		else	// not a valid turf
 			mode = SECBOT_IDLE
@@ -504,7 +504,7 @@
 		if(L.lasertag_color != lasertag_color)
 			turn_off()
 			qdel(Proj)
-			on_timer_id = addtimer(CALLBACK(src, .proc/turn_on_cb), 100, TIMER_STOPPABLE)
+			on_timer_id = addtimer(CALLBACK(src, PROC_REF(turn_on_cb)), 100, TIMER_STOPPABLE)
 
 /obj/machinery/bot/secbot/ed209/bluetag
 	lasertag_color = "blue"

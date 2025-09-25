@@ -181,17 +181,17 @@
 	user.set_machine(src)
 	var/dat
 	if(mybag)
-		dat += "<a href='?src=\ref[src];take_item=garbage'>[mybag.name]</a><br>"
+		dat += "<a href='byond://?src=\ref[src];take_item=garbage'>[mybag.name]</a><br>"
 	if(mybucket)
-		dat += "<a href='?src=\ref[src];take_item=bucket'>[mybucket.name]</a><br>"
+		dat += "<a href='byond://?src=\ref[src];take_item=bucket'>[mybucket.name]</a><br>"
 	if(mymop)
-		dat += "<a href='?src=\ref[src];take_item=mop'>[mymop.name]</a><br>"
+		dat += "<a href='byond://?src=\ref[src];take_item=mop'>[mymop.name]</a><br>"
 	if(myspray)
-		dat += "<a href='?src=\ref[src];take_item=spray'>[myspray.name]</a><br>"
+		dat += "<a href='byond://?src=\ref[src];take_item=spray'>[myspray.name]</a><br>"
 	if(myreplacer)
-		dat += "<a href='?src=\ref[src];take_item=replacer'>[myreplacer.name]</a><br>"
+		dat += "<a href='byond://?src=\ref[src];take_item=replacer'>[myreplacer.name]</a><br>"
 	if(signs)
-		dat += "<a href='?src=\ref[src];take_item=sign'>[signs] sign\s</a><br>"
+		dat += "<a href='byond://?src=\ref[src];take_item=sign'>[signs] sign\s</a><br>"
 
 	var/datum/browser/popup = new(user, "janicart", name, 240, 160)
 	popup.set_content(dat)
@@ -211,6 +211,13 @@
 				to_chat(user, "<span class='notice'>You take [mybag] from [src].</span>")
 				mybag = null
 		if("bucket")
+			if(mybucket && mymop)
+				mybucket.update_icon()
+				mybucket.forceMove(get_turf(src))
+				user.put_in_hands(mymop)
+				to_chat(user, "<span class='notice'>You unmount [mybucket] and take [mymop] from [src].</span>")
+				mybucket = null
+				mymop = null
 			if(mybucket)
 				mybucket.update_icon()
 				mybucket.forceMove(get_turf(src))
@@ -270,17 +277,17 @@
 	var/turf/dropspot = get_turf(src)
 	if(mymop && prob(chance))
 		mymop.forceMove(dropspot)
-		INVOKE_ASYNC(mymop, /obj.proc/tumble_async, 2)
+		INVOKE_ASYNC(mymop, TYPE_PROC_REF(/obj, tumble_async), 2)
 		mymop = null
 
 	if(myspray && prob(chance))
 		myspray.forceMove(dropspot)
-		INVOKE_ASYNC(myspray, /obj.proc/tumble_async, 3)
+		INVOKE_ASYNC(myspray, TYPE_PROC_REF(/obj, tumble_async), 3)
 		myspray = null
 
 	if(myreplacer && prob(chance))
 		myreplacer.forceMove(dropspot)
-		INVOKE_ASYNC(myreplacer, /obj.proc/tumble_async, 2)
+		INVOKE_ASYNC(myreplacer, TYPE_PROC_REF(/obj, tumble_async), 2)
 		myreplacer = null
 
 	if(mybucket) // Bucket is heavier, harder to knock off.
@@ -291,7 +298,7 @@
 				mybucket.reagents.trans_to(dropspot, amount=mybucket.reagents.total_volume)
 			else
 				mybucket.reagents.clear_reagents()
-			INVOKE_ASYNC(mybucket, /obj.proc/tumble_async, 1)
+			INVOKE_ASYNC(mybucket, TYPE_PROC_REF(/obj, tumble_async), 1)
 			mybucket = null
 		else // But the water is gone anyway.
 			mybucket.reagents.reaction(dropspot, method=TOUCH)
@@ -306,13 +313,13 @@
 			if(prob(chance * 2))
 				signs--
 				Sign.forceMove(dropspot)
-				INVOKE_ASYNC(Sign, /obj.proc/tumble_async, 3)
+				INVOKE_ASYNC(Sign, TYPE_PROC_REF(/obj, tumble_async), 3)
 				if(signs == 0)
 					break
 
 	if(mybag && prob(chance * 2))//Bag is flimsy
 		mybag.forceMove(dropspot)
-		INVOKE_ASYNC(mybag, /obj.proc/tumble_async, 1)
+		INVOKE_ASYNC(mybag, TYPE_PROC_REF(/obj, tumble_async), 1)
 		mybag.spill()//trashbag spills its contents too
 		mybag = null
 

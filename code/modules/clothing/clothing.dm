@@ -86,7 +86,7 @@
 			species_restricted = list(target_species)
 
 	if(target_species == VOX)
-		flags &= ~BLOCKHAIR
+		render_flags &= ~HIDE_ALL_HAIR
 
 	//Set icon
 	if (sprite_sheets_refit && (target_species in sprite_sheets_refit))
@@ -220,8 +220,6 @@
 	throwforce = 2
 	slot_flags = SLOT_FLAGS_EARS
 
-	sprite_sheet_slot = SPRITE_SHEET_EARS
-
 /obj/item/clothing/ears/attack_hand(mob/user)
 	if (!user) return
 
@@ -354,9 +352,15 @@ BLIND     // can't see anything
 	body_parts_covered = HEAD
 	slot_flags = SLOT_FLAGS_HEAD
 	w_class = SIZE_TINY
-	var/blockTracking = 0
-
 	sprite_sheet_slot = SPRITE_SHEET_HEAD
+
+//Neck
+/obj/item/clothing/neck
+	name = "neck"
+	icon = 'icons/obj/clothing/neck.dmi'
+	slot_flags = SLOT_FLAGS_NECK
+	w_class = SIZE_TINY
+	sprite_sheet_slot = SPRITE_SHEET_NECK
 
 //Mask
 /obj/item/clothing/mask
@@ -423,7 +427,8 @@ BLIND     // can't see anything
 	name = "space helmet"
 	icon_state = "space"
 	desc = "A special helmet designed for work in a hazardous, low-pressure environment."
-	flags = HEADCOVERSEYES | BLOCKHAIR | HEADCOVERSMOUTH | PHORONGUARD
+	flags = HEADCOVERSEYES | HEADCOVERSMOUTH | PHORONGUARD
+	render_flags = parent_type::render_flags | HIDE_ALL_HAIR
 	flags_pressure = STOPS_PRESSUREDMAGE
 	item_state = "space"
 	permeability_coefficient = 0.01
@@ -448,7 +453,7 @@ BLIND     // can't see anything
 	throw_range = 2
 	gas_transfer_coefficient = 0.01
 	permeability_coefficient = 0.02
-	flags = PHORONGUARD | BLOCKUNIFORM
+	flags = PHORONGUARD
 	flags_pressure = STOPS_PRESSUREDMAGE
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|ARMS|LEGS
 	pierce_protection = UPPER_TORSO|LOWER_TORSO|ARMS|LEGS
@@ -456,7 +461,8 @@ BLIND     // can't see anything
 	slowdown = 1.5
 	equip_time = 100 // Bone White - time to equip/unequip. see /obj/item/attack_hand (items.dm) and /obj/item/clothing/mob_can_equip (clothing.dm)
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 100, rad = 50)
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT|HIDETAIL
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
+	render_flags = parent_type::render_flags | HIDE_TAIL | HIDE_UNIFORM
 	cold_protection = UPPER_TORSO | LOWER_TORSO | LEGS | ARMS
 	min_cold_protection_temperature = SPACE_SUIT_MIN_COLD_PROTECTION_TEMPERATURE
 	siemens_coefficient = 0.2
@@ -501,6 +507,7 @@ BLIND     // can't see anything
 	slot_flags = SLOT_FLAGS_ICLOTHING
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
 	w_class = SIZE_SMALL
+	flags = HEAR_TALK //for webbing vest contents
 	var/has_sensor = 1//For the crew computer 2 = unable to change mode
 	var/sensor_mode = SUIT_SENSOR_OFF
 		/*
@@ -557,6 +564,11 @@ BLIND     // can't see anything
 			to_chat(user, "Its vital tracker appears to be enabled.")
 		if(SUIT_SENSOR_TRACKING)
 			to_chat(user, "Its vital tracker and tracking beacon appear to be enabled.")
+
+/obj/item/clothing/under/hear_talk(mob/M, text, verb, datum/language/speaking)
+	for(var/obj/item/clothing/accessory/A in accessories)
+		if(A.flags & (HEAR_TALK | HEAR_PASS_SAY | HEAR_TA_SAY))
+			A.hear_talk(M, text, verb, speaking)
 
 /obj/item/clothing/under/proc/set_sensors(mob/usr)
 	var/mob/M = usr
@@ -621,7 +633,7 @@ BLIND     // can't see anything
 
 	if(copytext(item_state,-2) != "_d")
 		basecolor = item_state
-	if((basecolor + "_d") in icon_states('icons/mob/uniform.dmi'))
+	if(icon_exists('icons/mob/uniform.dmi', "[basecolor]_d"))
 		item_state = item_state == "[basecolor]" ? "[basecolor]_d" : "[basecolor]"
 		update_inv_mob()
 	else

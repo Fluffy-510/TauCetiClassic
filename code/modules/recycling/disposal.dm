@@ -32,6 +32,8 @@
 	// find the attached trunk (if present) and init gas resvr.
 /obj/machinery/disposal/atom_init()
 	..()
+	if(is_station_level(z))
+		global.station_disposal_count++
 	return INITIALIZE_HINT_LATELOAD
 
 /obj/machinery/disposal/atom_init_late()
@@ -46,6 +48,8 @@
 	update()
 
 /obj/machinery/disposal/Destroy()
+	if(is_station_level(z))
+		global.station_disposal_count--
 	eject()
 	if(trunk)
 		trunk.linked = null
@@ -114,7 +118,7 @@
 			if(G.use_tool(src, usr, 20, required_skills_override = list(/datum/skill/atmospherics = SKILL_LEVEL_TRAINED)))
 				var/atom/old_loc = GM.loc
 				GM.forceMove(src)
-				INVOKE_ASYNC(GM, /atom/movable.proc/do_simple_move_animation, src, old_loc)
+				INVOKE_ASYNC(GM, TYPE_PROC_REF(/atom/movable, do_simple_move_animation), src, old_loc)
 				GM.instant_vision_update(1,src)
 				user.visible_message("<span class='danger'>[GM.name] has been placed in the [src] by [user].</span>")
 				qdel(G)
@@ -127,8 +131,14 @@
 		for(var/mob/living/holdermob in I.contents)
 			holdermob.log_combat(usr, "placed in disposals")
 
+	if(istype(I, /obj/item/weapon/paper/sticker))
+		var/obj/item/weapon/paper/sticker/S = I
+		if (!S.crumpled)
+			return
+
 	if(!I || !I.canremove || I.flags & NODROP)
 		return
+
 	user.drop_from_inventory(I, src)
 
 	user.visible_message("<span class='notice'>[user.name] places \the [I] into the [src].</span>", self_message = "<span class='notice'>You place \the [I] into the [src].</span>")
@@ -197,7 +207,7 @@
 
 	var/atom/old_loc = target.loc
 	target.forceMove(src)
-	INVOKE_ASYNC(target, /atom/movable.proc/do_simple_move_animation, src, old_loc)
+	INVOKE_ASYNC(target, TYPE_PROC_REF(/atom/movable, do_simple_move_animation), src, old_loc)
 	target.instant_vision_update(1,src)
 
 	user.visible_message(msg, self_message = self_msg)
@@ -236,11 +246,11 @@
 
 		user.attack_log += text("\[[time_stamp()]\] <font color='red'>Has placed [target.name] () in disposals.</font>")
 		//target.attack_log += text("\[[time_stamp()]\] <font color='orange'>Has been placed in disposals by [user.name] ([user.ckey])</font>")
-		//msg_admin_attack("[user] ([user.ckey]) placed [target] ([target.ckey]) in a disposals unit. (<A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
+		//msg_admin_attack("[user] ([user.ckey]) placed [target] ([target.ckey]) in a disposals unit. (<A href='byond://?_src_=holder;adminplayerobservecoodjump=1;X=[user.x];Y=[user.y];Z=[user.z]'>JMP</a>)")
 
 		var/atom/old_loc = target.loc
 		target.forceMove(src)
-		INVOKE_ASYNC(target, /atom/movable.proc/do_simple_move_animation, src, old_loc)
+		INVOKE_ASYNC(target, TYPE_PROC_REF(/atom/movable, do_simple_move_animation), src, old_loc)
 
 		user.visible_message(msg, self_message = self_msg)
 
@@ -345,6 +355,18 @@
 
 		if(action == "eject")
 			eject()
+			if(ishuman(usr))
+				var/mob/living/carbon/human/H = usr
+				if(HAS_TRAIT(H, TRAIT_HIDDEN_TRASH_GUN))
+					to_chat(H, "<span class='notice'>Оп-па! Иди к [H.gender == FEMALE ? "мамочке" : "папочке"]!</span>")
+					addtimer(CALLBACK(null, PROC_REF(to_chat), H, "<span class='notice'>Так...</span>"), 1 SECOND)
+					addtimer(CALLBACK(null, PROC_REF(to_chat), H, "<span class='notice'>А патроны где?</span>"), 2 SECONDS)
+
+					var/weapon_type = PATH_OR_RANDOM_PATH(/obj/random/guns/set_special)
+					var/obj/item/weapon/gun/projectile/P = new weapon_type(loc)
+					P.magazine.make_empty()
+					QDEL_NULL(P.chambered)
+					REMOVE_TRAIT(H, TRAIT_HIDDEN_TRASH_GUN, QUALITY_TRAIT)
 
 	return TRUE
 
@@ -369,21 +391,35 @@
 
 	// flush handle
 	if(flush)
-		add_overlay(image('icons/obj/pipes/disposal.dmi', "dispover-handle"))
+		add_overlay("dispover-handle")
 
 	// only handle is shown if no power
 	if(stat & NOPOWER || mode == -1)
 		return
 
+	var/list/status_overlay = list()
 	// 	check for items in disposal - occupied light
 	if(contents.len > 0)
-		add_overlay(image('icons/obj/pipes/disposal.dmi', "dispover-full"))
+		status_overlay.Add(image(icon = 'icons/obj/pipes/disposal.dmi',\
+							     icon_state = "dispover-full-light"))
+		set_light(1, 1, "#006381")
 
 	// charging and ready light
 	if(mode == 1)
-		add_overlay(image('icons/obj/pipes/disposal.dmi', "dispover-charge"))
+		status_overlay.Add(image(icon = 'icons/obj/pipes/disposal.dmi',\
+							     icon_state = "dispover-charge-light"))
+		add_overlay("dispover-charge")
+		set_light(1, 1, "#940101")
+
 	else if(mode == 2)
-		add_overlay(image('icons/obj/pipes/disposal.dmi', "dispover-ready"))
+		status_overlay.Add(image(icon = 'icons/obj/pipes/disposal.dmi',\
+							     icon_state = "dispover-ready-light"))
+		add_overlay("dispover-ready")
+		set_light(1, 1, "#0c8801")
+
+	for(var/image/I in status_overlay)
+		I.plane = LIGHTING_LAMPS_PLANE
+		add_overlay(I)
 
 // timed process
 // charge the gas reservoir and perform flush if ready
@@ -398,8 +434,8 @@
 	if( flush_count >= flush_every_ticks )
 		if( contents.len )
 			if(mode == 2)
-				feedback_inc("disposal_auto_flush",1)
-				INVOKE_ASYNC(src, .proc/flush)
+				feedback_inc("disposal_auto_flush", 1)
+				INVOKE_ASYNC(src, PROC_REF(flush))
 		flush_count = 0
 
 	if(flush && air_contents.return_pressure() >= SEND_PRESSURE )	// flush can happen even without power
@@ -586,7 +622,7 @@
 	loc = trunk
 	active = 1
 	set_dir(DOWN)
-	addtimer(CALLBACK(src, .proc/move), 1)
+	addtimer(CALLBACK(src, PROC_REF(move)), 1)
 
 // movement process, persists while holder is moving through pipes
 /obj/structure/disposalholder/proc/move()
@@ -597,13 +633,13 @@
 
 		if(hasmob && prob(3))
 			for(var/mob/living/H in src)
-				if(!isdrone(H) && !isreplicator(H)) //Drones use the mailing code to move through the disposal system,
+				if(!isdrone(H) && !isreplicator(H) && !HAS_TRAIT(H, TRAIT_NO_DISPOSALS_DAMAGE)) //Drones use the mailing code to move through the disposal system,
 					H.take_overall_damage(20, 0, "Blunt Trauma")//horribly maim any living creature jumping down disposals.  c'est la vie
 
 		if(has_bodybag && prob(3))
 			for(var/obj/structure/closet/body_bag/B in src)
 				for(var/mob/living/H in B)
-					if(!isdrone(H) && !isreplicator(H))
+					if(!isdrone(H) && !isreplicator(H) && !HAS_TRAIT(H, TRAIT_NO_DISPOSALS_DAMAGE))
 						H.take_overall_damage(20, 0, "Blunt Trauma")
 
 		if(has_fat_guy && prob(2)) // chance of becoming stuck per segment if contains a fat guy
@@ -705,17 +741,16 @@
 	anchored = TRUE
 	density = FALSE
 
-	level = 1			// underfloor only
 	var/dpdir = 0		// bitmask of pipe directions
 	dir = 0				// dir will contain dominant direction for junction pipes
 	max_integrity = 200
 	layer = 2.3			// slightly lower than wires and other pipes
-	var/base_icon_state	// initial icon state on map
 
 	// new pipe, set the icon_state as on map
 /obj/structure/disposalpipe/atom_init()
 	. = ..()
-	base_icon_state = icon_state
+
+	AddElement(/datum/element/undertile, TRAIT_T_RAY_VISIBLE, use_alpha = TRUE)
 
 	// pipe is deleted
 	// ensure if holder is present, it is expelled
@@ -767,30 +802,6 @@
 
 	return P
 
-
-// update the icon_state to reflect hidden status
-/obj/structure/disposalpipe/proc/update()
-	var/turf/T = src.loc
-	hide(T.intact && !isenvironmentturf(T))	// environment never hides pipes
-
-// hide called by levelupdate if turf intact status changes
-// change visibility status and force update of icon
-/obj/structure/disposalpipe/hide(intact)
-	invisibility = intact ? 101: 0	// hide if floor is intact
-	updateicon()
-
-// update actual icon_state depending on visibility
-// if invisible, append "f" to icon_state to show faded version
-// this will be revealed if a T-scanner is used
-// if visible, use regular icon_state
-/obj/structure/disposalpipe/proc/updateicon()
-	if(invisibility)
-		icon_state = "[base_icon_state]f"
-	else
-		icon_state = base_icon_state
-	return
-
-
 // expel the held objects into a turf
 // called when there is a break in the pipe
 //
@@ -807,13 +818,11 @@
 			AM.pipe_eject(0)
 		qdel(H)
 		return
-	if(T.intact && isfloorturf(T)) //intact floor, pop the tile
+	if(T.underfloor_accessibility < UNDERFLOOR_INTERACTABLE && isfloorturf(T)) //intact floor, pop the tile
 		var/turf/simulated/floor/F = T
-		F.burnt	= 1
-		F.intact	= 0
-		F.levelupdate()
-		new F.floor_type(H)	// add to holder so it will be thrown with other stuff
-		F.icon_state = "Floor[F.burnt ? "1" : ""]"
+		if(F.floor_type)
+			new F.floor_type(H)	// add cap to holder so it will be thrown with other stuff
+		F.break_tile_to_plating()
 
 	var/turf/target
 	playsound(src, 'sound/machines/hiss.ogg', VOL_EFFECTS_MASTER, null, FALSE)
@@ -863,7 +872,7 @@
 /obj/structure/disposalpipe/attackby(obj/item/I, mob/user)
 
 	var/turf/T = src.loc
-	if(T.intact)
+	if(T.underfloor_accessibility < UNDERFLOOR_INTERACTABLE)
 		return		// prevent interaction with T-scanner revealed pipes
 	add_fingerprint(user)
 	if(user.is_busy()) return
@@ -886,7 +895,7 @@
 /obj/structure/disposalpipe/proc/welded()
 
 	var/obj/structure/disposalconstruct/C = new (src.loc)
-	switch(base_icon_state)
+	switch(icon_state)
 		if("pipe-s")
 			C.ptype = 0
 		if("pipe-c")
@@ -911,7 +920,6 @@
 	C.set_dir(dir)
 	C.density = FALSE
 	C.anchored = TRUE
-	C.update()
 
 	qdel(src)
 
@@ -931,8 +939,6 @@
 	else
 		dpdir = dir | turn(dir, -90)
 
-	update()
-
 //a three-way junction with dir being the dominant direction
 /obj/structure/disposalpipe/junction
 	icon_state = "pipe-j1"
@@ -945,8 +951,6 @@
 		dpdir = dir | turn(dir, 90) | turn(dir,180)
 	else // pipe-y
 		dpdir = dir | turn(dir,90) | turn(dir, -90)
-	update()
-
 
 // next direction to move
 // if coming in from secondary dirs, then next is primary dir
@@ -1001,7 +1005,6 @@
 		tagger_locations |= sort_tag
 	updatename()
 	updatedesc()
-	update()
 
 /obj/structure/disposalpipe/tagger/attackby(obj/item/I, mob/user)
 	if(..())
@@ -1038,7 +1041,6 @@
 /obj/structure/disposalpipe/shop_scanner/atom_init()
 	. = ..()
 	dpdir = dir | turn(dir, 180)
-	update()
 
 /obj/structure/disposalpipe/shop_scanner/nextdir(fromdir)
 	return dir
@@ -1122,6 +1124,19 @@
 	var/market_price = export_item_and_contents(Item, FALSE, FALSE, dry_run=TRUE)
 	var/datum/shop_lot/Lot = new /datum/shop_lot(lot_name, lot_desc, lot_price, lot_category, lot_account, item_icon, "[REF(Item)]", market_price)
 
+	var/static/list/category2color = list(
+		"Еда" = "#ff9300",
+		"Одежда" = "#a8e61d",
+		"Устройства" = "#da00ff",
+		"Инструменты" = "#da0000",
+		"Ресурсы" = "#00b7ef",
+		"Наборы" = "#fff200",
+		// "Разное" = no colour,
+	)
+
+	if(category2color[lot_category])
+		Item.color = category2color[lot_category]
+
 	global.shop_categories[lot_category]++
 
 	Item.name = "Посылка номер: [global.online_shop_number]"
@@ -1150,11 +1165,11 @@
 /obj/structure/disposalpipe/sortjunction/proc/updatedesc()
 	desc = initial(desc)
 	if(sortType)
-		desc += "\nIt's filtering objects with the '[sortType]' tag."
+		desc += "\nIt's filtering objects with the '[istext(sortType) ? sortType : "multiple"]' tag."
 
 /obj/structure/disposalpipe/sortjunction/proc/updatename()
 	if(sortType)
-		name = "[initial(name)] ([sortType])"
+		name = "[initial(name)] ([istext(sortType) ? sortType : "multiple"])"
 	else
 		name = initial(name)
 
@@ -1171,13 +1186,12 @@
 
 /obj/structure/disposalpipe/sortjunction/atom_init()
 	. = ..()
-	if(sortType)
+	if(sortType && istext(sortType))
 		tagger_locations |= sortType
 
 	updatedir()
 	updatename()
 	updatedesc()
-	update()
 
 /obj/structure/disposalpipe/sortjunction/attackby(obj/item/I, mob/user)
 	if(..())
@@ -1194,7 +1208,13 @@
 			updatedesc()
 
 /obj/structure/disposalpipe/sortjunction/proc/divert_check(checkTag)
-	return sortType == checkTag
+	if(sortType && istext(sortType))
+		return sortType == checkTag
+	else if(islist(sortType))
+		for(var/sortType_variant in sortType)
+			if(sortType_variant == checkTag)
+				return TRUE
+		return FALSE
 
 // next direction to move
 // if coming in from negdir, then next is primary dir or sortdir
@@ -1263,7 +1283,6 @@
 /obj/structure/disposalpipe/trunk/atom_init()
 	..()
 	dpdir = dir
-	update()
 	return INITIALIZE_HINT_LATELOAD
 
 /obj/structure/disposalpipe/trunk/atom_init_late()
@@ -1281,7 +1300,6 @@
 	if(O)
 		linked = O
 
-	update()
 	return
 
 	// Override attackby so we disallow trunkremoval when somethings ontop
@@ -1306,7 +1324,7 @@
 		return
 
 	var/turf/T = src.loc
-	if(T.intact)
+	if(T.underfloor_accessibility < UNDERFLOOR_INTERACTABLE)
 		return		// prevent interaction with T-scanner revealed pipes
 	add_fingerprint(user)
 	if(iswelding(I))
@@ -1359,10 +1377,6 @@
 					// i.e. will be treated as an empty turf
 	desc = "A broken piece of disposal pipe."
 
-/obj/structure/disposalpipe/broken/atom_init()
-	. = ..()
-	update()
-
 /obj/structure/disposalpipe/broken/deconstruct()
 	qdel(src)
 
@@ -1413,7 +1427,19 @@
 		for(var/atom/movable/AM in H)
 			AM.forceMove(src.loc)
 			AM.pipe_eject(dir)
-			if(!isdrone(AM) && !isreplicator(AM)) //Drones keep smashing windows from being fired out of chutes. Bad for the station. ~Z
+
+			if(istype(AM, /obj/item/rocket))
+				var/obj/item/rocket/WH = AM
+				// long distance target will get us better accuracy in throwind datum
+				var/launch_target = get_turf_in_angle(dir2angle(dir)+WH.launch_angle, src.loc, 200)
+
+				var/datum/effect/effect/system/smoke_spread/smoke_effect = new
+				smoke_effect.set_up(1, 0, get_step(src.loc, dir))
+				INVOKE_ASYNC(smoke_effect, TYPE_PROC_REF(/datum/effect/effect/system/smoke_spread, start))
+
+				WH.throw_at(launch_target, 200, WH.launch_speed, spin = FALSE)
+
+			else if(!isdrone(AM) && !isreplicator(AM)) //Drones keep smashing windows from being fired out of chutes. Bad for the station. ~Z
 				AM.throw_at(target, 3, 2)
 		H.vent_gas(src.loc)
 		qdel(H)

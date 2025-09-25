@@ -1,4 +1,5 @@
 var/global/list/all_emotes
+var/global/list/emotes_for_emote_panel // for custom emote panel
 
 /*
  * Singleton emote datum.
@@ -32,6 +33,8 @@ var/global/list/all_emotes
 
 	// Sound produced. (HAHAHAHA)
 	var/sound
+	// Mutes shouldn't clap silently (but mimes should!)
+	var/soundless_for_mute = TRUE
 	// Whether sound pitch varies with age.
 	var/age_variations = FALSE
 
@@ -44,8 +47,21 @@ var/global/list/all_emotes
 
 	// Visual cue with a cloud above head for some emotes.
 	var/cloud
+	// How long emote cloud will float above character.
+	var/cloud_duration = 3 SECONDS
 
-	var/list/state_checks
+	// If specified, requires a greater degree of consciousness than the stat specified.
+	var/required_stat = null
+	// If specified requires a greater degree of consciousness than the stat specified, when intentionally performing the emote.
+	var/required_intentional_stat = null
+	// If performing mob has the trait, the emote can't be performed.
+	var/list/blocklist_traits = null
+	// If unintentionally permorming mob has the trait, the emote can't be performed.
+	var/list/blocklist_unintentional_traits = null
+	// If the mob doesn't have a usable arm, the emote can't be performed.
+	var/require_usable_hand = FALSE
+	// If the mob doesn't have all bodyparts in the list, the emote can't be performed.
+	var/list/required_bodyparts = null
 
 /datum/emote/proc/get_emote_message_1p(mob/user)
 	return "<i>[message_1p]</i>"
@@ -55,13 +71,7 @@ var/global/list/all_emotes
 
 /datum/emote/proc/get_emote_message_3p(mob/user)
 	var/msg = message_3p
-	var/miming = FALSE
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		if(H.miming)
-			miming = TRUE
-
-	if(message_miming && miming)
+	if(message_miming && HAS_TRAIT(src, TRAIT_MIMING))
 		msg = message_miming
 	else if(message_muzzled && istype(user.wear_mask, /obj/item/clothing/mask/muzzle))
 		msg = message_muzzled
@@ -89,18 +99,16 @@ var/global/list/all_emotes
 	LAZYSET(cooldowns, get_cooldown_group(), world.time + value)
 
 /datum/emote/proc/can_play_sound(mob/user, intentional)
-	if(HAS_TRAIT(user, TRAIT_MUTE))
+	if(HAS_TRAIT(user, TRAIT_MUTE) && soundless_for_mute)
 		return FALSE
-	if(istype(user.wear_mask, /obj/item/clothing/mask/muzzle))
+	if(istype(user.wear_mask, /obj/item/clothing/mask/muzzle) && soundless_for_mute)
 		return FALSE
 	if(isliving(user))
 		var/mob/living/L = user
-		if(L.silent)
+		if(L.silent && soundless_for_mute)
 			return FALSE
-	if(ishuman(user))
-		var/mob/living/carbon/human/H = user
-		if(H.miming)
-			return FALSE
+	if(HAS_TRAIT(user, TRAIT_MIMING))
+		return FALSE
 	if(!check_cooldown(user.next_audio_emote_produce, intentional))
 		return FALSE
 	return TRUE
@@ -124,20 +132,58 @@ var/global/list/all_emotes
 			to_chat(user, "<span class='notice'>You can't emote so much, give it a rest.</span>")
 		return FALSE
 
-	for(var/datum/callback/state as anything in state_checks)
-		if(!state.Invoke(user, intentional))
+	if(!isnull(required_stat) && user.stat > required_stat)
+		if(intentional)
+			to_chat(user, "<span class='notice'>You can't emote in this state.</span>")
+		return FALSE
+
+	if(!isnull(required_intentional_stat) && intentional && user.stat > required_stat)
+		to_chat(user, "<span class='notice'>You can't emote in this state.</span>")
+		return FALSE
+
+	if(blocklist_traits)
+		for(var/trait in blocklist_traits)
+			if(HAS_TRAIT(user, trait))
+				return FALSE
+
+	if(blocklist_unintentional_traits && !intentional)
+		for(var/trait in blocklist_unintentional_traits)
+			if(HAS_TRAIT(user, trait))
+				return FALSE
+
+	if(require_usable_hand)
+		if(user.restrained())
+			if(intentional)
+				to_chat(user, "<span class='notice'>You can't perform this emote while being restrained.</span>")
 			return FALSE
+
+		if(ishuman(user))
+			var/mob/living/carbon/human/H = user
+
+			var/obj/item/organ/external/l_arm = H.get_bodypart(BP_L_ARM)
+			var/obj/item/organ/external/r_arm = H.get_bodypart(BP_R_ARM)
+
+			var/l_arm_usable = l_arm && l_arm.is_usable()
+			var/r_arm_usable = r_arm && r_arm.is_usable()
+
+			if(!l_arm_usable && !r_arm_usable)
+				return FALSE
+
+	if(required_bodyparts && ishuman(user))
+		var/mob/living/carbon/human/H = user
+
+		for(var/zone in required_bodyparts)
+			var/obj/item/organ/external/BP = H.get_bodypart(zone)
+			if(!BP)
+				if(intentional)
+					to_chat(H, "<span class='notice'>You can't perform this emote without a [parse_zone(zone)]</span>")
+				return FALSE
 
 	return TRUE
 
 /datum/emote/proc/do_emote(mob/user, emote_key, intentional)
 	LAZYINITLIST(user.next_emote_use)
 	set_cooldown(user.next_emote_use, cooldown, intentional)
-
-	for(var/obj/item/weapon/implant/I in user)
-		if(!I.implanted)
-			continue
-		I.trigger(emote_key, user)
 
 	var/msg_1p = get_emote_message_1p(user)
 	var/msg_3p = "<b>[user]</b> <i>[get_emote_message_3p(user)]</i>"
@@ -185,5 +231,5 @@ var/global/list/all_emotes
 /datum/emote/proc/add_cloud(mob/user)
 	var/image/emote_bubble = image('icons/mob/emote.dmi', user, cloud, EMOTE_LAYER)
 	emote_bubble.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	flick_overlay(emote_bubble, clients, 30)
-	QDEL_IN(emote_bubble, 3 SECONDS)
+	flick_overlay(emote_bubble, clients, cloud_duration)
+	QDEL_IN(emote_bubble, cloud_duration)

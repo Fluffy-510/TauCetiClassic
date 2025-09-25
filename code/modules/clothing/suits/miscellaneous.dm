@@ -98,16 +98,6 @@
 	allowed = list(/obj/item/weapon/storage/fancy/cigarettes,/obj/item/weapon/spacecash)
 	flags_inv = HIDEJUMPSUIT
 
-
-/obj/item/clothing/suit/wcoat
-	name = "waistcoat"
-	desc = "For some classy, murderous fun."
-	icon_state = "vest"
-	item_state = "wcoat"
-	blood_overlay_type = "armor"
-	body_parts_covered = UPPER_TORSO|LOWER_TORSO
-
-
 /obj/item/clothing/suit/apron/overalls
 	name = "coveralls"
 	desc = "A set of denim overalls."
@@ -217,7 +207,8 @@
 	icon_state = "straight_jacket"
 	item_state = "straight_jacket"
 	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|ARMS
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT|HIDETAIL
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
+	render_flags = parent_type::render_flags | HIDE_TAIL
 
 /obj/item/clothing/suit/ianshirt
 	name = "worn shirt"
@@ -334,7 +325,7 @@
 	name = "black trenchcoat"
 	desc = "A black trenchcoat."
 	icon_state = "dude_coat"
-	item_state = "jensensuit"
+	item_state = "dude_coat"
 
 //pyjamas
 //originally intended to be pinstripes >.>
@@ -413,7 +404,7 @@
 /obj/item/clothing/under/swimsuit
 	siemens_coefficient = 1
 	body_parts_covered = 0
-	flags = ONESIZEFITSALL
+	flags = ONESIZEFITSALL|HEAR_TALK
 
 /obj/item/clothing/under/swimsuit/black
 	name = "black swimsuit"
@@ -534,6 +525,24 @@
 	icon_state = "ponchoshame"
 	item_state = "ponchoshame"
 
+/obj/item/clothing/suit/pluvia_morality
+	name = "Path of Morality"
+	icon_state = "pluvia_morality"
+	item_state = "pluvia_morality"
+	flags = ONESIZEFITSALL
+
+/obj/item/clothing/suit/pluvia_trick
+	name = "Path of Trick"
+	icon_state = "pluvia_trick"
+	item_state = "pluvia_trick"
+	flags = ONESIZEFITSALL
+
+/obj/item/clothing/suit/pluvia_balance
+	name = "Path of Balance"
+	icon_state = "pluvia_balance"
+	item_state = "pluvia_balance"
+	flags = ONESIZEFITSALL
+
 //Mafia
 /obj/item/clothing/suit/browntrenchcoat
 	name = "brown trench coat"
@@ -631,16 +640,19 @@
 	name = "Student Jacket"
 	desc = "A Student's jacket from the eighties."
 	icon_state = "student_jacket"
-	action_button_name = "To Fasten"
+	item_action_types = list(/datum/action/item_action/hands_free/to_fasten)
 	var/fastened = TRUE
+/datum/action/item_action/hands_free/to_fasten
+	name = "To Fasten"
 
-/obj/item/clothing/suit/student_jacket/ui_action_click()
-	if(fastened)
-		icon_state = "student_jacket_open"
+/datum/action/item_action/hands_free/to_fasten/Activate()
+	var/obj/item/clothing/suit/student_jacket/S = target
+	if(S.fastened)
+		S.icon_state = "student_jacket_open"
 	else
-		icon_state = "student_jacket"
-	update_inv_mob()
-	fastened = !fastened
+		S.icon_state = "student_jacket"
+	S.update_inv_mob()
+	S.fastened = !S.fastened
 
 /obj/item/clothing/suit/atlas_jacket
 	name = "atlas jacket"
@@ -700,3 +712,13 @@
 	icon_state = "kung_jacket"
 	item_state = "kung_jacket"
 	w_class = SIZE_SMALL
+
+/obj/item/clothing/suit/storage/comissar
+	name = "comissar's coat"
+	desc = "Red and black will never go out of fashion."
+	icon_state = "comissar"
+	item_state = "comissar"
+	blood_overlay_type = "coat"
+	allowed = list(/obj/item/weapon/tank/emergency_oxygen, /obj/item/device/flashlight,/obj/item/weapon/gun/energy,/obj/item/weapon/gun/projectile,/obj/item/ammo_box/magazine,/obj/item/ammo_casing,/obj/item/weapon/melee/baton,/obj/item/weapon/handcuffs)
+	body_parts_covered = UPPER_TORSO|ARMS
+	armor = list(melee = 50, bullet = 40, laser = 40, energy = 30, bomb = 0, bio = 0, rad = 0)

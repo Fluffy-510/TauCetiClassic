@@ -3,6 +3,11 @@
 //gets all subtypes of type
 #define subtypesof(typepath) ( typesof(typepath) - typepath )
 
+// gets final path from /obj/random, ignores item spawn nothing chance
+#define PATH_OR_RANDOM_PATH(path) (ispath(path, /obj/random) ? random2path(path) : path)
+
+#define PM_RENDER_NAME(path) "*[path]: render name"
+
 //number of deciseconds in a day
 #define MIDNIGHT_ROLLOVER 864000
 
@@ -34,10 +39,10 @@
 #define GAME_STATE_FINISHED		4
 
 //Security levels
-#define SEC_LEVEL_GREEN	0
-#define SEC_LEVEL_BLUE	1
-#define SEC_LEVEL_RED	2
-#define SEC_LEVEL_DELTA	3
+#define SEC_LEVEL_GREEN	1
+#define SEC_LEVEL_BLUE	2
+#define SEC_LEVEL_RED	3
+#define SEC_LEVEL_DELTA	4
 
 #define ROUNDSTART_LOGOUT_REPORT_TIME 6000 //Amount of time (in deciseconds) after the rounds starts, that the player disconnect report is issued.
 
@@ -192,9 +197,10 @@
 #define WORLD_ICON_SIZE 32
 #define PIXEL_MULTIPLIER WORLD_ICON_SIZE/32
 
-// (Bay12 = -2), but we don't have that projectile code, so...
+// bullet_act() return values
+#define PROJECTILE_WEAKENED -2
 #define PROJECTILE_FORCE_MISS -1
-#define PROJECTILE_ACTED 0 // it means that something else has took control of bullet_act() proc and it didn't run till the end.
+#define PROJECTILE_ACTED 0
 #define PROJECTILE_ABSORBED 2
 #define PROJECTILE_ALL_OK 3
 
@@ -228,6 +234,7 @@
 
 #define BYOND_JOIN_LINK "byond://[BYOND_SERVER_ADDRESS]"
 #define BYOND_SERVER_ADDRESS config.server ? "[config.server]" : "[world.address]:[world.port]"
+#define BRIDGE_JOIN_LINKS "Присоединиться: [BYOND_JOIN_LINK]"
 
 #define DELAY2GLIDESIZE(delay) (world.icon_size / max(CEIL(delay / world.tick_lag), 1))
 
@@ -278,6 +285,8 @@
 #define REGION_COMMAND		7
 #define REGION_CENTCOMM		8
 
+// be wary this adds little overhead with additional proc calls
+// consider modifying existing atom_init/Destroy for atoms with numerous instances
 #define ADD_TO_GLOBAL_LIST(type, list) ##type/atom_init(){\
 	. = ..();\
 	global.##list += src;}\
@@ -316,12 +325,47 @@
 #define NOTIFY_ATTACK "attack"
 #define NOTIFY_ORBIT "orbit"
 
+#define TEST_MERGE_DEFAULT_TEXT "Loading..."
+
+#define TURF_DECALS_LIMIT 4 // max of /obj/effect/decal/turf_decal in one turf
+
+#define WALLS_COLORS list("blue", "yellow", "red", "purple", "green", "beige")
+
+// todo: do something with this monster
+//       port smooth groups from tg/other sane server
 #define CAN_SMOOTH_WITH_WALLS list( \
 		/turf/unsimulated/wall, \
+		/turf/unsimulated/wall/like_a_normal, \
+		/turf/unsimulated/wall/like_a_normal/yellow, \
+		/turf/unsimulated/wall/like_a_normal/red, \
+		/turf/unsimulated/wall/like_a_normal/purple, \
+		/turf/unsimulated/wall/like_a_normal/green, \
+		/turf/unsimulated/wall/like_a_normal/beige, \
 		/turf/simulated/wall, \
+		/turf/simulated/wall/yellow, \
+		/turf/simulated/wall/red, \
+		/turf/simulated/wall/purple, \
+		/turf/simulated/wall/green, \
+		/turf/simulated/wall/beige, \
 		/turf/simulated/wall/r_wall, \
+		/turf/simulated/wall/r_wall/yellow, \
+		/turf/simulated/wall/r_wall/red, \
+		/turf/simulated/wall/r_wall/purple, \
+		/turf/simulated/wall/r_wall/green, \
+		/turf/simulated/wall/r_wall/beige, \
+		/turf/simulated/wall/heaven, \
 		/obj/structure/falsewall, \
+		/obj/structure/falsewall/yellow, \
+		/obj/structure/falsewall/red, \
+		/obj/structure/falsewall/purple, \
+		/obj/structure/falsewall/green, \
+		/obj/structure/falsewall/beige, \
 		/obj/structure/falsewall/reinforced, \
+		/obj/structure/falsewall/reinforced/yellow, \
+		/obj/structure/falsewall/reinforced/red, \
+		/obj/structure/falsewall/reinforced/purple, \
+		/obj/structure/falsewall/reinforced/green, \
+		/obj/structure/falsewall/reinforced/beige, \
 		/obj/structure/girder, \
 		/obj/structure/girder/reinforced, \
 		/obj/structure/windowsill, \
@@ -369,9 +413,19 @@
 		/turf/simulated/wall = "wall", \
 		/obj/structure/falsewall = "wall", \
 		/obj/machinery/door/airlock = "wall", \
+		/turf/unsimulated/wall/like_a_normal = "wall", \
 )
 
 // wall don't need adapter with another wall
 #define SMOOTH_ADAPTERS_WALLS_FOR_WALLS list( \
 		/obj/machinery/door/airlock = "wall", \
 )
+
+#define QUOTA_NEUTRAL 0
+#define QUOTA_WANTED 1
+#define QUOTA_UNWANTED 2
+
+#define UPLINK_TYPE_TRAITOR     "uplink_traitor"
+#define UPLINK_TYPE_NUCLEAR     "uplink_nuclear"
+#define UPLINK_TYPE_DEALER      "uplink_dealer"
+#define UPLINK_TYPE_REVOLUTION  "uplink_revolution"

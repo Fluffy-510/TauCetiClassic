@@ -1,10 +1,10 @@
-/mob/living/proc/log_combat(mob/living/attacker, msg, alert_admins = TRUE)
+/mob/living/proc/log_combat(mob/living/attacker, msg, alert_admins = TRUE, redirected = FALSE)
 	if(!logs_combat)
 		return
-	attack_log += "\[[time_stamp()]\] <font color='orange'>Has been [msg], by [attacker.name] ([attacker.ckey])</font>"
-	attacker.attack_log += "\[[time_stamp()]\] <font color='red'>Has [msg] [src] ([ckey])</font>"
+	attack_log += "\[[time_stamp()]\] <font color='orange'>Has been [msg], by [attacker.name] ([attacker.ckey])[redirected ? " (redirected)" : ""]</font>"
+	attacker.attack_log += "\[[time_stamp()]\] <font color='red'>Has [msg] [src] ([ckey])[redirected ? " (redirected)" : ""]</font>"
 	if(alert_admins)
-		msg_admin_attack("[key_name(src)] has been [msg], by [key_name(attacker)]", attacker)
+		msg_admin_attack("[key_name(src)] has been [msg], by [key_name(attacker)][redirected ? " (redirected)" : ""]", attacker)
 
 /mob/living/proc/run_armor_check(def_zone = null, attack_flag = MELEE, absorb_text = null, soften_text = null)
 	var/armor = getarmor(def_zone, attack_flag)
@@ -25,7 +25,7 @@
 	return 0
 
 /mob/living/proc/is_impact_force_affected(impact_force, impact_dir)
-	if(status_flags & GODMODE)
+	if(HAS_TRAIT(src, TRAIT_IMMOVABLE))
 		return FALSE
 	if(buckled || anchored)
 		return FALSE
@@ -45,6 +45,9 @@
 /mob/living/proc/get_projectile_impact_force(obj/item/projectile/P, def_zone)
 	return P.impact_force
 
+/mob/living/proc/prob_miss(obj/item/projectile/P)
+	return prob(20 + P.get_miss_modifier()) // no bopyparts -> no reason to check def_zone
+
 /mob/living/bullet_act(obj/item/projectile/P, def_zone)
 	var/impact_force = get_projectile_impact_force(P, def_zone)
 	if(impact_force && is_impact_force_affected(P.impact_force, get_dir(P, src)))
@@ -57,6 +60,21 @@
 		return PROJECTILE_ABSORBED
 
 	. = mob_bullet_act(P, def_zone)
+
+	if(. == PROJECTILE_ACTED || . == PROJECTILE_ALL_OK) // logs
+		if(P.silenced)
+			to_chat(src, "<span class='userdanger'>You've been shot in the [parse_zone(def_zone)] by the [P.name]!</span>")
+		else if(!P.fake)
+			visible_message("<span class='userdanger'>[name] is hit by the [P.name] in the [parse_zone(def_zone)]!</span>")
+			//X has fired Y is now given by the guns so you cant tell who shot you if you could not see the shooter
+		if(P.firer)
+			log_combat(P.firer, "shot with <b>[P.type]</b>", alert_admins = !P.fake, redirected = P.redirected)
+			SEND_SIGNAL(P.firer, COMSIG_HUMAN_HARMED_OTHER, src)
+		else
+			attack_log += "\[[time_stamp()]\] <b>UNKNOWN SUBJECT</b> shot <b>[src]/[ckey]</b> with a <b>[src]</b>"
+			if(!P.fake)
+				msg_admin_attack("UNKNOWN shot [name] ([ckey]) with a [P][P.redirected ? " (redirected)" : ""]", src) //BS12 EDIT ALG
+
 	if(. != PROJECTILE_ALL_OK)
 		return
 
@@ -129,6 +147,8 @@
 			var/client/assailant = L.client
 			if(assailant)
 				log_combat(L, "hit with thrown [O]")
+				if(throw_damage > 0)
+					SEND_SIGNAL(L, COMSIG_HUMAN_HARMED_OTHER, src)
 
 		// Begin BS12 momentum-transfer code.
 		if(O.throw_source && AM.fly_speed >= 15)
@@ -138,7 +158,7 @@
 				"<span class='danger'>You stagger under the impact!</span>")
 
 			var/atom/throw_target = get_edge_target_turf(src, get_dir(O.throw_source, src))
-			throw_at(throw_target, 5, 1, throwingdatum.thrower, FALSE, null, null, CALLBACK(src, .proc/pin_to_turf, W))
+			throw_at(throw_target, 5, 1, throwingdatum.thrower, FALSE, null, null, CALLBACK(src, PROC_REF(pin_to_turf), W))
 
 
 /mob/living/proc/resolve_thrown_attack(obj/O, throw_damage, dtype, zone, armor)
@@ -202,13 +222,13 @@
 		visible_message("<span class='warning'>[src] is pinned to the [T] by [I]!</span>",
 			"<span class='danger'>You are pinned to the wall by [I]!</span>")
 		ADD_TRAIT(src, TRAIT_ANCHORED, I)
-		RegisterSignal(I, COMSIG_MOVABLE_MOVED, CALLBACK(src, .proc/unpin_signal, I))
+		RegisterSignal(I, COMSIG_MOVABLE_MOVED, CALLBACK(src, PROC_REF(unpin_signal), I))
 		update_canmove() // instant update, no need to wait Life() tick
 
 /mob/living/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	. = ..()
 
-	if(hit_atom.density)
+	if(. && hit_atom.density)
 		visible_message("<span class='warning'>[src] crashed into \the [hit_atom]!</span>","<span class='danger'>You are crashed into \the [hit_atom]!</span>")
 		take_bodypart_damage(fly_speed * 5)
 
@@ -243,7 +263,6 @@
 		visible_message("<span class='warning'>[src] catches fire!</span>",
 						"<span class='userdanger'>You're set on fire!</span>")
 		new/obj/effect/dummy/lighting_obj/moblight/fire(src)
-		SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "on_fire", /datum/mood_event/on_fire)
 		update_fire()
 
 /mob/living/proc/ExtinguishMob()
@@ -251,7 +270,6 @@
 		playsound(src, 'sound/effects/extinguish_mob.ogg', VOL_EFFECTS_MASTER)
 		on_fire = 0
 		fire_stacks = 0
-		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "on_fire")
 		for(var/obj/effect/dummy/lighting_obj/moblight/fire/F in src)
 			qdel(F)
 		update_fire()
@@ -301,7 +319,7 @@
 	var/turf/location = get_turf(src)
 	location.hotspot_expose(fire_burn_temperature(), 50)
 
-/mob/living/fire_act()
+/mob/living/fire_act(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	adjust_fire_stacks(0.5)
 	IgniteMob()
 

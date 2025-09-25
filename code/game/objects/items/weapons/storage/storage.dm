@@ -46,17 +46,11 @@
 
 	if(startswith)
 		for(var/item_path in startswith)
-			var/list/data = startswith[item_path]
-			if(islist(data))
-				var/qty = data[1]
-				var/list/argsl = data.Copy()
-				argsl[1] = src
-				for(var/i in 1 to qty)
-					new item_path(arglist(argsl))
-			else
-				for(var/i in 1 to (isnull(data)? 1 : data))
-					new item_path(src)
-		update_icon()
+			var/quantity = startswith[item_path] || 1
+			for(var/num in 1 to quantity)
+				new item_path(src)
+
+		update_icon() // todo: some storages that use content as overlays can have problems with world_icons, need to fix it in the furure while adding new world_icons (donut_box and donuts, crayons and crayon box, etc.)
 
 /obj/item/weapon/storage/Destroy()
 	QDEL_NULL(storage_ui)
@@ -241,9 +235,17 @@
 
 	return TRUE
 
-//This proc handles items being inserted. It does not perform any checks of whether an item can or can't be inserted. That's done by can_be_inserted()
-//The stop_warning parameter will stop the insertion message from being displayed. It is intended for cases where you are inserting multiple items at once,
-//such as when picking up all the items on a tile with one click.
+// low level proc just to handle Move/ForceMove
+/obj/item/weapon/storage/Entered(obj/item/mover)
+	. = ..()
+
+	if(istype(mover))
+		mover.on_enter_storage(src)
+
+// Handles item insertion with related events and user feedback.
+// It does not perform any checks of whether an item can or can't be inserted. That's done by can_be_inserted()
+// The stop_warning parameter will stop the insertion message from being displayed. It is intended for cases where you are inserting multiple items at once,
+// such as when picking up all the items on a tile with one click.
 /obj/item/weapon/storage/proc/handle_item_insertion(obj/item/W, prevent_warning = FALSE, NoUpdate = FALSE)
 	if(!istype(W))
 		return FALSE
@@ -256,7 +258,6 @@
 	else
 		W.forceMove(src)
 
-	W.on_enter_storage(src)
 	if(usr)
 		add_fingerprint(usr)
 
@@ -334,9 +335,6 @@
 	if(!can_be_inserted(I))
 		return FALSE
 
-	if(istype(I, /obj/item/weapon/implanter/compressed))
-		return FALSE
-
 	if((istype(I, /obj/item/weapon/packageWrap) || istagger(I)) && !(src in user)) //prevents package wrap being put inside the backpack when the backpack is not being worn/held (hence being wrappable)
 		return FALSE
 
@@ -406,6 +404,10 @@
 		return
 
 	var/turf/T = get_turf(src)
+
+	if(HAS_TRAIT(src, TRAIT_UNDERFLOOR) && T.underfloor_accessibility < UNDERFLOOR_INTERACTABLE)
+		return
+
 	hide_from(usr)
 	for(var/obj/item/I in contents)
 		remove_from_storage(I, T, NoUpdate = TRUE)
@@ -521,7 +523,7 @@
 
 	for(var/obj/O in contents)
 		remove_from_storage(O, T)
-		INVOKE_ASYNC(O, /obj.proc/tumble_async, 2)
+		INVOKE_ASYNC(O, TYPE_PROC_REF(/obj, tumble_async), 2)
 
 /obj/item/weapon/storage/proc/make_empty(delete = TRUE)
 	var/turf/T = get_turf(src)

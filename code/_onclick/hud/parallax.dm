@@ -11,18 +11,25 @@
 	var/parallax_layers_max = 3
 	var/parallax_animate_timer
 
-/datum/hud/proc/create_parallax()
+/mob
+	var/current_parallax = PARALLAX_CLASSIC
+
+/datum/hud/proc/create_parallax(parallax_type)
 	var/client/C = mymob.client
 	if (!apply_parallax_pref())
 		return
 
-	if(!length(C.parallax_layers_cached))
+	var/icon/parralax_icon
+	switch(parallax_type)
+		if(PARALLAX_CLASSIC)
+			parralax_icon = 'icons/effects/parallax.dmi'
+		if(PARALLAX_HEAVEN)
+			parralax_icon = 'icons/effects/pluvia_water.dmi'
+	if(!length(C.parallax_layers_cached) || parallax_type != mymob.current_parallax)
 		C.parallax_layers_cached = list()
-		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_1(null, C.view, 'icons/effects/parallax.dmi')
-		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_2(null, C.view, 'icons/effects/parallax.dmi')
-		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_3(null, C.view, 'icons/effects/parallax.dmi')
-		//C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/planet(null, C.view, 'icons/effects/parallax.dmi') awaiting for new planet image in replace for lavaland
-
+		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_1(null, C.view, parralax_icon)
+		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_2(null, C.view, parralax_icon)
+		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_3(null, C.view, parralax_icon)
 	C.parallax_layers = C.parallax_layers_cached.Copy()
 
 	if (length(C.parallax_layers) > C.parallax_layers_max)
@@ -30,25 +37,14 @@
 
 	C.screen |= (C.parallax_layers)
 
-	var/atom/movable/screen/plane_master/PM = plane_masters["[PLANE_SPACE]"]
-
-	PM.color = list(
-		0, 0, 0, 0,
-		0, 0, 0, 0,
-		0, 0, 0, 0,
-		1, 1, 1, 1,
-		0, 0, 0, 0
-		)
+	C.update_plane_masters(/atom/movable/screen/plane_master/parallax_white)
 
 /datum/hud/proc/remove_parallax()
 	var/client/C = mymob.client
 	C.screen -= (C.parallax_layers_cached)
-
-	var/atom/movable/screen/plane_master/PM = plane_masters["[PLANE_SPACE]"]
-
-	PM.color = initial(PM.color)
-
 	C.parallax_layers = null
+	mymob.current_parallax = null
+	C.update_plane_masters(/atom/movable/screen/plane_master/parallax_white)
 
 /datum/hud/proc/apply_parallax_pref()
 	if (SSlag_switch.measures[DISABLE_PARALLAX] && !HAS_TRAIT(mymob, TRAIT_BYPASS_MEASURES))
@@ -79,9 +75,14 @@
 			C.parallax_layers_max = 3
 			return TRUE
 
-/datum/hud/proc/update_parallax_pref()
+/datum/hud/proc/set_parallax(new_parallax)
 	remove_parallax()
-	create_parallax()
+	create_parallax(new_parallax)
+	mymob.current_parallax = new_parallax
+
+/datum/hud/proc/update_parallax_pref()
+	set_parallax(mymob.current_parallax)
+
 
 // This sets which way the current shuttle is moving (returns true if the shuttle has stopped moving so the caller can append their animation)
 /datum/hud/proc/set_parallax_movedir(new_parallax_movedir)
@@ -131,7 +132,7 @@
 	C.parallax_movedir = new_parallax_movedir
 	if (C.parallax_animate_timer)
 		deltimer(C.parallax_animate_timer)
-	C.parallax_animate_timer = addtimer(CALLBACK(src, .proc/update_parallax_motionblur, C, animatedir, new_parallax_movedir, newtransform), min(shortesttimer, PARALLAX_LOOP_TIME), TIMER_CLIENT_TIME|TIMER_STOPPABLE)
+	C.parallax_animate_timer = addtimer(CALLBACK(src, PROC_REF(update_parallax_motionblur), C, animatedir, new_parallax_movedir, newtransform), min(shortesttimer, PARALLAX_LOOP_TIME), TIMER_CLIENT_TIME|TIMER_STOPPABLE)
 
 /datum/hud/proc/update_parallax_motionblur(client/C, animatedir, new_parallax_movedir, matrix/newtransform)
 	if(!C)
@@ -246,9 +247,12 @@
 	if (!view)
 		view = world.view
 	var/list/new_overlays = list()
-	var/count = CEIL(view/(480/world.icon_size))+1
-	for(var/x in -count to count)
-		for(var/y in -count to count)
+	var/static/parallax_scaler = world.icon_size / 480
+	var/list/viewscales = getviewsize(view)
+	var/countx = CEIL((viewscales[1] / 2) * parallax_scaler) + 1
+	var/county = CEIL((viewscales[2] / 2) * parallax_scaler) + 1
+	for(var/x in -countx to countx)
+		for(var/y in -county to county)
 			if(x == 0 && y == 0)
 				continue
 			var/mutable_appearance/texture_overlay = mutable_appearance(icon, icon_state)

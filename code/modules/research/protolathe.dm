@@ -69,6 +69,8 @@ Note: Must be placed west/left of and R&D console to function.
 	return am
 
 /obj/machinery/r_n_d/protolathe/RefreshParts()
+	..()
+
 	var/T = 0
 	for(var/obj/item/weapon/stock_parts/matter_bin/M in component_parts)
 		T += M.rating
@@ -146,6 +148,7 @@ Note: Must be placed west/left of and R&D console to function.
 	busy = TRUE
 
 	to_chat(user, "<span class='notice'>You add [amount] sheets to the [name].</span>")
+	playsound(src, 'sound/machines/material_insert.ogg', VOL_EFFECTS_MASTER, vary = FALSE)
 
 	add_overlay("protolathe_[stack.name]")
 	sleep(10)
@@ -208,7 +211,6 @@ Note: Must be placed west/left of and R&D console to function.
 		return
 
 	busy = TRUE
-	flick("protolathe_n",src)
 	use_power(power)
 
 	for(var/M in D.materials)
@@ -219,7 +221,7 @@ Note: Must be placed west/left of and R&D console to function.
 	for(var/M in D.materials)
 		loaded_materials[M].amount = max(0, (loaded_materials[M].amount - (D.materials[M] / efficiency_coeff * amount)))
 
-	addtimer(CALLBACK(src, .proc/create_design, RNDD), 32 * amount / efficiency_coeff)
+	addtimer(CALLBACK(src, PROC_REF(create_design), RNDD), 32 * amount / efficiency_coeff)
 
 /obj/machinery/r_n_d/protolathe/proc/create_design(datum/rnd_queue_design/RNDD)
 	if(!linked_console)
@@ -241,6 +243,8 @@ Note: Must be placed west/left of and R&D console to function.
 		linked_console.files.design_created_prototypes[D.id]++
 	busy = FALSE
 	queue -= RNDD
+	flick("protolathe_n",src)
+	playsound(src, 'sound/machines/protolat.ogg', VOL_EFFECTS_MASTER, vary = FALSE)
 
 	if(queue.len)
 		produce_design(queue[1])
@@ -257,3 +261,4 @@ Note: Must be placed west/left of and R&D console to function.
 			var/sheet_amount = min(available_num_sheets, amount)
 			sheet.set_amount(sheet_amount)
 			loaded_materials[sheet_type].amount = max(0, loaded_materials[sheet_type].amount - sheet_amount * loaded_materials[sheet_type].sheet_size)
+			playsound(src, 'sound/machines/material_eject.ogg', VOL_EFFECTS_MASTER, vary = FALSE)

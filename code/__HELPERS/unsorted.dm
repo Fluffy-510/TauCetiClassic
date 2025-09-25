@@ -129,9 +129,6 @@ Turf and target are seperate in case you want to teleport some distance from a t
 
 	return destination
 
-/proc/sign(x)
-	return x!=0?x/abs(x):0
-
 /proc/getline(atom/M,atom/N)//Ultra-Fast Bresenham Line-Drawing Algorithm
 	var/px=M.x		//starting x
 	var/py=M.y
@@ -140,8 +137,8 @@ Turf and target are seperate in case you want to teleport some distance from a t
 	var/dy=N.y-py
 	var/dxabs=abs(dx)//Absolute value of x distance
 	var/dyabs=abs(dy)
-	var/sdx=sign(dx)	//Sign of x distance (+ or -)
-	var/sdy=sign(dy)
+	var/sdx=SIGN(dx)	//Sign of x distance (+ or -)
+	var/sdy=SIGN(dy)
 	var/x=dxabs>>1	//Counters for steps taken, setting to distance/2
 	var/y=dyabs>>1	//Bit-shifting makes me l33t.  It also makes getline() unnessecarrily fast.
 	var/j			//Generic integer for counting
@@ -165,7 +162,16 @@ Turf and target are seperate in case you want to teleport some distance from a t
 
 //Returns whether or not a player is a guest using their ckey as an input
 /proc/IsGuestKey(key)
-	return findtext(key, "Guest-", 1, 7) == 1
+	if(findtext(key, "Guest-", 1, 7) != 1)
+		return FALSE
+
+	var/i, ch, len = length(key)
+
+	for(i = 7, i <= len, ++i) //we know the first 6 chars are Guest-
+		ch = text2ascii(key, i)
+		if (ch < 48 || ch > 57) //0-9
+			return FALSE
+	return TRUE
 
 //Ensure the frequency is within bounds of what it should be sending/recieving at
 /proc/sanitize_frequency(f)
@@ -439,7 +445,7 @@ Turf and target are seperate in case you want to teleport some distance from a t
 
 	if(key)
 		if(include_link && C)
-			. += "<a href='?priv_msg=\ref[C][reply ? ";ahelp_reply=[reply]" : ""][mentor_pm ? ";mentor_pm=1" : ""]'>"
+			. += "<a href='byond://?priv_msg=\ref[C][reply ? ";ahelp_reply=[reply]" : ""][mentor_pm ? ";mentor_pm=1" : ""]'>"
 
 		if(C && C.holder && C.holder.fakekey && !include_name)
 			. += "Administrator"
@@ -683,9 +689,11 @@ Turf and target are seperate in case you want to teleport some distance from a t
 			areas += N
 	return areas
 
-//Takes: Area type as text string or as typepath OR an instance of the area.
-//Returns: A list of all turfs in areas of that type of that type in the world.
-/proc/get_area_turfs(areatype, subtypes=TRUE, target_z = 0, list/black_list)
+// Takes: Area type as text string or as typepath OR an instance of the area.
+// Returns: A list of all turfs in areas of that type of that type in the world.
+// Please note that because of (loop in area) this is not really optimal,
+// but you probably have no choice
+/proc/get_area_turfs(areatype, subtypes=TRUE, filter_by_z = 0, ignore_blocked = FALSE)
 	if(istext(areatype))
 		areatype = text2path(areatype)
 	else if(isarea(areatype))
@@ -697,25 +705,26 @@ Turf and target are seperate in case you want to teleport some distance from a t
 	var/list/turfs = list()
 	if(subtypes)
 		var/list/cache = typecacheof(areatype)
-		for(var/V in global.all_areas)
-			var/area/A = V
+		for(var/area/A as anything in global.all_areas)
 			if(!cache[A.type])
 				continue
 			for(var/turf/T in A)
-				if(black_list && (T.type in black_list))
+				if(filter_by_z && filter_by_z != T.z)
 					continue
-				if(target_z == 0 || target_z == T.z)
-					turfs += T
+				if(ignore_blocked && is_blocked_turf(T))
+					continue
+				turfs += T
 	else
-		for(var/V in global.all_areas)
-			var/area/A = V
+		for(var/area/A as anything in global.all_areas)
 			if(A.type != areatype)
 				continue
 			for(var/turf/T in A)
-				if(black_list && (T.type in black_list))
+				if(filter_by_z && filter_by_z != T.z)
 					continue
-				if(target_z == 0 || target_z == T.z)
-					turfs += T
+				if(ignore_blocked && is_blocked_turf(T))
+					continue
+				turfs += T
+
 	return turfs
 
 //Takes: Area type as text string or as typepath OR an instance of the area.
@@ -899,7 +908,7 @@ Turf and target are seperate in case you want to teleport some distance from a t
 		var/mob/M = O
 		M.cut_overlays()
 		M.regenerate_icons()
-	
+
 	return O
 
 
@@ -1036,7 +1045,7 @@ Turf and target are seperate in case you want to teleport some distance from a t
 				SSair.tiles_to_update += T1*/
 
 	for(var/obj/O in doors)
-		O:update_nearby_tiles(1)
+		O:update_nearby_tiles()
 
 
 
@@ -1087,6 +1096,19 @@ Turf and target are seperate in case you want to teleport some distance from a t
 			return "left leg"
 		if(BP_R_LEG)
 			return "right leg"
+		else
+			return zone
+
+/proc/parse_zone_ru(zone)
+	switch(zone)
+		if(BP_L_ARM)
+			return "левая рука"
+		if(BP_R_ARM)
+			return "правая рука"
+		if(BP_L_LEG)
+			return "левая нога"
+		if(BP_R_LEG)
+			return "правая нога"
 		else
 			return zone
 
@@ -1143,22 +1165,6 @@ Turf and target are seperate in case you want to teleport some distance from a t
 /proc/get_turf_or_move(turf/location)
 	return get_turf(location)
 
-
-//Quick type checks for some tools
-var/global/list/common_tools = list(
-/obj/item/stack/cable_coil,
-/obj/item/weapon/wrench,
-/obj/item/weapon/weldingtool,
-/obj/item/weapon/screwdriver,
-/obj/item/weapon/wirecutters,
-/obj/item/device/multitool,
-/obj/item/weapon/crowbar)
-
-/proc/istool(O)
-	if(O && is_type_in_list(O, common_tools))
-		return TRUE
-	return FALSE
-
 // For items that can puncture e.g. thick plastic but aren't necessarily sharp
 // Returns TRUE if the given item is capable of popping things like balloons, inflatable barriers, or cutting police tape.
 /obj/item/proc/can_puncture()
@@ -1208,10 +1214,10 @@ var/global/list/common_tools = list(
 	return 0
 
 //check if mob is lying down on something we can operate him on.
-/proc/can_operate(mob/living/carbon/M)
+/proc/can_operate(mob/living/carbon/M, mob/user)
 	if(locate(/obj/machinery/optable, M.loc) && M.crawling)
 		return TRUE
-	if((M.buckled || M.lying || M.incapacitated()) && prob(get_surg_chance(M.loc)))
+	if((M.buckled || M.incapacitated()) && user.mood_prob(get_surg_chance(M.loc)))
 		return TRUE
 	return FALSE
 
@@ -1520,10 +1526,6 @@ var/global/list/WALLITEMS = typecacheof(list(
 
 	return L
 
-//gives us the stack trace from CRASH() without ending the current proc.
-/proc/stack_trace(msg)
-	CRASH(msg)
-
 //Increases delay as the server gets more overloaded,
 //as sleeps aren't cheap and sleeping only to wake up and sleep again is wasteful
 #define DELTA_CALC max(((max(TICK_USAGE, world.cpu) / 100) * max(Master.sleep_delta - 1, 1)), 1)
@@ -1593,14 +1595,14 @@ var/global/list/WALLITEMS = typecacheof(list(
 		global.custom_lobby_image = new_screen
 	else
 		custom_lobby_image = null
-		
+
 		if(SSholiday.holidays[NEW_YEAR])
 			lobby_screen = "lobby-ny"
 		else
 			lobby_screen = "lobby"
 
 	for(var/mob/dead/new_player/N as anything in new_player_list)
-		INVOKE_ASYNC(N, /mob/dead/new_player.proc/show_titlescreen)
+		INVOKE_ASYNC(N, TYPE_PROC_REF(/mob/dead/new_player, show_titlescreen))
 
 // Converts browser keycodes to BYOND keycodes.
 /proc/browser_keycode_to_byond(keycode)
@@ -1649,12 +1651,12 @@ var/global/list/WALLITEMS = typecacheof(list(
 // Format a power value in W, kW, MW, or GW
 /proc/DisplayPower(powerused)
 	if(powerused < 1000) // Less than a kW
-		return "[powerused] W"
+		return "[powerused] Вт"
 	if(powerused < 1000000) // Less than a MW
-		return "[round((powerused * 0.001), 0.01)] kW"
+		return "[round((powerused * 0.001), 0.01)] кВт"
 	if(powerused < 1000000000) // Less than a GW
-		return "[round((powerused * 0.000001), 0.001)] MW"
-	return "[round((powerused * 0.000000001), 0.0001)] GW"
+		return "[round((powerused * 0.000001), 0.001)] МВт"
+	return "[round((powerused * 0.000000001), 0.0001)] ГВТ"
 
 //Returns a list of all locations (except the area) the movable is within.
 /proc/get_nested_locs(atom/movable/AM, include_turf = FALSE)
@@ -1666,3 +1668,23 @@ var/global/list/WALLITEMS = typecacheof(list(
 		location = location.loc
 	if(location && include_turf) //At this point, only the turf is left, provided it exists.
 		. += location
+
+/proc/parse_caught_click_modifiers(list/modifiers, turf/origin, client/viewing_client)
+	if(!modifiers)
+		return null
+
+	var/screen_loc = splittext(LAZYACCESS(modifiers, SCREEN_LOC), ",")
+	var/list/actual_view = getviewsize(viewing_client ? viewing_client.view : world.view)
+	var/click_turf_x = splittext(screen_loc[1], ":")
+	var/click_turf_y = splittext(screen_loc[2], ":")
+	var/click_turf_z = origin.z
+
+	var/click_turf_px = text2num(click_turf_x[2])
+	var/click_turf_py = text2num(click_turf_y[2])
+	click_turf_x = origin.x + text2num(click_turf_x[1]) - round(actual_view[1] / 2) - 1
+	click_turf_y = origin.y + text2num(click_turf_y[1]) - round(actual_view[2] / 2) - 1
+
+	var/turf/click_turf = locate(clamp(click_turf_x, 1, world.maxx), clamp(click_turf_y, 1, world.maxy), click_turf_z)
+	LAZYSET(modifiers, ICON_X, "[(click_turf_px - click_turf.pixel_x) + ((click_turf_x - click_turf.x) * world.icon_size)]")
+	LAZYSET(modifiers, ICON_Y, "[(click_turf_py - click_turf.pixel_y) + ((click_turf_y - click_turf.y) * world.icon_size)]")
+	return click_turf

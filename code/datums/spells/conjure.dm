@@ -87,11 +87,6 @@
 	unacidable = 1
 	can_block_air = TRUE
 
-/obj/effect/forcefield/bullet_act(obj/item/projectile/Proj, def_zone)
-	. = ..()
-	for(var/mob/living/M in get_turf(loc))
-		M.bullet_act(Proj, def_zone)
-
 /obj/effect/forcefield/magic
 	var/mob/wizard
 
@@ -154,7 +149,10 @@
 	custom_metabolism = 1
 
 /datum/reagent/toxin/harvester/on_general_digest(mob/living/carbon/M)
-	..()
+	. = ..()
+	if(!.)
+		return
+
 	if(!data)
 		data = 1
 	if(!volume)
@@ -170,12 +168,17 @@
 	charge_max = 5 SECONDS
 	action_icon_state = "areaconvert"
 	action_background_icon_state = "bg_cult"
+	range = 3
 
 /obj/effect/proc_holder/spell/no_target/area_conversion/cast(list/targets, mob/user)
 	if(!user.my_religion)
 		return
 	. = ..()
-	for(var/turf/nearby_turf in range(3, user))
+	for(var/turf/nearby_turf in range(range, user))
 		if(prob(100 - (get_dist(nearby_turf, user) * 25)))
 			playsound(nearby_turf, 'sound/items/welder.ogg', VOL_EFFECTS_MASTER)
 			nearby_turf.atom_religify(user.my_religion)
+
+/obj/effect/proc_holder/spell/no_target/area_conversion/lesser
+	charge_max = 25 SECONDS
+	range = 2

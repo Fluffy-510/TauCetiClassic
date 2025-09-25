@@ -3,6 +3,8 @@
 //////////////////////////
 
 /proc/make_datum_references_lists()
+	global.default_plane_masters = init_paths(/atom/movable/screen/plane_master) - /atom/movable/screen/plane_master/rendering_plate
+
 	//Hair - Initialise all /datum/sprite_accessory/hair into an list indexed by hair-style name
 	for(var/path in subtypesof(/datum/sprite_accessory/hair))
 		var/datum/sprite_accessory/hair/H = new path()
@@ -218,12 +220,22 @@
 		var/datum/bridge_command/C = new command
 		global.bridge_commands[C.name] = C
 
-	sortTim(bridge_commands, /proc/cmp_bridge_commands)
+	sortTim(bridge_commands, GLOBAL_PROC_REF(cmp_bridge_commands))
 
 	global.metahelps = list()
 	for(var/help in subtypesof(/datum/metahelp))
 		var/datum/metahelp/H = new help
 		global.metahelps[H.id] = H
+
+
+	global.skin_tones_by_ru_name = list()
+	global.skin_tones_by_name = list()
+	global.skin_tones = list()
+	for(var/tone in subtypesof(/datum/skin_tone))
+		var/datum/skin_tone/T = new tone
+		global.skin_tones_by_ru_name[T.cases[NOMINATIVE_CASE]] = T
+		global.skin_tones_by_name[T.name] = T
+		global.skin_tones += T
 
 	global.special_roles = get_list_of_primary_keys(special_roles_ignore_question)
 
@@ -249,6 +261,23 @@
 	for(var/emote_type in subtypesof(/datum/emote))
 		global.all_emotes[emote_type] = new emote_type
 
+	global.emotes_for_emote_panel = list()
+	var/emote_icons = 'icons/misc/emotes.dmi'
+	var/mob/living/carbon/human/H = new /mob/living/carbon/human // meh initial doesn't work with lists
+	for(var/datum/emote/E as anything in H.default_emotes) // non-humans emotes but humans have them
+		if(initial(E.key) in icon_states(emote_icons))
+			global.emotes_for_emote_panel |= initial(E.key)
+	qdel(H)
+	for(var/datum/emote/E as anything in subtypesof(/datum/emote/human)) // humans emotes
+		if(initial(E.key) in icon_states(emote_icons))
+			global.emotes_for_emote_panel |= initial(E.key)
+	for(var/datum/species/S as anything in subtypesof(/datum/species)) // IPC emotes and etc.
+		S = new S
+		for(var/datum/emote/E as anything in S.emotes)
+			if(initial(E.key) in icon_states(emote_icons))
+				global.emotes_for_emote_panel |= initial(E.key)
+		qdel(S)
+
 	global.light_modes_by_type = list()
 	global.light_modes_by_name = list()
 	for(var/type as anything in subtypesof(/datum/light_mode))
@@ -259,6 +288,50 @@
 	global.smartlight_presets = list()
 	for(var/datum/smartlight_preset/type as anything in subtypesof(/datum/smartlight_preset))
 		smartlight_presets[initial(type.name)] = type
+
+	global.lighting_effects = list()
+	for(var/datum/level_lighting_effect/type as anything in subtypesof(/datum/level_lighting_effect))
+		lighting_effects[initial(type.name)] = type
+
+	global.virus_types_by_pool = list()
+	for(var/e in subtypesof(/datum/disease2/effect))
+		var/datum/disease2/effect/f = new e
+		var/list/L = f.pools
+		qdel(f)
+		if(!L.len)
+			continue
+		for(var/pool in L)
+			LAZYADD(virus_types_by_pool[pool], e)
+
+	global.ringtones_by_names = list()
+	for(var/datum/ringtone/Ring as anything in subtypesof(/datum/ringtone))
+		global.ringtones_by_names["[initial(Ring.name)]"] = new Ring
+
+	init_washing_items_list()
+
+/proc/init_washing_items_list()
+	var/list/path_list = list(/obj/item/clothing/mask,
+							/obj/item/clothing/head,
+							/obj/item/clothing/gloves,
+							/obj/item/clothing/shoes,
+							/obj/item/clothing/suit,
+							/obj/item/weapon/bedsheet,
+							/obj/item/clothing/under)
+
+	global.washing_items_list = typecacheof(path_list, ignore_root_path = TRUE)
+
+	global.washing_items_list[/obj/item/stack/sheet/hairlesshide] = TRUE
+
+	global.washing_items_list -= /obj/item/clothing/suit/space
+	global.washing_items_list -= /obj/item/clothing/suit/syndicatefake
+	global.washing_items_list -= /obj/item/clothing/suit/cyborg_suit
+	global.washing_items_list -= /obj/item/clothing/suit/bomb_suit
+	global.washing_items_list -= /obj/item/clothing/suit/armor
+	global.washing_items_list -= /obj/item/clothing/mask/gas
+	global.washing_items_list -= /obj/item/clothing/mask/cigarette
+	global.washing_items_list -= /obj/item/clothing/head/syndicatefake
+	global.washing_items_list -= /obj/item/clothing/head/helmet
+	global.washing_items_list -= /obj/item/clothing/gloves/pipboy
 
 /proc/init_joblist() // Moved here because we need to load map config to edit jobs, called from SSjobs
 	//List of job. I can't believe this was calculated multiple times per tick!
@@ -292,11 +365,9 @@
 /proc/init_paths(prototype, list/L)
 	if(!istype(L))
 		L = list()
-		for(var/path in typesof(prototype))
-			if(path == prototype)
-				continue
-			L+= path
-		return L
+	for(var/path in subtypesof(prototype))
+		L+= path
+	return L
 
 /proc/gen_hex_by_color()
 	if(!hex_by_color)

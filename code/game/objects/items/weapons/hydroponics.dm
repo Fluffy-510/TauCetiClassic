@@ -25,7 +25,8 @@
 
 /obj/item/clothing/head/sunflower_crown
 	name = "sunflower crown"
-	desc = "A bright flower crown made out sunflowers that is sure to brighten up anyone's day!"
+	cases = list("венок из подсолнуха", "венка из подсолнуха", "венку из подсолнуха", "венок из подсолнуха", "венком из подсолнуха", "венке из подсолнуха")
+	desc = "Яркий венок из подсолнухов, который обязательно поднимет настроение любому!"
 	icon_state = "sunflower_crown"
 
 /*
@@ -34,7 +35,8 @@
 
 /obj/item/clothing/head/poppy_crown
 	name = "poppy crown"
-	desc = "A flower crown made out of a string of bright red poppies."
+	cases = list("маковый венок", "макового венка", "маковому венку", "маковый венок", "маковым венком", "маковом венке")
+	desc = "Венок из ярких красных маков."
 	icon_state = "poppy_crown"
 
 /*
@@ -90,6 +92,7 @@
 		to_chat(M, "<span class='warning'>You are stunned by the powerful acid of the Deathnettle!</span>")
 
 		M.log_combat(user, "stunned with [name]")
+		SEND_SIGNAL(user, COMSIG_HUMAN_HARMED_OTHER, M)
 
 		playsound(src, 'sound/weapons/bladeslice.ogg', VOL_EFFECTS_MASTER)
 
@@ -212,19 +215,20 @@ var/global/gourd_name = null
 
 /obj/item/weapon/reagent_containers/food/snacks/grown/gourd/attackby(obj/item/I, mob/user)
 	if(I.get_quality(QUALITY_CUTTING))
-		var/turf/T = I.loc
+		var/turf/T = loc
 		if(!isturf(T))
 			T = T.loc
 		if(!isturf(T))
 			return ..()
 
-		user.drop_from_inventory(I)
+		user.drop_from_inventory(src)
 		var/obj/item/weapon/reagent_containers/food/drinks/bottle/gourd/G = new /obj/item/weapon/reagent_containers/food/drinks/bottle/gourd(T)
 		G.volume = reagents.maximum_volume * 3
 		G.reagents.maximum_volume = reagents.maximum_volume * 3
 
 		if(user.in_interaction_vicinity(G))
 			user.put_in_hands(G)
+
 		qdel(src)
 		return
 
@@ -371,5 +375,6 @@ var/global/gourd_name = null
 
 	//Attack logs
 	target.log_combat(user, "smashed with a [name] (INTENT: [uppertext(user.a_intent)])")
+	SEND_SIGNAL(user, COMSIG_HUMAN_HARMED_OTHER, target)
 
 	qdel(src)

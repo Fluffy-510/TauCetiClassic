@@ -1,10 +1,9 @@
 // Areas.dm
 
 
-
+// Do not translate this area name
 // ===
 /area
-	level = null
 	name = "Space"
 	icon = 'icons/turf/areas.dmi'
 	icon_state = "unknown"
@@ -12,6 +11,9 @@
 	//Keeping this on the default plane, GAME_PLANE, will make area overlays fail to render on FLOOR_PLANE.
 	plane = AREA_PLANE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+	luminosity = 0
+	var/dynamic_lighting = TRUE
 
 	var/static/global_uid = 0
 	var/uid
@@ -90,6 +92,8 @@
 	/// Does the mood bonus require a trait?
 	var/mood_trait
 
+	var/list/obj/effect/spawner/mob_spawners
+
 /*Adding a wizard area teleport list because motherfucking lag -- Urist*/
 /*I am far too lazy to make it a proper list of areas so I'll just make it run the usual telepot routine at the start of the game*/
 var/global/list/teleportlocs = list()
@@ -140,16 +144,9 @@ var/global/list/ghostteleportlocs = list()
 
 	..()
 
-	if(requires_power)
-		luminosity = 0
-	else
-		if(dynamic_lighting == DYNAMIC_LIGHTING_FORCED)
-			dynamic_lighting = DYNAMIC_LIGHTING_ENABLED
-			luminosity = 0
-		else if(dynamic_lighting != DYNAMIC_LIGHTING_IFSTARLIGHT)
-			dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
-	if(dynamic_lighting == DYNAMIC_LIGHTING_IFSTARLIGHT)
-		dynamic_lighting = config.starlight ? DYNAMIC_LIGHTING_ENABLED : DYNAMIC_LIGHTING_DISABLED
+	if(!dynamic_lighting)
+		luminosity = 1
+		add_overlay(area_unsimulated_light_mask)
 
 	update_areasize()
 	power_change() // all machines set to current power level, also updates lighting icon
@@ -263,7 +260,7 @@ var/global/list/ghostteleportlocs = list()
 				if(E.operating)
 					E.nextstate = CLOSED
 				else if(!E.density)
-					INVOKE_ASYNC(E, /obj/machinery/door/firedoor.proc/close)
+					INVOKE_ASYNC(E, TYPE_PROC_REF(/obj/machinery/door/firedoor, close))
 
 /area/proc/air_doors_open()
 	if(air_doors_activated)
@@ -273,7 +270,7 @@ var/global/list/ghostteleportlocs = list()
 				if(E.operating)
 					E.nextstate = OPEN
 				else if(E.density)
-					INVOKE_ASYNC(E, /obj/machinery/door/firedoor.proc/open)
+					INVOKE_ASYNC(E, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
 
 /area/proc/airlocks_close(bolt_after = FALSE)
 	for(var/obj/machinery/door/airlock/A in src)
@@ -290,7 +287,7 @@ var/global/list/ghostteleportlocs = list()
 				if(D.operating)
 					D.nextstate = CLOSED
 				else if(!D.density)
-					INVOKE_ASYNC(D, /obj/machinery/door/firedoor.proc/close)
+					INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, close))
 		var/list/cameras = list()
 		for (var/obj/machinery/camera/C in src)
 			cameras.Add(C)
@@ -311,7 +308,7 @@ var/global/list/ghostteleportlocs = list()
 				if(D.operating)
 					D.nextstate = OPEN
 				else if(D.density)
-					INVOKE_ASYNC(D, /obj/machinery/door/firedoor.proc/open)
+					INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
 		for (var/obj/machinery/camera/C in src)
 			C.remove_network("Fire Alarms")
 		for (var/mob/living/silicon/ai/aiPlayer as anything in ai_list)
@@ -340,7 +337,7 @@ var/global/list/ghostteleportlocs = list()
 				if(D.operating)
 					D.nextstate = OPEN
 				else if(D.density)
-					INVOKE_ASYNC(D, /obj/machinery/door/firedoor.proc/open)
+					INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
 	return
 
 /area/proc/updateicon()
@@ -430,6 +427,10 @@ var/global/list/ghostteleportlocs = list()
 	if (!L.ckey)
 		return
 
+	if(length(mob_spawners))
+		for(var/obj/effect/spawner/mob_spawn/MS as anything in mob_spawners)
+			MS.creatMob()
+
 	if (!L.lastarea)
 		L.lastarea = get_area(L.loc)
 
@@ -498,7 +499,7 @@ var/global/list/ghostteleportlocs = list()
 		else
 			H.AdjustStunned(1)
 			H.AdjustWeakened(1)
-		to_chat(mob, "<span class='notice'>The sudden appearance of gravity makes you fall to the floor!</span>")
+		to_chat(mob, "<span class='notice'>Внезапное появление гравитации заставляет вас упасть на пол!</span>")
 
 /proc/has_gravity(atom/AT, turf/T)
 	if(!T)

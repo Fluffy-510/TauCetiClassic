@@ -35,12 +35,16 @@
 	return ""
 
 /datum/surgery_step/cavity/proc/remove_from_cavity(mob/user, mob/target, obj/obj_to_remove, obj/item/organ/external/BP, obj/tool)
-	BP.implants -= obj_to_remove
+	BP.embedded_objects -= obj_to_remove
 	for(var/datum/wound/W in BP.wounds)
 		if(obj_to_remove in W.embedded_objects)
 			W.embedded_objects -= obj_to_remove
 			break
 	obj_to_remove.forceMove(get_turf(target))
+	if(isitem(obj_to_remove))
+		var/obj/item/I = obj_to_remove
+		I.item_actions_special = initial(I.item_actions_special)
+		I.remove_item_actions(target)
 	user.visible_message("<span class='notice'>[user] takes something out of incision on [target]'s [BP.name] with \the [tool].</span>", \
 	"<span class='notice'>You take [obj_to_remove] out of incision on [target]'s [BP.name]s with \the [tool].</span>" )
 
@@ -152,6 +156,8 @@
 	user.drop_from_inventory(tool, target)
 	BP.hidden = tool
 	BP.cavity = 0
+	tool.item_actions_special = TRUE
+	tool.add_item_actions(target)
 
 /datum/surgery_step/cavity/place_item/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/chest/BP = target.get_bodypart(target_zone)
@@ -190,12 +196,12 @@
 
 /datum/surgery_step/cavity/implant_removal/end_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/chest/BP = target.get_bodypart(target_zone)
-	if(BP.implants.len)
+	if(length(BP.embedded_objects))
 		var/list/list_of_embed_types = list()
 		var/list/embed_object_shrapnel = list()
 		var/list/embed_object_implants = list()
 		var/list/embed_object_else = list()
-		for(var/embed_object in BP.implants)
+		for(var/embed_object in BP.embedded_objects)
 			if(istype(embed_object, /obj/item/weapon/shard/shrapnel))
 				embed_object_shrapnel += embed_object
 				continue
@@ -226,18 +232,7 @@
 				var/choosen_object = show_radial_menu(user, target, embed_object_implants, radius = 50, require_near = TRUE, tooltips = TRUE)
 				if(choosen_object)
 					var/obj/item/weapon/implant/imp = choosen_object
-					for(var/datum/wound/W in BP.wounds)
-						if(imp in W.embedded_objects)
-							W.embedded_objects -= imp
-							break
-					if(istype(imp, /obj/item/weapon/implant/skill))
-						var/obj/item/weapon/implant/skill/skill_impant = imp
-						skill_impant.removed()
-					imp.imp_in = null
-					imp.implanted = FALSE
-					if(istype(imp, /obj/item/weapon/implant/storage))
-						var/obj/item/weapon/implant/storage/Simp = imp
-						Simp.removed()
+					imp.eject()
 					remove_from_cavity(user, target, choosen_object, BP, tool)
 					target.sec_hud_set_implants()
 			if("Else")
@@ -254,7 +249,9 @@
 	else if (BP.hidden)
 		user.visible_message("<span class='notice'>[user] takes something out of incision on [target]'s [BP.name] with \the [tool].</span>", \
 		"<span class='notice'>You take something out of incision on [target]'s [BP.name]s with \the [tool].</span>" )
-		BP.hidden.loc = get_turf(target)
+		BP.hidden.forceMove(get_turf(target))
+		BP.hidden.item_actions_special = initial(BP.hidden.item_actions_special)
+		BP.hidden.remove_item_actions(target)
 		if(!BP.hidden.blood_DNA)
 			BP.hidden.blood_DNA = list()
 		BP.hidden.blood_DNA[target.dna.unique_enzymes] = target.dna.b_type
@@ -269,12 +266,11 @@
 	user.visible_message("<span class='warning'>[user]'s hand slips, scraping tissue inside [target]'s [BP.name] with \the [tool]!</span>", \
 	"<span class='warning'>Your hand slips, scraping tissue inside [target]'s [BP.name] with \the [tool]!</span>")
 	BP.take_damage(20, 0, DAM_SHARP|DAM_EDGE, tool)
-	if (BP.implants.len)
+	if (length(BP.embedded_objects))
 		var/fail_prob = 10
 		fail_prob += 100 - tool_quality(tool)
+		var/obj/item/weapon/implant/imp = locate(/obj/item/weapon/implant) in BP.embedded_objects
 		if (prob(fail_prob))
-			var/obj/item/weapon/implant/imp = BP.implants[1]
-			user.visible_message("<span class='warning'>Something beeps inside [target]'s [BP.name]!</span>")
+			user.visible_message("<span class='warning'>Внутри [CASE(BP, GENITIVE_CASE)] [target] что-то пищит!</span>")
 			playsound(imp, 'sound/items/countdown.ogg', VOL_EFFECTS_MASTER, null, FALSE, null, -3)
-			spawn(25)
-				imp.activate()
+			addtimer(CALLBACK(imp, TYPE_PROC_REF(/obj/item/weapon/implant, use_implant)), 3 SECONDS)

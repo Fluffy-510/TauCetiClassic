@@ -3,7 +3,7 @@
 
 /obj/item/clothing/mask/facehugger
 	name = "alien"
-	desc = "It has some sort of a tube at the end of its tail."
+	desc = "Из кончика хвоста выступает отросток, похожий на трубочку."
 	icon = 'icons/mob/alien.dmi'
 	icon_state = "facehugger"
 	item_state = "facehugger"
@@ -209,14 +209,15 @@
 		return
 	if(stat == CONSCIOUS)
 		icon_state = "[initial(icon_state)]_thrown"
-		addtimer(CALLBACK(src, .proc/set_active_icon_state), 15)
+		addtimer(CALLBACK(src, PROC_REF(set_active_icon_state)), 15)
 
 /obj/item/clothing/mask/facehugger/proc/set_active_icon_state()
 	if(icon_state == "[initial(icon_state)]_thrown")
 		icon_state = "[initial(icon_state)]"
 
 /obj/item/clothing/mask/facehugger/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	..()
+	if(..())
+		return
 	if(stat == CONSCIOUS)
 		icon_state = "[initial(icon_state)]"
 		Attach(hit_atom)
@@ -296,7 +297,7 @@
 
 	GoIdle() //so it doesn't jump the people that tear it off
 	if(!current_hugger)
-		addtimer(CALLBACK(src, .proc/Impregnate, C), rand(MIN_IMPREGNATION_TIME, MAX_IMPREGNATION_TIME))
+		addtimer(CALLBACK(src, PROC_REF(Impregnate), C), rand(MIN_IMPREGNATION_TIME, MAX_IMPREGNATION_TIME))
 
 	return TRUE
 
@@ -342,7 +343,7 @@
 	stat = UNCONSCIOUS
 	icon_state = "[initial(icon_state)]_inactive"
 
-	addtimer(CALLBACK(src, .proc/GoActive), rand(MIN_ACTIVE_TIME, MAX_ACTIVE_TIME))
+	addtimer(CALLBACK(src, PROC_REF(GoActive)), rand(MIN_ACTIVE_TIME, MAX_ACTIVE_TIME))
 
 /obj/item/clothing/mask/facehugger/proc/Die()
 	if(stat == DEAD)
@@ -355,7 +356,7 @@
 	playsound(src, 'sound/voice/xenomorph/facehugger_dies.ogg', VOL_EFFECTS_MASTER)
 	visible_message("<span class='warning'>[src] curls up into a ball and exudes a strange substance!</span>")
 	for(var/mob/living/carbon/human/H in view(1, src))
-		if(!mouth_is_protected())
+		if(!mouth_is_protected(H.wear_mask))
 			H.invoke_vomit_async()
 
 /obj/item/clothing/mask/facehugger/verb/hide_fh()

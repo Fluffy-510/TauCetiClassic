@@ -170,15 +170,18 @@ Class Procs:
 	set_power_use(NO_POWER_USE)
 	machines -= src
 
+	stop_processing()
+
+	dropContents()
+	return ..()
+
+/obj/machinery/proc/stop_processing()
 	if (speed_process)
 		STOP_PROCESSING(SSfastprocess, src)
 	else if (process_last)
 		STOP_PROCESSING_NAMED(SSmachines, src, processing_second)
 	else
 		STOP_PROCESSING(SSmachines, src)
-
-	dropContents()
-	return ..()
 
 /obj/machinery/proc/set_frequency(new_frequency)
 	radio_controller.remove_object(src, frequency)
@@ -229,15 +232,12 @@ Class Procs:
 				continue
 			else
 				target = C
-	if(target && !target.buckled)
+	if(target && !target.buckled && Adjacent(target))
 		if(target.client)
 			target.client.perspective = EYE_PERSPECTIVE
 			target.client.eye = src
 		occupant = target
-		target.loc = src
-		target.stop_pulling()
-		if(target.pulledby)
-			target.pulledby.stop_pulling()
+		target.forceMove(src, keep_grabs = FALSE)
 	updateUsrDialog()
 	update_icon()
 
@@ -436,8 +436,41 @@ Class Procs:
 	..()
 	RefreshParts()
 
-/obj/machinery/proc/RefreshParts() //Placeholder proc for machines that are built using frames.
-	return
+/obj/machinery/proc/RefreshParts()
+	SHOULD_CALL_PARENT(TRUE)
+
+	var/caprat = 0
+	var/binrat = 0
+
+	var/manrat = 0
+	var/lasrat = 0
+	var/scanrat = 0
+
+	for(var/obj/item/weapon/stock_parts/capacitor/C in component_parts)
+		caprat += C.rating
+	for(var/obj/item/weapon/stock_parts/matter_bin/C in component_parts)
+		binrat += C.rating
+
+	for(var/obj/item/weapon/stock_parts/manipulator/C in component_parts)
+		manrat += C.rating
+	for(var/obj/item/weapon/stock_parts/micro_laser/C in component_parts)
+		lasrat += C.rating
+	for(var/obj/item/weapon/stock_parts/scanning_module/C in component_parts)
+		scanrat += C.rating
+
+	idle_power_usage = initial(idle_power_usage)
+	if(caprat)
+		idle_power_usage *= caprat * CAPACITOR_POWER_MULTIPLIER
+	if(binrat)
+		idle_power_usage *= binrat * MATTERBIN_POWER_MULTIPLIER
+
+	active_power_usage = initial(active_power_usage)
+	if(manrat)
+		active_power_usage *= manrat * MANIPULATOR_POWER_MULTIPLIER
+	if(lasrat)
+		active_power_usage *= lasrat * LASER_POWER_MULTIPLIER
+	if(scanrat)
+		active_power_usage *= scanrat * SCANER_POWER_MULTIPLIER
 
 /obj/machinery/proc/assign_uid()
 	uid = gl_uid

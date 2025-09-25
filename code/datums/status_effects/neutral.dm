@@ -1,6 +1,6 @@
 /atom/movable/screen/alert/status_effect/array_turn_back
-	name = "Turn Back"
-	desc = "Affect the replicator you were controlling before this one."
+	name = "Возвращение"
+	desc = "Воздействуйте на оболочку, которой управляли до этого."
 	icon_state = "swarm_turn_back"
 
 	var/mob/living/simple_animal/hostile/replicator/remembered
@@ -26,7 +26,7 @@
 
 /atom/movable/screen/alert/status_effect/array_turn_back/proc/remember(mob/living/simple_animal/hostile/replicator/R)
 	remembered = R
-	RegisterSignal(R, list(COMSIG_MOB_DIED, COMSIG_LOGIN, COMSIG_PARENT_QDELETING), .proc/forget)
+	RegisterSignal(R, list(COMSIG_MOB_DIED, COMSIG_LOGIN, COMSIG_PARENT_QDELETING), PROC_REF(forget))
 
 /atom/movable/screen/alert/status_effect/array_turn_back/proc/forget(datum/source)
 	var/mob/living/simple_animal/hostile/replicator/R = mob_viewer
