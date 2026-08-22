@@ -129,7 +129,8 @@
 
 /obj/item/rig_module/mounted
 	name = "hardsuit mounted laser rifle"
-	desc = "A shoulder-mounted battery-powered laser rifle mount."
+	cases = list("модуль-лазер","модуля-лазера","модулю-лазеру","модуль-лазер","модулем-лазером","модуле-лазере")
+	desc = "Плечевая установка для лазерной винтовки с питанием от аккумулятора."
 	selectable = TRUE
 	usable = FALSE
 	module_cooldown = 0
@@ -183,7 +184,8 @@
 
 /obj/item/rig_module/mounted/taser
 	name = "hardsuit mounted taser"
-	desc = "A palm-mounted nonlethal energy projector."
+	cases = list("модуль-тазер","модуля-тазера","модулю-тазеру","модуль-тазер","модулем-тазером","модуле-тазере")
+	desc = "Плечевая установка для излучателя энергии нелетального действия."
 	icon_state = "taser"
 	suit_overlay = "mounted-taser"
 	use_power_cost = 0

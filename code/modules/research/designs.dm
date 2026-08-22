@@ -1615,7 +1615,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/adv_mass_spectrometer
 	name = "Advanced Mass-Spectrometer"
-	desc = "Устройство для анализа химических веществ в крови и определения их количества."
 	id = "adv_mass_spectrometer"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 30, MAT_GLASS = 20)
@@ -1624,7 +1623,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/reagent_scanner
 	name = "Reagent Scanner"
-	desc = "Устройство для определения химических веществ."
 	id = "reagent_scanner"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 30, MAT_GLASS = 20)
@@ -1633,7 +1631,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/adv_reagent_scanner
 	name = "Advanced Reagent Scanner"
-	desc = "Устройство для определения химических веществ и их соотношения."
 	id = "adv_reagent_scanner"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 30, MAT_GLASS = 20)
@@ -1642,7 +1639,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/mmi
 	name = "Man-Machine Interface"
-	desc = "Невзрачная аббревиатура MMI скрывает подлинный ужас этого устройства."
 	id = "mmi"
 	build_type = PROTOLATHE | MECHFAB
 	materials = list(MAT_METAL = 1000, MAT_GLASS = 500)
@@ -1651,7 +1647,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/mmi_radio
 	name = "Radio-enabled Man-Machine Interface"
-	desc = "Невзрачная аббревиатура MMI скрывает подлинный ужас этого устройства. Эта версия оснащена встроенным радиоприемником."
 	id = "mmi_radio"
 	build_type = PROTOLATHE | MECHFAB
 	materials = list(MAT_METAL = 1200, MAT_GLASS = 500)
@@ -1660,7 +1655,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/synthetic_flash
 	name = "Synthetic Flash"
-	desc = "Когда возникает проблема, решение — это наука."
 	id = "sflash"
 	build_type = MECHFAB
 	materials = list(MAT_METAL = 750, MAT_GLASS = 750)
@@ -1669,7 +1663,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/cyborg_analyzer
 	name = "Cyborg Analyzer"
-	desc = "Ручной сканер, способный диагностировать повреждения у киборгов."
 	id = "cyborg_analyzer"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 7000, MAT_GLASS = 7000, MAT_SILVER = 1500, MAT_DIAMOND = 1000)
@@ -1678,7 +1671,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/nanopaste
 	name = "nanopaste"
-	desc = "Тюбик с пастой, содержащей рои ремонтных нанитов. Очень эффективен при ремонте роботизированной техники."
 	id = "nanopaste"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 7000, MAT_GLASS = 7000)
@@ -1687,7 +1679,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/implanter
 	name = "implanter"
-	desc = "Имплантер, используемый для введения имплантатов."
 	id = "implanter"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 1000, MAT_GLASS = 1000)
@@ -1750,7 +1741,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/chameleon
 	name = "Chameleon Kit"
-	desc = "Комплект одежды хамелеон."
 	id = "chameleon"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 5000)
@@ -1768,7 +1758,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/smuggler_satch
 	name = "Smuggler's Satchel"
-	desc = "Необычная сумка, которую можно поместить под напольной плиткой."
 	id = "smuggler_satch"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 3000)
@@ -1823,7 +1812,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/defibrillators_back
 	name = "Defibrillators"
-	desc = "Дефибриллятор для реанимации людей."
 	id = "defibrillators_back"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 2000, MAT_GLASS = 50)
@@ -1832,7 +1820,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/defibrillators_belt
 	name = "Compact defibrillators"
-	desc = "Дефибриллятор для реанимации людей."
 	id = "defibrillators_compact"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 2000, MAT_GLASS = 50)
@@ -1841,7 +1828,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/defibrillators_standalone
 	name = "Standalone defibrillators"
-	desc = "Дефибриллятор для реанимации людей."
 	id = "defibrillators_standalone"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 1000)
@@ -1850,7 +1836,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/sensor_device
 	name = "Handheld Crew Monitor"
-	desc = "Устройство для отслеживания экипажа на станции."
 	id = "sensor_device"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 7000, MAT_GLASS = 7000)
@@ -1859,7 +1844,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/detective_scanner
 	name = "Forensic Scanner"
-	desc = "Используется для дистанционного сканирования объектов и биомассы на предмет наличия ДНК и отпечатков. Позволяет распечатать отчет о результатах сканирования."
 	id = "detective_scanner"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 7000, MAT_GLASS = 7000)
@@ -1868,7 +1852,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/scalpel_laser1
 	name = "Basic Laser Scalpel"
-	desc = "Скальпель, дополненный направленным лазером для более точного разреза без разбрызгивания крови на операционном столе. Эта модель выглядит простой и может быть усовершенствована."
 	id = "scalpel_laser1"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 12500, MAT_GLASS = 7500)
@@ -1877,7 +1860,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/scalpel_laser2
 	name = "Improved Laser Scalpel"
-	desc = "Скальпель, дополненный направленным лазером для более точного разреза без разбрызгивания крови на операционном столе. Эта модель выглядит довольно продвинуто."
 	id = "scalpel_laser2"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 12500, MAT_GLASS = 7500)
@@ -1886,7 +1868,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/scalpel_laser3
 	name = "Advanced Laser Scalpel"
-	desc = "Скальпель, дополненный направленным лазером для более точного разреза без разбрызгивания крови на операционном столе. Похоже, это вершина высокоточных энергетических хирургических скальпелей!"
 	id = "scalpel_laser3"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 12500, MAT_GLASS = 7500, MAT_SILVER = 2000, MAT_GOLD = 1500)
@@ -1895,7 +1876,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/scalpel_manager
 	name = "Incision Management System"
-	desc = "Будучи подлинным продолжением тела хирурга, это чудо техники мгновенно и безупречно подготавливает разрез, позволяя незамедлительно приступить к хирургическим манипуляциям."
 	id = "scalpel_manager"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 12500, MAT_GLASS = 7500, MAT_SILVER = 1500, MAT_GOLD = 1500, MAT_DIAMOND = 750)
@@ -1904,7 +1884,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/biocan
 	name = "Biogel can"
-	desc = "Медицинское устройство для поддержания жизни головы."
 	id = "biocan"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 1200, MAT_GLASS = 1000)
@@ -1926,7 +1905,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/nuclear_gun
 	name = "Advanced Energy Gun"
-	desc = "Энергетическое оружие с экспериментальным миниатюрным реактором."
 	id = "nuclear_gun"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 5000, MAT_GLASS = 1000, MAT_URANIUM = 500)
@@ -1944,7 +1922,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/laserrifle
 	name = "Extended-Capacity Laser Rifle"
-	desc = "Стандартное оружие, предназначенное для убийства с помощью концентрированных энергетических зарядов. Эта модель имеет батарейку повышенной емкости  и выглядит крупнее обычной винтовки."
 	id = "laserrifle"
 	build_type = PROTOLATHE
 	materials = list (MAT_METAL = 8000, MAT_GLASS = 1000, MAT_URANIUM = 200)
@@ -1953,7 +1930,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/laserpractice
 	name = "Practice Laser Gun"
-	desc = "Модифицированная версия стандартной лазерной винтовки, стреляет менее концентрированными энергетическими зарядами, предназначенными для стрельбы по мишеням."
 	id = "laserpractice"
 	build_type = PROTOLATHE
 	materials = list (MAT_METAL = 1250, MAT_GLASS = 250)
@@ -1962,7 +1938,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/lasercannon
 	name = "Laser Cannon"
-	desc = "В пушке Л.А.З.Е.Р. излучающая среда заключена в трубку с ураном-235 и подвергается воздействию высокого потока нейтронов в активной зоне ядерного реактора. Эта невероятная технология может помочь ВАМ достичь высоких скоростей электронного излучения при малых объемах лазера!"
 	id = "lasercannon"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 10000, MAT_GLASS = 1000, MAT_DIAMOND = 2000, MAT_URANIUM = 100)
@@ -1971,7 +1946,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/decloner
 	name = "Decloner"
-	desc = "Оружие, которое за счет большого количества контролируемого излучения постепенно разрушает цель на составные элементы."
 	id = "decloner"
 	build_type = PROTOLATHE
 	materials = list(MAT_GOLD = 5000,MAT_URANIUM = 10000)
@@ -1980,7 +1954,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/chemsprayer
 	name = "Chem Sprayer"
-	desc = "Усовершенствованное устройство для распыления химикатов на большую площадь."
 	id = "chemsprayer"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 5000, MAT_GLASS = 1000)
@@ -1989,7 +1962,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/rapidsyringe
 	name = "Rapid Syringe Gun"
-	desc = "Оружие, стреляющее множеством шприцев."
 	id = "rapidsyringe"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 5000, MAT_GLASS = 1000)
@@ -2007,7 +1979,6 @@ other types of metals and chemistry for reagents).
 */
 /datum/design/temp_gun
 	name = "Temperature Gun"
-	desc = "Оружие, стреляющее снарядами, которые меняют температуру."//Change it if you want
 	id = "temp_gun"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 5000, MAT_GLASS = 500, MAT_SILVER = 3000)
@@ -2025,7 +1996,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/tesla_gun
 	name = "Tesla Cannon"
-	desc = "Оружие, использующие электрический заряд для поражения нескольких целей. Вращайте рукоятку генератора, чтобы зарядить её."
 	id = "tesla_gun"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 10000, MAT_GOLD = 1000, MAT_SILVER = 4000)
@@ -2034,7 +2004,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/flora_gun
 	name = "Floral Somatoray"
-	desc = "Инструмент, чей принцип работы основывается на управляемом излучениее, вызывающий мутации в клетках растений."
 	id = "flora_gun"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 2000, MAT_GLASS = 500, MAT_URANIUM = 500)
@@ -2043,7 +2012,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/large_grenade
 	name = "Large Grenade"
-	desc = "Крупная граната, поражающая большую область."
 	id = "large_Grenade"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 3000)
@@ -2052,7 +2020,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/plasma_10_gun
 	name = "plasma 10-bc"
-	desc = "Стандартный плазменный карабин типа булл-пап обладающий высокой скорострельностью."
 	id = "plasma_10_gun"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 12500, MAT_GOLD = 6000, MAT_SILVER = 4500, MAT_DIAMOND = 500, MAT_URANIUM = 1000)
@@ -2061,7 +2028,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/plasma_104_gun
 	name = "plasma 104-sass"
-	desc = "Полуавтоматический короткоствольный дробовик на основе плазмы."
 	id = "plasma_104_gun"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 12500, MAT_GOLD = 6000, MAT_SILVER = 8000, MAT_DIAMOND = 750, MAT_URANIUM = 5000)
@@ -2070,7 +2036,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/plasma_mag
 	name = "plasma weapon battery pack"
-	desc = "Специальный корпус аккумулятора с защитой от ЭМИ. Используется метод быстрой зарядки. Имеет стандартизированные размеры и может использоваться с любым плазмотроном данной серии. Возможна замена элемента питания."
 	id = "plasma_mag"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 4500, MAT_GOLD = 2000, MAT_SILVER = 1500)
@@ -2079,7 +2044,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/smg
 	name = "Submachine Gun"
-	desc = "Легкий, скорострельный пистолет-пулемёт. Использует патроны калибра 9мм."
 	id = "smg"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 8000, MAT_SILVER = 2000, MAT_DIAMOND = 1000)
@@ -2097,7 +2061,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/stunshot
 	name = "Stun Shot"
-	desc = "Коробка для ружейных патронов 'Электрошок'."
 	id = "stunshell"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 20000)
@@ -2106,7 +2069,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/phoronpistol
 	name = "phoron pistol"
-	desc = "Специализированное огнестрельное оружие, предназначенное для стрельбы смертоносными зарядами форона."
 	id = "ppistol"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 5000, MAT_GLASS = 1000, MAT_PHORON = 3000)
@@ -2115,7 +2077,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/medigun
 	name = "Medigun"
-	desc = "Прототип лечебной пушки, которая медленно возвращает органику в прежнее состояние, исцеляя её."
 	id = "medigun"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 10000, MAT_GLASS = 5000, MAT_PHORON = 5000, MAT_GOLD = 1500, MAT_SILVER = 1500, MAT_DIAMOND = 2000)
@@ -2124,7 +2085,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/sniperrifle
 	name = "Sniper rifle"
-	desc = "Снайперская винтовка W2500-E, разработанная компанией W&J, изготовлена из легких материалов и оснащена прицелом системы SMART."
 	id = "sniperrifle"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 20000, MAT_GLASS = 7000, MAT_URANIUM = 5000, MAT_GOLD = 2500, MAT_SILVER = 2500, MAT_DIAMOND = 2000)
@@ -2133,7 +2093,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/pulse_rifle
 	name = "Pulse rifle"
-	desc = "Сверхмощное, импульсно-энергетическое оружие, используемое военными."
 	id = "pulse_rifle"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 30000, MAT_GLASS = 15000, MAT_URANIUM = 12500, MAT_GOLD = 5000, MAT_SILVER = 5000, MAT_DIAMOND = 5000, MAT_PHORON = 20000)
@@ -2576,7 +2535,6 @@ other types of metals and chemistry for reagents).
 ///////////////////////////////
 /datum/design/beacon_warp
 	name = "Medical Tracking Beacon"
-	desc = "Маяк, используемый телепортером тел."
 	id = "beacon_warp"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 10000)
@@ -2585,7 +2543,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/body_warp
 	name = "Medical Body Teleporter Device"
-	desc = "Устройство, используемое для телепортации раненых или погибших людей."
 	id = "body_warp"
 	build_type = PROTOLATHE | MINEFAB
 	materials = list(MAT_METAL = 3500, MAT_GLASS = 3500)
@@ -2596,7 +2553,6 @@ other types of metals and chemistry for reagents).
 /datum/design/spraycan
 	name = "Spraycan"
 	id = "spraycan"
-	desc = "Металлический контейнер с вкусной краской."
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 100, MAT_GLASS = 100)
 	build_path = /obj/item/toy/crayon/spraycan
@@ -2604,7 +2560,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/welding_mask
 	name = "Welding Gas Mask"
-	desc = "Противогаз со встроенными сварочными очками и защитным щитком для лица. Напоминает череп — явно работа какого-то гика."
 	id = "weldingmask"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 4000, MAT_GLASS = 1000)
@@ -2613,7 +2568,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/exwelder
 	name = "Experimental Welding Tool"
-	desc = "Экспериментальный сварочный аппарат, способный самостоятельно вырабатывать топливо."
 	id = "exwelder"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 1000, MAT_GLASS = 500, MAT_PHORON = 1500, MAT_URANIUM = 200)
@@ -2631,7 +2585,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/handdrill
 	name = "Hand Drill"
-	desc = "Небольшая электрическая ручная дрель со сменными насадками для болтов и винтиков."
 	id = "handdrill"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 4500, MAT_SILVER = 2000, MAT_GOLD = 1000)
@@ -2640,7 +2593,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/magboots
 	name = "Magnetic Boots"
-	desc = "Магнитные ботинки, часто используемые при работе в открытом космосе для надежного удержания космонавта на поверхности космического аппарата."
 	id = "magboots"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 4500, MAT_SILVER = 1500, MAT_GOLD = 2500)
@@ -2649,7 +2601,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/airbag
 	name = "Personal airbag"
-	desc = "Одноразовая защита от сногсшибательных порывов ветра и низкого давления."
 	id = "airbag"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 500, MAT_SILVER = 500)
@@ -2734,7 +2685,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/rigmountedlaserrifle
 	name = "Hardsuit Mounted Laser Rifle"
-	desc = "Плечевая установка для лазерной винтовки с питанием от аккумулятора."
 	id = "rigmountedlaserrifle"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 12500, MAT_GOLD = 6000, MAT_SILVER = 4500, MAT_DIAMOND = 500, MAT_URANIUM = 1000)
@@ -2743,7 +2693,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/rigmountedtaser
 	name = "Hardsuit Mounted Taser"
-	desc = "Плечевая установка для излучателя энергии нелетального действия."
 	id = "rigmountedtaser"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 6000, MAT_SILVER = 500)
@@ -2752,7 +2701,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/righealthscanner
 	name = "Hardsuit Health Scanner Module"
-	desc = "Сканер здоровья, установленный на РИГе"
 	id = "righealthscanner"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 500, MAT_GLASS = 100)
@@ -2761,7 +2709,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/rigdrill
 	name = "Hardsuit Drill Mount"
-	desc = "Установка на которой очень тяжелый бур с алмазным наконечником."
 	id = "rigdrill"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 6000, MAT_GLASS = 2000, MAT_DIAMOND = 2000)
@@ -2770,7 +2717,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/riganomalyscanner
 	name = "Hardsuit Anomaly Scanner Module"
-	desc = "Кажется, это называется Elder Sarsparilla или что-то в этом роде."
 	id = "riganomalyscanner"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 1000, MAT_GLASS = 500)
@@ -2779,7 +2725,6 @@ other types of metals and chemistry for reagents).
 
 /datum/design/rigorescanner
 	name = "Hardsuit Ore Scanner Module"
-	desc = "Громоздкий старый сканер руды."
 	id = "rigorescanner"
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 500, MAT_GLASS = 500)

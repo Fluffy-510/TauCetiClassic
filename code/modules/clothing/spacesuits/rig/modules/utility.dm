@@ -1,5 +1,6 @@
 /obj/item/rig_module/device
 	name = "mounted device"
+	cases = list("модуль РИГа","модуля РИГа","модулю РИГа","модуль РИГа","модулем РИГа","модуле РИГа")
 	desc = "Some kind of hardsuit mount."
 	usable = FALSE
 	selectable = TRUE
@@ -11,7 +12,8 @@
 
 /obj/item/rig_module/device/healthscanner
 	name = "hardsuit health scanner module"
-	desc = "A hardsuit-mounted health scanner."
+	cases = list("модуль-сканер здоровья","модуля-сканера здоровья","модулю-сканеру здоровья","модуль-сканер здоровья","модулем-сканером здоровья","модуле-сканере здоровья")
+	desc = "Сканер здоровья, установленный на РИГе"
 	icon_state = "scanner"
 	interface_name = "health scanner"
 	interface_desc = "Shows an informative health readout when used on a subject."
@@ -49,7 +51,8 @@
 
 /obj/item/rig_module/device/drill
 	name = "hardsuit drill mount"
-	desc = "A very heavy diamond-tipped drill."
+	cases = list("модуль-бур","модуля-бура","модулю-буру","модуль-бур","модулем-буром","модуле-буре")
+	desc = "Установка на которой очень тяжелый бур с алмазным наконечником."
 	icon_state = "drill"
 	suit_overlay = "mounted-drill"
 	interface_name = "mounted drill"
@@ -61,7 +64,8 @@
 
 /obj/item/rig_module/device/anomaly_scanner
 	name = "hardsuit anomaly scanner module"
-	desc = "You think it's called an Elder Sarsparilla or something."
+	cases = list("модуль-сканер аномалий","модуля-сканера аномалий","модулю-сканеру аномалий","модуль-сканер аномалий","модулем-сканером аномалий","модуле-сканере аномалий")
+	desc = "Кажется, это называется Elder Sarsparilla или что-то в этом роде."
 	icon_state = "eldersasparilla"
 	interface_name = "Alden-Saraspova counter"
 	interface_desc = "An exotic particle detector commonly used by xenoarchaeologists."
@@ -74,7 +78,8 @@
 
 /obj/item/rig_module/device/orescanner
 	name = "hardsuit ore scanner module"
-	desc = "A clunky old ore scanner."
+	cases = list("модуль-сканер руды","модуля-сканера руды","модулю-сканеру руды","модуль-сканер руды","модулем-сканером руды","модуле-сканере руды")
+	desc = "Громоздкий старый сканер руды."
 	icon_state = "scanner"
 	interface_name = "ore detector"
 	interface_desc = "A sonar system for detecting large masses of ore."
